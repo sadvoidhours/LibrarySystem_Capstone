@@ -1,0 +1,36 @@
+{
+  "name": "ptc-library-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
+    "@expo/vector-icons": "^15.1.1",
+    "@react-navigation/bottom-tabs": "^7.2.0",
+    "@react-navigation/native": "^7.0.14",
+    "@react-navigation/native-stack": "^7.2.0",
+    "@reduxjs/toolkit": "^2.5.0",
+    "axios": "^1.8.4",
+    "expo": "^53.0.0",
+    "expo-asset": "~11.1.7",
+    "expo-camera": "~16.1.11",
+    "expo-image-picker": "^55.0.13",
+    "expo-status-bar": "~2.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.0",
+    "react-native-safe-area-context": "5.3.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-web": "~0.20.0",
+    "react-redux": "^9.2.0"
+  },
+  "devDependencies": {
+    "expo-module-scripts": "^55.0.2"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "ptc-library-backend",
+  "version": "1.0.0",
+  "description": "Library Management System API for Pateros Technological College",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "seed:filipino-books": "node src/seeders/seedFilipinoBooks.js",
+    "seed:filipino-books:reset": "node src/seeders/seedFilipinoBooks.js --reset",
+    "seed:users-transactions": "node src/seeders/seedUsersAndTransactions.js",
+    "seed:users-transactions:reset": "node src/seeders/seedUsersAndTransactions.js --reset",
+    "seed:demo": "npm run seed:filipino-books && npm run seed:users-transactions"
+  },
+  "dependencies": {
+    "axios": "^1.8.4",
+    "bcryptjs": "^2.4.3",
+    "bwip-js": "^4.5.2",
+    "cloudinary": "^2.6.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.10.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^6.10.1",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
