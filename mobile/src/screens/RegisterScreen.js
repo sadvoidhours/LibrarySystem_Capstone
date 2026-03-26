@@ -13,8 +13,9 @@ const PTC_EMAIL_REGEX = /^[a-z]+@paterostechnologicalcollege\.edu\.ph$/;
 export default function RegisterScreen({ navigation }) {
   const dispatch = useDispatch();
   const { loading, error, registerMessage } = useSelector((state) => state.auth);
+  const p = palette; // pre-auth always light
   const [localError, setLocalError] = useState('');
-  const [form, setForm] = useState({ name: '', email: '', studentIdNumber: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', studentIdNumber: '', password: '' });
 
   const clearErrors = () => {
     if (localError) setLocalError('');
@@ -30,6 +31,7 @@ export default function RegisterScreen({ navigation }) {
     const payload = {
       name: form.name.trim(),
       email: form.email.trim().toLowerCase(),
+      phone: form.phone.trim(),
       studentIdNumber: form.studentIdNumber.trim(),
       password: form.password,
     };
@@ -54,60 +56,54 @@ export default function RegisterScreen({ navigation }) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { backgroundColor: p.background }]}
         keyboardShouldPersistTaps="handled"
       >
         <View style={[styles.container, baseStyles.webCenter]}>
-          {/* Back to Home */}
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.navigate('Landing')}
-          >
-            <Ionicons name="arrow-back" size={18} color={palette.green} />
-            <Text style={styles.backText}>Back to Home</Text>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate('Landing')}>
+            <Ionicons name="arrow-back" size={18} color={p.green} />
+            <Text style={[styles.backText, { color: p.green }]}>Back to Home</Text>
           </TouchableOpacity>
 
-          {/* Header */}
           <View style={styles.header}>
-            <View style={styles.logoWrap}>
+            <View style={[styles.logoWrap, { backgroundColor: p.greenLight }]}>
               <Image source={require('../../assets/logo.png')} style={styles.logo} />
             </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>Create your account</Text>
+            <View style={[styles.badge, { backgroundColor: p.greenLight }]}>
+              <Text style={[styles.badgeText, { color: p.green }]}>Create your account</Text>
             </View>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Student / Faculty Registration</Text>
+            <Text style={[styles.title, { color: p.gray800 }]}>Create Account</Text>
+            <Text style={[styles.subtitle, { color: p.gray500 }]}>Student / Faculty Registration</Text>
           </View>
 
-          {/* Form Card */}
           <Card style={styles.form}>
             <StyledInput label="Full Name" placeholder="Juan dela Cruz" value={form.name} onChangeText={(v) => update('name', v)} />
             <StyledInput label="Email" placeholder="jabellino@paterostechnologicalcollege.edu.ph" autoCapitalize="none" keyboardType="email-address" value={form.email} onChangeText={(v) => update('email', v)} />
+            <StyledInput label="Mobile Number" placeholder="09XXXXXXXXX" keyboardType="phone-pad" value={form.phone} onChangeText={(v) => update('phone', v)} />
             <StyledInput label="Student ID Number" placeholder="20XX-XXXXX" value={form.studentIdNumber} onChangeText={(v) => update('studentIdNumber', v)} />
             <StyledInput label="Password" placeholder="Min. 6 characters" secureTextEntry value={form.password} onChangeText={(v) => update('password', v)} />
 
             {displayError ? (
-              <View style={styles.errorBox}>
-                <Ionicons name="alert-circle" size={16} color={palette.red} />
-                <Text style={styles.errorText}>{displayError}</Text>
+              <View style={[styles.errorBox, { backgroundColor: p.redLight }]}>
+                <Ionicons name="alert-circle" size={16} color={p.red} />
+                <Text style={[styles.errorText, { color: p.red }]}>{displayError}</Text>
               </View>
             ) : null}
 
             {registerMessage ? (
-              <View style={styles.successBox}>
-                <Ionicons name="checkmark-circle" size={16} color={palette.green} />
-                <Text style={styles.successText}>{registerMessage}</Text>
+              <View style={[styles.successBox, { backgroundColor: p.greenLight }]}>
+                <Ionicons name="checkmark-circle" size={16} color={p.green} />
+                <Text style={[styles.successText, { color: p.green }]}>{registerMessage}</Text>
               </View>
             ) : null}
 
             <StyledButton title="Submit Registration" variant="success" onPress={submit} loading={loading} />
           </Card>
 
-          {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerLabel}>Already have an account?</Text>
+            <Text style={[styles.footerLabel, { color: p.gray500 }]}>Already have an account?</Text>
             <TouchableOpacity onPress={() => { dispatch(clearAuthFeedback()); navigation.navigate('Login'); }}>
-              <Text style={styles.footerLink}>{registerMessage ? 'Go to Login' : 'Sign In'}</Text>
+              <Text style={[styles.footerLink, { color: p.green }]}>{registerMessage ? 'Go to Login' : 'Sign In'}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -120,7 +116,6 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     justifyContent: 'center',
-    backgroundColor: palette.background,
   },
   container: {
     padding: spacing.xl,
@@ -137,7 +132,6 @@ const styles = StyleSheet.create({
   backText: {
     ...fonts.sm,
     ...fonts.semibold,
-    color: palette.green,
   },
   header: {
     alignItems: 'center',
@@ -147,13 +141,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,
     borderRadius: radii.full,
-    backgroundColor: palette.greenLight,
     marginBottom: spacing.xs,
   },
   badgeText: {
     ...fonts.xs,
     ...fonts.semibold,
-    color: palette.green,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
@@ -161,7 +153,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: radii.full,
     padding: 4,
-    backgroundColor: palette.greenLight,
     ...shadows.sm,
     marginBottom: spacing.xs,
   },
@@ -174,12 +165,10 @@ const styles = StyleSheet.create({
     ...fonts.xl,
     ...fonts.bold,
     textAlign: 'center',
-    color: palette.gray800,
   },
   subtitle: {
     ...fonts.sm,
     textAlign: 'center',
-    color: palette.gray500,
     marginBottom: spacing.sm,
   },
   form: {
@@ -190,26 +179,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: palette.redLight,
     padding: spacing.md,
     borderRadius: radii.sm,
   },
   errorText: {
     ...fonts.sm,
-    color: palette.red,
     flex: 1,
   },
   successBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: palette.greenLight,
     padding: spacing.md,
     borderRadius: radii.sm,
   },
   successText: {
     ...fonts.sm,
-    color: palette.green,
     flex: 1,
   },
   footer: {
@@ -221,11 +206,9 @@ const styles = StyleSheet.create({
   },
   footerLabel: {
     ...fonts.sm,
-    color: palette.gray500,
   },
   footerLink: {
     ...fonts.sm,
     ...fonts.bold,
-    color: palette.green,
   },
 });

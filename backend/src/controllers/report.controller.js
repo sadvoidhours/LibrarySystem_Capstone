@@ -13,7 +13,7 @@ const adminOverview = async (req, res) => {
     recentTransactions
   ] = await Promise.all([
     Book.countDocuments(),
-    User.countDocuments({ role: { $in: ['student', 'faculty'] } }),
+    User.countDocuments({ role: { $in: ['student', 'faculty'] }, isArchived: { $ne: true } }),
     Borrowing.countDocuments({ status: { $in: ['Active', 'Overdue'] } }),
     Borrowing.countDocuments({ status: 'Pending' }),
     Payment.aggregate([{ $group: { _id: null, total: { $sum: '$amount' } } }]),

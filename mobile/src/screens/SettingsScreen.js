@@ -20,6 +20,7 @@ import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import StyledButton from '../components/StyledButton';
 import StyledInput from '../components/StyledInput';
+import { logout } from '../store/slices/authSlice';
 import { changePassword, updateProfile } from '../store/slices/authSlice';
 import { getThemePalette, radii, spacing, fonts, shadows, baseStyles } from '../theme/colors';
 
@@ -204,7 +205,7 @@ const createStyles = (palette) =>
       borderRadius: radii.full,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: palette.white,
+      backgroundColor: palette.surface,
       borderWidth: 1,
       borderColor: palette.gray100,
     },
@@ -280,6 +281,7 @@ export default function SettingsScreen() {
   const isWide = width >= 980;
 
   const [fullName, setFullName] = useState(user?.name || '');
+  const [mobileNumber, setMobileNumber] = useState(user?.phone || '');
   const [profileImageUrl, setProfileImageUrl] = useState(user?.profileImageUrl || '');
   const [darkMode, setDarkMode] = useState(themeMode === 'dark');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -304,6 +306,7 @@ export default function SettingsScreen() {
       await dispatch(
         updateProfile({
           name: fullName.trim(),
+          phone: mobileNumber.trim(),
           profileImageUrl,
           themePreference: profileMode,
         })
@@ -325,6 +328,7 @@ export default function SettingsScreen() {
       await dispatch(
         updateProfile({
           name: fullName.trim(),
+          phone: mobileNumber.trim(),
           profileImageUrl,
           themePreference: nextValue ? 'dark' : 'light',
         })
@@ -361,6 +365,7 @@ export default function SettingsScreen() {
       await dispatch(
         updateProfile({
           name: fullName.trim(),
+          phone: mobileNumber.trim(),
           profileImageUrl: data.url,
           themePreference: profileMode,
         })
@@ -459,6 +464,28 @@ export default function SettingsScreen() {
     }
   };
 
+  const deleteAccount = async () => {
+    Alert.alert(
+      'Delete account',
+      'This will permanently remove your account and sign you out. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete('/users/me');
+              dispatch(logout());
+            } catch (error) {
+              setErrorMessage(error?.response?.data?.message || 'Unable to delete account.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const avatar = avatarPreviewUri ? (
     <Image source={{ uri: avatarPreviewUri }} style={styles.avatar} />
   ) : (
@@ -480,7 +507,7 @@ export default function SettingsScreen() {
               <Text style={styles.email}>{user?.email}</Text>
               <View style={styles.roleBadge}>
                 <Ionicons name="id-card-outline" size={14} color={palette.green} />
-                <Text style={styles.roleText}>{user?.role || 'student'} account</Text>
+                <Text style={styles.roleText}>{user?.role ? `${user.role} account` : 'Account'}</Text>
               </View>
             </View>
           </View>
@@ -517,6 +544,7 @@ export default function SettingsScreen() {
 
               <View style={styles.formGrid}>
                 <StyledInput label="Full name" value={fullName} onChangeText={setFullName} placeholder="Your name" />
+                <StyledInput label="Mobile number" value={mobileNumber} onChangeText={setMobileNumber} placeholder="09XXXXXXXXX" keyboardType="phone-pad" />
                 <StyledInput
                   label="Profile image URL"
                   value={profileImageUrl}
@@ -631,6 +659,17 @@ export default function SettingsScreen() {
             <Text style={styles.error}>{errorMessage}</Text>
           </View>
         ) : null}
+
+        <Card style={[styles.sectionCard, { marginTop: spacing.lg, backgroundColor: palette.redLight, borderColor: palette.redLight }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionKicker, { color: palette.red }]}>Danger zone</Text>
+            <Text style={styles.sectionTitle}>Delete your account</Text>
+            <Text style={styles.sectionText}>
+              This removes your personal account permanently. Staff accounts are archived by administrators instead.
+            </Text>
+          </View>
+          <StyledButton title="Delete My Account" variant="danger" onPress={deleteAccount} />
+        </Card>
       </View>
     </ScrollView>
   );

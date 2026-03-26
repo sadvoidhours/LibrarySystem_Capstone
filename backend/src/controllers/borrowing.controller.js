@@ -7,6 +7,18 @@ const { calculatePenalty } = require('../services/penalty.service');
 const { notifyUser } = require('../services/notification.service');
 const { logAudit } = require('../services/audit.service');
 
+const DEFAULT_BORROW_DAYS = Number(process.env.DEFAULT_BORROW_DAYS || 7);
+
+const resolveDueDays = (value) => {
+  const parsed = Number.parseInt(value, 10);
+
+  if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 60) {
+    return parsed;
+  }
+
+  return DEFAULT_BORROW_DAYS;
+};
+
 const requestBorrowValidation = [
   body('bookId').isMongoId()
 ];
@@ -43,6 +55,16 @@ const requestBorrow = async (req, res) => {
     return res.status(404).json({ message: 'Book not found' });
   }
 
+  const existingRequest = await Borrowing.findOne({
+    userId: req.user._id,
+    bookId,
+    status: 'Pending'
+  });
+
+  if (existingRequest) {
+    return res.status(409).json({ message: 'You already have a pending request for this book' });
+  }
+
   const borrowing = await Borrowing.create({
     userId: req.user._id,
     bookId,
@@ -60,7 +82,8 @@ const requestBorrow = async (req, res) => {
 };
 
 const approveBorrow = async (req, res) => {
-  const { dueDays = 7, remarks = '' } = req.body;
+  const { dueDays, remarks = '' } = req.body;
+  const resolvedDueDays = resolveDueDays(dueDays);
 
   const borrowing = await Borrowing.findById(req.params.id);
   if (!borrowing) {
@@ -73,23 +96,25 @@ const approveBorrow = async (req, res) => {
 
   const session = await mongoose.startSession();
 
-  await session.withTransaction(async () => {
-    const book = await Book.findById(borrowing.bookId).session(session);
-    if (!book || book.available_copies < 1) {
-      throw new Error('No available copies');
-    }
+  try {
+    await session.withTransaction(async () => {
+      const book = await Book.findById(borrowing.bookId).session(session);
+      if (!book || book.available_copies < 1) {
+        throw new Error('No available copies');
+      }
 
-    book.available_copies -= 1;
-    await book.save({ session });
+      book.available_copies -= 1;
+      await book.save({ session });
 
-    borrowing.status = 'Active';
-    borrowing.borrow_date = new Date();
-    borrowing.due_date = new Date(Date.now() + Number(dueDays) * 24 * 60 * 60 * 1000);
-    borrowing.remarks = remarks;
-    await borrowing.save({ session });
-  });
-
-  session.endSession();
+      borrowing.status = 'Active';
+      borrowing.borrow_date = new Date();
+      borrowing.due_date = new Date(Date.now() + resolvedDueDays * 24 * 60 * 60 * 1000);
+      borrowing.remarks = remarks;
+      await borrowing.save({ session });
+    });
+  } finally {
+    session.endSession();
+  }
 
   await notifyUser(borrowing.userId, 'Your borrow request was approved.');
 
@@ -132,7 +157,8 @@ const rejectBorrow = async (req, res) => {
 };
 
 const scanBorrow = async (req, res) => {
-  const { userBarcode, bookBarcode, dueDays = 7 } = req.body;
+  const { userBarcode, bookBarcode, dueDays } = req.body;
+  const resolvedDueDays = resolveDueDays(dueDays);
 
   const user = await User.findOne({ barcodeString: userBarcode });
   const book = await Book.findOne({ barcodeString: bookBarcode });
@@ -148,25 +174,27 @@ const scanBorrow = async (req, res) => {
   const session = await mongoose.startSession();
   let borrowing;
 
-  await session.withTransaction(async () => {
-    book.available_copies -= 1;
-    await book.save({ session });
+  try {
+    await session.withTransaction(async () => {
+      book.available_copies -= 1;
+      await book.save({ session });
 
-    borrowing = await Borrowing.create(
-      [
-        {
-          userId: user._id,
-          bookId: book._id,
-          status: 'Active',
-          borrow_date: new Date(),
-          due_date: new Date(Date.now() + Number(dueDays) * 24 * 60 * 60 * 1000)
-        }
-      ],
-      { session }
-    );
-  });
-
-  session.endSession();
+      borrowing = await Borrowing.create(
+        [
+          {
+            userId: user._id,
+            bookId: book._id,
+            status: 'Active',
+            borrow_date: new Date(),
+            due_date: new Date(Date.now() + resolvedDueDays * 24 * 60 * 60 * 1000)
+          }
+        ],
+        { session }
+      );
+    });
+  } finally {
+    session.endSession();
+  }
 
   await notifyUser(user._id, `Book borrowed: ${book.title}. Due date assigned.`);
 

@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
 import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
+import MiniBarChart from '../components/MiniBarChart';
 import StyledButton from '../components/StyledButton';
+import { logout } from '../store/slices/authSlice';
 import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
 const QUICK_ACTIONS = [
@@ -26,6 +29,7 @@ const metricCards = [
 ];
 
 export default function SuperadminDashboardScreen({ navigation }) {
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
@@ -50,9 +54,15 @@ export default function SuperadminDashboardScreen({ navigation }) {
 
   const recentUsers = overview?.recentUsers || [];
   const recentLogs = overview?.recentAuditLogs || [];
-  const profileName = user?.name || 'Superadmin';
-  const profileEmail = user?.email || '';
-  const profileInitial = (profileName[0] || 'S').toUpperCase();
+  const profileName = user?.full_name || user?.name || user?.email || 'Account';
+  const profileEmail = user?.email || user?.phone || '';
+  const profileInitial = (profileName[0] || 'A').toUpperCase();
+  const chartItems = useMemo(() => ([
+    { label: 'Students', value: overview?.studentUsers ?? 0, color: palette.green },
+    { label: 'Faculty', value: overview?.facultyUsers ?? 0, color: palette.blue },
+    { label: 'Admins', value: overview?.adminUsers ?? 0, color: palette.orange },
+    { label: 'Superadmins', value: overview?.superadminUsers ?? 0, color: palette.red },
+  ]), [overview, palette]);
 
   const renderMetric = ({ item }) => (
     <Card key={item.key} style={styles.metricCard}>
@@ -75,7 +85,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor: palette.background }]} showsVerticalScrollIndicator={false}>
       <View style={[styles.container, baseStyles.webCenter]}>
         <BrandHeader title="Superadmin Control Center" subtitle="Govern users, staff, and system activity" />
 
@@ -124,7 +134,9 @@ export default function SuperadminDashboardScreen({ navigation }) {
             <StyledButton title="Refresh data" variant="success" onPress={loadOverview} loading={loading} style={styles.heroButton} />
             <StyledButton title="Generate report" variant="outlineGreen" onPress={() => navigation.navigate('Reports')} style={styles.heroButton} />
             <StyledButton title="Open accounts" variant="outlineGreen" onPress={() => navigation.navigate('Accounts')} style={styles.heroButton} />
+            <StyledButton title="Borrowing queue" variant="outlineGreen" onPress={() => navigation.navigate('Borrowings')} style={styles.heroButton} />
             <StyledButton title="Edit profile" variant="outline" onPress={() => navigation.navigate('Profile')} style={styles.heroButton} />
+            <StyledButton title="Logout" variant="outline" onPress={() => dispatch(logout())} style={styles.heroButton} />
           </View>
         </Card>
 
@@ -136,6 +148,12 @@ export default function SuperadminDashboardScreen({ navigation }) {
         <View style={styles.metricGrid}>
           {metricCards.map((item) => renderMetric({ item }))}
         </View>
+
+        <MiniBarChart
+          title="User distribution"
+          subtitle="Breakdown of the active account base"
+          items={chartItems}
+        />
 
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Quick actions</Text>

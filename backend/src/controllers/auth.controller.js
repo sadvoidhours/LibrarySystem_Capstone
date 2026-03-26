@@ -2,12 +2,14 @@ const bcrypt = require('bcryptjs');
 const { body } = require('express-validator');
 const User = require('../models/User');
 const { signToken } = require('../utils/jwt');
+const { archiveUserRecord, isInactiveForOneYear } = require('../services/inactive-account.service');
 
 const PTC_EMAIL_REGEX = /^[a-z]+@paterostechnologicalcollege\.edu\.ph$/;
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 
 const registerValidation = [
   body('name').trim().notEmpty(),
+  body('phone').optional().trim(),
   body('email')
     .customSanitizer(normalizeEmail)
     .matches(PTC_EMAIL_REGEX)
@@ -26,7 +28,7 @@ const loginValidation = [
 ];
 
 const register = async (req, res) => {
-  const { name, studentIdNumber, password, role } = req.body;
+  const { name, phone, studentIdNumber, password, role } = req.body;
   const email = normalizeEmail(req.body.email);
 
   const existing = await User.findOne({
@@ -39,6 +41,7 @@ const register = async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await User.create({
     name,
+    phone: typeof phone === 'string' ? phone.trim() : '',
     email,
     studentIdNumber,
     passwordHash,
@@ -56,6 +59,7 @@ const register = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       studentIdNumber: user.studentIdNumber,
       role: user.role,
       isVerified: user.isVerified,
@@ -76,6 +80,16 @@ const login = async (req, res) => {
     return res.status(401).json({ message: 'Invalid credentials' });
   }
 
+  if (user.isArchived) {
+    return res.status(403).json({ message: 'Account has been archived' });
+  }
+
+  if (isInactiveForOneYear(user)) {
+    await archiveUserRecord(user);
+
+    return res.status(403).json({ message: 'Account has been archived due to 1 year of inactivity' });
+  }
+
   const matches = await bcrypt.compare(password, user.passwordHash);
   if (!matches) {
     return res.status(401).json({ message: 'Invalid credentials' });
@@ -90,6 +104,9 @@ const login = async (req, res) => {
     return res.status(403).json({ message: statusMessage });
   }
 
+  user.lastActiveAt = new Date();
+  await user.save();
+
   const token = signToken(user);
 
   return res.json({
@@ -98,12 +115,14 @@ const login = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       studentIdNumber: user.studentIdNumber,
       role: user.role,
       isVerified: user.isVerified,
       verificationStatus: user.verificationStatus,
       profileImageUrl: user.profileImageUrl,
       themePreference: user.themePreference,
+      lastActiveAt: user.lastActiveAt,
       barcodeString: user.barcodeString
     }
   });

@@ -17,6 +17,10 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid token user' });
     }
 
+    if (user.isArchived) {
+      return res.status(401).json({ message: 'Account has been archived' });
+    }
+
     req.user = user;
     next();
   } catch (error) {

@@ -389,7 +389,7 @@ export default function LandingScreen({ navigation }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: palette.white,
+    backgroundColor: palette.background,
   },
   scrollContent: {
     paddingBottom: spacing.xxl,
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radii.full,
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -893,7 +893,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.xl,
     gap: spacing.lg,
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderTopWidth: 1,
     borderTopColor: palette.gray200,
   },

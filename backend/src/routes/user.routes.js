@@ -4,6 +4,7 @@ const validate = require('../middlewares/validate.middleware');
 const {
 	getMe,
 	updateMe,
+	deleteMe,
 	changePasswordValidation,
 	changePassword,
 	myBarcodeQR,
@@ -16,6 +17,7 @@ const router = express.Router();
 
 router.get('/me', protect, getMe);
 router.patch('/me', protect, updateMe);
+router.delete('/me', protect, deleteMe);
 router.patch('/me/password', protect, changePasswordValidation, validate, changePassword);
 router.get('/me/barcode', protect, myBarcodeQR);
 router.get('/pending-verification', protect, authorize('admin', 'superadmin'), listPendingUsers);

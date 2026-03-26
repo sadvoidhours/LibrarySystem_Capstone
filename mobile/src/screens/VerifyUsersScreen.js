@@ -1,13 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import api from '../api/client';
-import { baseStyles, fonts, palette, radii, spacing } from '../theme/colors';
+import { baseStyles, fonts, getThemePalette, radii, spacing } from '../theme/colors';
 import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import StyledButton from '../components/StyledButton';
 import EmptyState from '../components/EmptyState';
 
 export default function VerifyUsersScreen() {
+  const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
+  const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
+  const styles = useMemo(() => createStyles(palette), [palette]);
+
   const [items, setItems] = useState([]);
   const [loadingId, setLoadingId] = useState(null);
 
@@ -47,13 +52,13 @@ export default function VerifyUsersScreen() {
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <View style={styles.userInfo}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{(item.name || '?')[0].toUpperCase()}</Text>
+        <View style={[styles.avatar, { backgroundColor: palette.chestnut + '18' }]}>
+          <Text style={[styles.avatarText, { color: palette.chestnut }]}>{(item.name || '?')[0].toUpperCase()}</Text>
         </View>
         <View style={styles.infoWrap}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.meta}>{item.email}</Text>
-          <Text style={styles.meta}>ID: {item.studentIdNumber || '-'}</Text>
+          <Text style={[styles.name, { color: palette.gray800 }]}>{item.name}</Text>
+          <Text style={[styles.meta, { color: palette.gray500 }]}>{item.email}</Text>
+          <Text style={[styles.meta, { color: palette.gray500 }]}>ID: {item.studentIdNumber || '-'}</Text>
         </View>
       </View>
       <View style={styles.actions}>
@@ -78,7 +83,7 @@ export default function VerifyUsersScreen() {
   );
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: palette.background }]}>
       <View style={[styles.container, baseStyles.webCenter]}>
         <BrandHeader title="Registration Approvals" subtitle="Admin verification for student/faculty accounts" />
         <FlatList
@@ -93,8 +98,8 @@ export default function VerifyUsersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: palette.background },
+const createStyles = (p) => StyleSheet.create({
+  screen: { flex: 1 },
   container: { flex: 1, padding: spacing.lg },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },
   card: { padding: spacing.md, gap: spacing.md },
@@ -103,13 +108,12 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: radii.full,
-    backgroundColor: palette.chestnut + '18',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { ...fonts.md, ...fonts.bold, color: palette.chestnut },
+  avatarText: { ...fonts.md, ...fonts.bold },
   infoWrap: { flex: 1, gap: 2 },
-  name: { ...fonts.base, ...fonts.bold, color: palette.gray800 },
-  meta: { ...fonts.sm, color: palette.gray500 },
+  name: { ...fonts.base, ...fonts.bold },
+  meta: { ...fonts.sm },
   actions: { flexDirection: 'row', gap: spacing.sm },
 });

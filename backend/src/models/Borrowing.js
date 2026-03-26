@@ -22,4 +22,23 @@ const borrowingSchema = new mongoose.Schema(
 borrowingSchema.index({ userId: 1, status: 1 });
 borrowingSchema.index({ bookId: 1, status: 1 });
 
+borrowingSchema.set('toJSON', { virtuals: true });
+borrowingSchema.set('toObject', { virtuals: true });
+
+borrowingSchema.virtual('borrowing_id').get(function borrowingId() {
+  return this._id;
+});
+
+borrowingSchema.virtual('user_id').get(function userId() {
+  return this.userId;
+});
+
+borrowingSchema.virtual('book_id').get(function bookId() {
+  return this.bookId;
+});
+
+borrowingSchema.virtual('created_at').get(function createdAt() {
+  return this.createdAt;
+});
+
 module.exports = mongoose.model('Borrowing', borrowingSchema);

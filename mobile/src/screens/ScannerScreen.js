@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useSelector } from 'react-redux';
 import api from '../api/client';
-import { baseStyles, fonts, palette, radii, shadows, spacing } from '../theme/colors';
+import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import StyledInput from '../components/StyledInput';
 import StyledButton from '../components/StyledButton';
 
 export default function ScannerScreen() {
+  const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
+  const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
+  const styles = useMemo(() => createStyles(palette), [palette]);
+
   const [userBarcode, setUserBarcode] = useState('');
   const [bookBarcode, setBookBarcode] = useState('');
   const [scanTarget, setScanTarget] = useState(null);
@@ -51,7 +56,7 @@ export default function ScannerScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor: palette.background }]} keyboardShouldPersistTaps="handled">
         <View style={[styles.container, baseStyles.webCenter]}>
           <BrandHeader title="Scanner Circulation" subtitle="Scan user and book barcodes" />
 
@@ -89,7 +94,7 @@ export default function ScannerScreen() {
           </View>
 
           <Card>
-            <Text style={styles.sectionTitle}>Manual Entry</Text>
+            <Text style={[styles.sectionTitle, { color: palette.gray700 }]}>Manual Entry</Text>
             <View style={styles.formGap}>
               <StyledInput label="User Barcode" placeholder="User barcode" value={userBarcode} onChangeText={setUserBarcode} />
               <StyledInput label="Book Barcode" placeholder="Book barcode" value={bookBarcode} onChangeText={setBookBarcode} />
@@ -106,15 +111,15 @@ export default function ScannerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flexGrow: 1, backgroundColor: palette.background },
+const createStyles = (p) => StyleSheet.create({
+  scroll: { flexGrow: 1 },
   container: { padding: spacing.lg, gap: spacing.lg },
   scannerWrap: {
     height: 220,
     borderRadius: radii.lg,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: palette.chestnut,
+    borderColor: p.chestnut,
     ...shadows.md,
   },
   scanOverlay: {
@@ -128,7 +133,7 @@ const styles = StyleSheet.create({
   scanLabel: {
     ...fonts.sm,
     ...fonts.semibold,
-    color: palette.white,
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   scanButtons: {
@@ -138,7 +143,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...fonts.base,
     ...fonts.bold,
-    color: palette.gray700,
     marginBottom: spacing.md,
   },
   formGap: { gap: spacing.md },

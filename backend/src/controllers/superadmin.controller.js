@@ -7,7 +7,9 @@ const Borrowing = require('../models/Borrowing');
 const Payment = require('../models/Payment');
 const AuditLog = require('../models/AuditLog');
 const { logAudit } = require('../services/audit.service');
-const { sendTestEmail } = require('../services/mailtrap.service');
+const { sendArchiveEmail, sendRestoreEmail, sendTestEmail } = require('../services/mailtrap.service');
+
+const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const createAdminValidation = [
   body('name').trim().notEmpty(),
@@ -16,10 +18,10 @@ const createAdminValidation = [
   body('role').isIn(['admin', 'superadmin'])
 ];
 
-const buildUserSearchFilter = ({ role, verificationStatus, search }) => {
-  const filter = {};
+const buildUserSearchFilter = ({ role, verificationStatus, search, archived }) => {
+  const filter = archived === 'true' ? { isArchived: true } : { isArchived: { $ne: true } };
 
-  if (role) {
+  if (role && archived !== 'true') {
     if (role === 'staff') {
       filter.role = { $in: ['admin', 'superadmin'] };
     } else if (role === 'all') {
@@ -29,15 +31,15 @@ const buildUserSearchFilter = ({ role, verificationStatus, search }) => {
     }
   }
 
-  if (verificationStatus) {
+  if (verificationStatus && archived !== 'true') {
     filter.verificationStatus = verificationStatus;
   }
 
   if (search) {
     filter.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-      { studentIdNumber: { $regex: search, $options: 'i' } }
+      { name: { $regex: escapeRegex(search), $options: 'i' } },
+      { email: { $regex: escapeRegex(search), $options: 'i' } },
+      { studentIdNumber: { $regex: escapeRegex(search), $options: 'i' } }
     ];
   }
 
@@ -47,7 +49,7 @@ const buildUserSearchFilter = ({ role, verificationStatus, search }) => {
 const createAdmin = async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  const exists = await User.findOne({ email });
+  const exists = await User.findOne({ email, isArchived: { $ne: true } });
   if (exists) {
     return res.status(409).json({ message: 'Email already exists' });
   }
@@ -98,23 +100,23 @@ const getOverview = async (req, res) => {
     recentAuditLogs,
     recentUsers
   ] = await Promise.all([
-    User.countDocuments(),
-    User.countDocuments({ role: { $in: ['admin', 'superadmin'] } }),
-    User.countDocuments({ role: { $in: ['student', 'faculty'] } }),
-    User.countDocuments({ role: 'faculty' }),
-    User.countDocuments({ role: 'admin' }),
-    User.countDocuments({ role: 'superadmin' }),
-    User.countDocuments({ verificationStatus: 'verified' }),
-    User.countDocuments({ verificationStatus: 'pending' }),
-    User.countDocuments({ verificationStatus: 'rejected' }),
-    User.countDocuments({ role: { $in: ['student', 'faculty'] }, verificationStatus: 'pending' }),
+    User.countDocuments({ isArchived: { $ne: true } }),
+    User.countDocuments({ role: { $in: ['admin', 'superadmin'] }, isArchived: { $ne: true } }),
+    User.countDocuments({ role: { $in: ['student', 'faculty'] }, isArchived: { $ne: true } }),
+    User.countDocuments({ role: 'faculty', isArchived: { $ne: true } }),
+    User.countDocuments({ role: 'admin', isArchived: { $ne: true } }),
+    User.countDocuments({ role: 'superadmin', isArchived: { $ne: true } }),
+    User.countDocuments({ verificationStatus: 'verified', isArchived: { $ne: true } }),
+    User.countDocuments({ verificationStatus: 'pending', isArchived: { $ne: true } }),
+    User.countDocuments({ verificationStatus: 'rejected', isArchived: { $ne: true } }),
+    User.countDocuments({ role: { $in: ['student', 'faculty'] }, verificationStatus: 'pending', isArchived: { $ne: true } }),
     Book.countDocuments(),
     Borrowing.countDocuments({ status: { $in: ['Active', 'Overdue'] } }),
     Borrowing.countDocuments({ status: 'Overdue' }),
     Borrowing.countDocuments({ status: 'Pending' }),
     Payment.aggregate([{ $group: { _id: null, total: { $sum: '$amount' } } }]),
     AuditLog.find().populate('actorId', 'name email role').sort({ createdAt: -1 }).limit(6),
-    User.find().select('-passwordHash').sort({ createdAt: -1 }).limit(6)
+    User.find({ isArchived: { $ne: true } }).select('-passwordHash').sort({ createdAt: -1 }).limit(6)
   ]);
 
   return res.json({
@@ -139,8 +141,8 @@ const getOverview = async (req, res) => {
 };
 
 const listUsers = async (req, res) => {
-  const { page = 1, limit = 20, role = 'all', verificationStatus, search, sort = 'newest' } = req.query;
-  const filter = buildUserSearchFilter({ role, verificationStatus, search });
+  const { page = 1, limit = 20, role = 'all', verificationStatus, search, sort = 'newest', archived } = req.query;
+  const filter = buildUserSearchFilter({ role, verificationStatus, search, archived });
   const skip = (Number(page) - 1) * Number(limit);
 
   let sortQuery = { createdAt: -1 };
@@ -204,20 +206,57 @@ const deleteUserRecord = async (req, res) => {
     return res.status(400).json({ message: 'You cannot delete your own account' });
   }
 
-  const deleted = await User.findByIdAndDelete(req.params.id);
+  const archived = await User.findByIdAndUpdate(
+    req.params.id,
+    { $set: { isArchived: true, archivedAt: new Date() } },
+    { new: true }
+  ).select('-passwordHash');
 
-  if (!deleted) {
+  if (!archived) {
     return res.status(404).json({ message: 'User not found' });
   }
 
   await logAudit({
     actorId: req.user._id,
     actorRole: req.user.role,
-    action: 'USER_RECORD_DELETED',
-    metadata: { userId: deleted._id }
+    action: 'USER_RECORD_ARCHIVED',
+    metadata: { userId: archived._id }
   });
 
-  return res.json({ message: 'User record deleted' });
+  try {
+    await sendArchiveEmail(archived, 'Your account was archived by a superadmin.');
+  } catch (error) {
+    console.error('Failed to send archive email:', error.message);
+  }
+
+  return res.json({ message: 'User record archived' });
+};
+
+const restoreUserRecord = async (req, res) => {
+  const restored = await User.findByIdAndUpdate(
+    req.params.id,
+    { $set: { isArchived: false, archivedAt: null } },
+    { new: true }
+  ).select('-passwordHash');
+
+  if (!restored) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  try {
+    await sendRestoreEmail(restored);
+  } catch (error) {
+    console.error('Failed to send restore email:', error.message);
+  }
+
+  await logAudit({
+    actorId: req.user._id,
+    actorRole: req.user.role,
+    action: 'USER_RECORD_RESTORED',
+    metadata: { userId: restored._id }
+  });
+
+  return res.json({ message: 'User record restored', user: restored });
 };
 
 const getAuditLogs = async (req, res) => {
@@ -333,6 +372,7 @@ module.exports = {
   updateUserRole,
   deleteBookRecord,
   deleteUserRecord,
+  restoreUserRecord,
   getAuditLogs,
   generateBookBarcodes,
   sendMailtrapTest

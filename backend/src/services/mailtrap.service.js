@@ -132,6 +132,72 @@ const sendRejectionEmail = async (user, reason = '') => {
   });
 };
 
+const sendArchiveEmail = async (user, reason = '') => {
+  const subject = 'Your PTC Library account has been archived';
+  const text = [
+    `Hello ${user.name},`,
+    '',
+    'Your PTC Library Management System account has been archived.',
+    reason ? `Reason: ${reason}` : 'You can contact the library office if you believe this was a mistake.',
+    '',
+    'Regards,',
+    'PTC Library Management System',
+  ].join('\n');
+
+  const html = buildEmailShell({
+    title: 'Account Archived',
+    eyebrow: 'Account status changed',
+    bodyHtml: `
+      <p style="margin:0 0 14px;">Hello ${user.name},</p>
+      <p style="margin:0 0 14px;">Your PTC Library Management System account has been archived.</p>
+      <p style="margin:0;">${reason || 'You can contact the library office if you believe this was a mistake.'}</p>
+    `,
+    ctaLabel: 'Open the library portal',
+    ctaUrl: process.env.APP_LANDING_URL || '',
+    footerNote: 'This account can be restored by a superadmin if needed.',
+  });
+
+  await sendMailtrapEmail({
+    to: user.email,
+    subject,
+    text,
+    html,
+  });
+};
+
+const sendRestoreEmail = async (user) => {
+  const subject = 'Your PTC Library account has been restored';
+  const text = [
+    `Hello ${user.name},`,
+    '',
+    'Your PTC Library Management System account has been restored.',
+    'You can sign in again and continue using the library system.',
+    '',
+    'Regards,',
+    'PTC Library Management System',
+  ].join('\n');
+
+  const html = buildEmailShell({
+    title: 'Account Restored',
+    eyebrow: 'Access re-enabled',
+    bodyHtml: `
+      <p style="margin:0 0 14px;">Hello ${user.name},</p>
+      <p style="margin:0 0 14px;">Your PTC Library Management System account has been restored.</p>
+      <p style="margin:0;">You can sign in again and continue using the library system.</p>
+    `,
+    ctaLabel: 'Open the library portal',
+    ctaUrl: process.env.APP_LANDING_URL || '',
+    footerNote: 'If you did not request this change, contact the library office.',
+  });
+
+  await sendMailtrapEmail({
+    to: user.email,
+    subject,
+    text,
+    html,
+  });
+};
+
 const sendTestEmail = async ({ to, subject, message }) => {
   const emailSubject = subject || 'Mailtrap test from PTC Library System';
   const emailMessage = message || 'This is a Mailtrap test message from the PTC Library System backend.';
@@ -153,5 +219,7 @@ module.exports = {
   sendMailtrapEmail,
   sendVerificationEmail,
   sendRejectionEmail,
+  sendArchiveEmail,
+  sendRestoreEmail,
   sendTestEmail,
 };

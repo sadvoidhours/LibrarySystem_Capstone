@@ -42,10 +42,18 @@ const filipinoBooks = [
   { title: 'Para Kay B', author: 'Ricky Lee', category: 'Contemporary Filipino Fiction', isbn: '9789715087024' }
 ];
 
+const buildCoverUrl = (title, side) => {
+  const palette = side === 'front' ? 'f3e6d0/1f3a2d' : 'd8e8f3/1f3557';
+  return `https://placehold.co/600x900/${palette}?text=${encodeURIComponent(`${title}\n${side === 'front' ? 'Front Cover' : 'Back Cover'}`)}`;
+};
+
 const buildBookPayload = (book, index) => ({
   ...book,
   available_copies: 5,
-  coverImageUrl: '',
+  total_copies: 5,
+  publication_year: null,
+  coverImageUrl: buildCoverUrl(book.title, 'front'),
+  backCoverImageUrl: buildCoverUrl(book.title, 'back'),
   barcodeString: `PTC-FIL-${String(index + 1).padStart(4, '0')}`
 });
 
@@ -55,8 +63,8 @@ const seed = async () => {
     const shouldReset = process.argv.includes('--reset');
 
     if (shouldReset) {
-      const deleteResult = await Book.deleteMany({ barcodeString: { $regex: '^PTC-FIL-' } });
-      console.log(`Reset complete. Removed ${deleteResult.deletedCount} previously seeded Filipino books.`);
+      const deleteResult = await Book.deleteMany({});
+      console.log(`Reset complete. Removed ${deleteResult.deletedCount} books.`);
     }
 
     const operations = filipinoBooks.map((book, index) => ({

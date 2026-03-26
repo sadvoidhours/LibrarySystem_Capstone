@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/client';
 import { fetchBooks } from '../store/slices/booksSlice';
-import { baseStyles, fonts, getThemePalette, palette, radii, shadows, spacing } from '../theme/colors';
+import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import StyledInput from '../components/StyledInput';
@@ -16,7 +16,8 @@ export default function CatalogScreen() {
   const { items, loading } = useSelector((state) => state.books);
   const user = useSelector((state) => state.auth.user);
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
-  const themePalette = getThemePalette(themeMode);
+  const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [q, setQ] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [availability, setAvailability] = useState('all');
@@ -58,20 +59,29 @@ export default function CatalogScreen() {
   const renderItem = ({ item }) => (
     <Card style={[styles.bookCard, numColumns > 1 && styles.bookCardWide]}>
       <View style={styles.bookRow}>
-        {item.coverImageUrl ? (
-          <Image source={{ uri: item.coverImageUrl }} style={styles.cover} />
-        ) : (
-          <View style={[styles.cover, styles.coverPlaceholder]}>
-            <Text style={styles.coverLetter}>{(item.title || 'B')[0]}</Text>
-          </View>
-        )}
+        <View style={styles.coverColumn}>
+          {item.coverImageUrl ? (
+            <Image source={{ uri: item.coverImageUrl }} style={styles.cover} />
+          ) : (
+            <View style={[styles.cover, styles.coverPlaceholder]}>
+              <Text style={styles.coverLetter}>{(item.title || 'B')[0]}</Text>
+            </View>
+          )}
+          <Text style={[styles.coverTag, { color: palette.gray500 }]}>Front</Text>
+        </View>
         <View style={styles.meta}>
-          <Text style={styles.bookTitle} numberOfLines={2}>{item.title}</Text>
-          <Text style={styles.metaText}>{item.author}</Text>
-          <Text style={styles.metaText}>{item.category}</Text>
+          <Text style={[styles.bookTitle, { color: palette.gray800 }]} numberOfLines={2}>{item.title}</Text>
+          <Text style={[styles.metaText, { color: palette.gray500 }]}>{item.author}</Text>
+          <Text style={[styles.metaText, { color: palette.gray500 }]}>{item.category}</Text>
+          <Text style={[styles.metaText, { color: palette.gray500 }]}>Year: {item.publication_year || 'N/A'}</Text>
           <View style={styles.availRow}>
-            <View style={[styles.badge, item.available_copies > 0 ? styles.badgeGreen : styles.badgeRed]}>
-              <Text style={styles.badgeText}>
+            <View
+              style={[
+                styles.badge,
+                { backgroundColor: item.available_copies > 0 ? palette.greenLight : palette.redLight },
+              ]}
+            >
+              <Text style={[styles.badgeText, { color: item.available_copies > 0 ? palette.green : palette.red }]}>
                 {item.available_copies > 0 ? `${item.available_copies} avail.` : 'Unavailable'}
               </Text>
             </View>
@@ -102,23 +112,23 @@ export default function CatalogScreen() {
         avatarUri={user?.profileImageUrl}
       />
 
-      <View style={[styles.heroCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
+      <View style={[styles.heroCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
         <View style={styles.heroRow}>
           <View>
-            <Text style={styles.heroKicker}>Collection</Text>
-            <Text style={styles.heroTitle}>Discover books faster</Text>
+            <Text style={[styles.heroKicker, { color: palette.green }]}>Collection</Text>
+            <Text style={[styles.heroTitle, { color: palette.gray800 }]}>Discover books faster</Text>
           </View>
           <View style={styles.heroBadge}>
             <Ionicons name="library-outline" size={14} color={palette.green} />
-            <Text style={styles.heroBadgeText}>{items.length} titles</Text>
+            <Text style={[styles.heroBadgeText, { color: palette.green }]}>{items.length} titles</Text>
           </View>
         </View>
-        <Text style={styles.heroText}>
+        <Text style={[styles.heroText, { color: palette.gray500 }]}>
           Search the catalog, review availability, and open any book for full details.
         </Text>
       </View>
 
-      <View style={[styles.searchCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
+      <View style={[styles.searchCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
         <View style={styles.searchRow}>
           <StyledInput
             placeholder="Search title, author, or category..."
@@ -137,7 +147,7 @@ export default function CatalogScreen() {
         {showFilters ? (
           <View style={styles.filtersWrap}>
             <View style={styles.filterBlock}>
-              <Text style={styles.filterLabel}>Category</Text>
+              <Text style={[styles.filterLabel, { color: palette.gray500 }]}>Category</Text>
               <View style={styles.chipRow}>
                 {categories.map((category) => (
                   <StyledButton
@@ -153,7 +163,7 @@ export default function CatalogScreen() {
             </View>
 
             <View style={styles.filterBlock}>
-              <Text style={styles.filterLabel}>Availability</Text>
+              <Text style={[styles.filterLabel, { color: palette.gray500 }]}>Availability</Text>
               <View style={styles.chipRow}>
                 {[
                   { key: 'all', label: 'All' },
@@ -173,7 +183,7 @@ export default function CatalogScreen() {
             </View>
 
             <View style={styles.filterFooter}>
-              <Text style={styles.resultText}>{filteredItems.length} results</Text>
+              <Text style={[styles.resultText, { color: palette.gray500 }]}>{filteredItems.length} results</Text>
               <StyledButton title="Clear Filters" small variant="outline" onPress={resetFilters} />
             </View>
           </View>
@@ -188,40 +198,68 @@ export default function CatalogScreen() {
         <Pressable
           style={[
             styles.modalCard,
-            { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 },
+            { backgroundColor: palette.surface, borderColor: palette.gray100 },
             isModalWide && styles.modalCardWide,
           ]}
           onPress={() => null}
         >
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle} numberOfLines={2}>{selectedBook.title}</Text>
+            <Text style={[styles.modalTitle, { color: palette.gray800 }]} numberOfLines={2}>{selectedBook.title}</Text>
             <Pressable onPress={() => setSelectedBook(null)} style={styles.closeButton}>
               <Ionicons name="close" size={18} color={palette.gray700} />
             </Pressable>
           </View>
 
           <View style={[styles.modalBody, isModalWide && styles.modalBodyWide]}>
-            {selectedBook.coverImageUrl ? (
-              <Image source={{ uri: selectedBook.coverImageUrl }} style={styles.modalCover} />
-            ) : (
-              <View style={[styles.modalCover, styles.coverPlaceholder, styles.modalCoverPlaceholder]}>
-                <Text style={styles.coverLetter}>{(selectedBook.title || 'B')[0]}</Text>
-              </View>
-            )}
+            <View style={styles.modalCoverColumn}>
+              {selectedBook.coverImageUrl ? (
+                <Image source={{ uri: selectedBook.coverImageUrl }} style={styles.modalCover} />
+              ) : (
+                <View style={[styles.modalCover, styles.coverPlaceholder, styles.modalCoverPlaceholder]}>
+                  <Text style={styles.coverLetter}>{(selectedBook.title || 'B')[0]}</Text>
+                </View>
+              )}
+              <Text style={[styles.coverTag, { color: palette.gray500 }]}>Front Cover</Text>
+            </View>
+
+            <View style={styles.modalCoverColumn}>
+              {selectedBook.backCoverImageUrl ? (
+                <Image source={{ uri: selectedBook.backCoverImageUrl }} style={styles.modalCover} />
+              ) : (
+                <View style={[styles.modalCover, styles.coverPlaceholder, styles.modalCoverPlaceholder]}>
+                  <Text style={styles.coverLetter}>{(selectedBook.title || 'B')[0]}</Text>
+                </View>
+              )}
+              <Text style={[styles.coverTag, { color: palette.gray500 }]}>Back Cover</Text>
+            </View>
 
             <View style={styles.modalInfo}>
-              <Text style={styles.modalMeta}>{selectedBook.author}</Text>
-              <Text style={styles.modalMeta}>{selectedBook.category || 'Uncategorized'}</Text>
-              <Text style={styles.modalMeta}>ISBN: {selectedBook.isbn || 'N/A'}</Text>
-              <Text style={styles.modalMeta}>Barcode: {selectedBook.barcodeString}</Text>
+              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>{selectedBook.author}</Text>
+              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>{selectedBook.category || 'Uncategorized'}</Text>
+              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Publication Year: {selectedBook.publication_year || 'N/A'}</Text>
+              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>ISBN: {selectedBook.isbn || 'N/A'}</Text>
+              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Copies: {selectedBook.available_copies}/{selectedBook.total_copies || selectedBook.available_copies}</Text>
+              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Barcode: {selectedBook.barcodeString}</Text>
               <View style={styles.modalBadgeRow}>
-                <View style={[styles.badge, Number(selectedBook.available_copies) > 0 ? styles.badgeGreen : styles.badgeRed]}>
-                  <Text style={styles.badgeText}>
+                <View
+                  style={[
+                    styles.badge,
+                    {
+                      backgroundColor: Number(selectedBook.available_copies) > 0 ? palette.greenLight : palette.redLight,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      { color: Number(selectedBook.available_copies) > 0 ? palette.green : palette.red },
+                    ]}
+                  >
                     {Number(selectedBook.available_copies) > 0 ? `${selectedBook.available_copies} avail.` : 'Unavailable'}
                   </Text>
                 </View>
               </View>
-              <Text style={styles.modalDescription}>
+              <Text style={[styles.modalDescription, { color: palette.gray500 }]}>
                 This record is available in the catalog and can be requested directly from this view.
               </Text>
             </View>
@@ -246,7 +284,7 @@ export default function CatalogScreen() {
   ) : null;
 
   return (
-    <View style={[styles.screen, { backgroundColor: themePalette.background }]}>
+    <View style={[styles.screen, { backgroundColor: palette.background }]}>
       <View style={[styles.container, baseStyles.webCenter]}>
         <FlatList
           data={filteredItems}
@@ -270,7 +308,7 @@ export default function CatalogScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette) => StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: palette.background,
@@ -280,7 +318,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   heroCard: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderRadius: radii.xl,
     padding: spacing.lg,
     borderWidth: 1,
@@ -329,7 +367,7 @@ const styles = StyleSheet.create({
   },
   searchCard: {
     marginBottom: spacing.md,
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderRadius: radii.xl,
     padding: spacing.md,
     borderWidth: 1,
@@ -395,9 +433,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
   },
+  coverColumn: {
+    width: 92,
+    gap: 6,
+    alignItems: 'center',
+  },
   cover: {
-    width: 70,
-    height: 100,
+    width: 92,
+    height: 140,
     borderRadius: radii.md,
     backgroundColor: palette.gray100,
   },
@@ -405,6 +448,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: palette.yellowSoft,
+  },
+  coverTag: {
+    ...fonts.xs,
+    ...fonts.semibold,
+    color: palette.gray500,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   coverLetter: {
     ...fonts.xl,
@@ -457,7 +507,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   modalCard: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderRadius: radii.xl,
     padding: spacing.lg,
     maxWidth: 720,
@@ -474,9 +524,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing.md,
-  modalBodyWide: {
-    alignItems: 'flex-start',
-  },
     marginBottom: spacing.md,
   },
   modalTitle: {
@@ -497,6 +544,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.lg,
     flexWrap: 'wrap',
+  },
+  modalBodyWide: {
+    alignItems: 'flex-start',
+  },
+  modalCoverColumn: {
+    gap: 6,
+    alignItems: 'center',
   },
   modalCover: {
     width: 160,

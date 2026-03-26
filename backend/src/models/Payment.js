@@ -11,4 +11,19 @@ const paymentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+paymentSchema.set('toJSON', { virtuals: true });
+paymentSchema.set('toObject', { virtuals: true });
+
+paymentSchema.virtual('payment_id').get(function paymentId() {
+  return this._id;
+});
+
+paymentSchema.virtual('borrowing_id').get(function borrowingId() {
+  return this.borrowingId;
+});
+
+paymentSchema.virtual('created_at').get(function createdAt() {
+  return this.createdAt;
+});
+
 module.exports = mongoose.model('Payment', paymentSchema);

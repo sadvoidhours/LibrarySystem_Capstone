@@ -3,19 +3,20 @@ import { ActivityIndicator, Modal, Pressable, RefreshControl, ScrollView, StyleS
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
-import { baseStyles, fonts, getThemePalette, palette, radii, shadows, spacing } from '../theme/colors';
+import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import EmptyState from '../components/EmptyState';
 import StyledButton from '../components/StyledButton';
 import StyledInput from '../components/StyledInput';
+import { exportReceiptPdf } from '../utils/receipt';
 
-const STATUS_CONFIG = {
-  Active: { bg: palette.greenLight, color: palette.green, icon: 'checkmark-circle' },
-  Overdue: { bg: palette.redLight, color: palette.red, icon: 'alert-circle' },
-  Returned: { bg: palette.blueLight, color: palette.blue, icon: 'arrow-undo-circle' },
-  Pending: { bg: palette.orangeLight, color: palette.orange, icon: 'time' },
-};
+const getStatusConfig = (p) => ({
+  Active: { bg: p.greenLight, color: p.green, icon: 'checkmark-circle' },
+  Overdue: { bg: p.redLight, color: p.red, icon: 'alert-circle' },
+  Returned: { bg: p.blueLight, color: p.blue, icon: 'arrow-undo-circle' },
+  Pending: { bg: p.orangeLight, color: p.orange, icon: 'time' },
+});
 
 const PAYMENT_METHODS = ['Cash', 'GCash', 'Maya', 'Card'];
 
@@ -50,7 +51,9 @@ const formatMonthLabel = (date) => date.toLocaleDateString(undefined, { month: '
 export default function BorrowingsScreen() {
   const user = useSelector((state) => state.auth.user);
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
-  const themePalette = getThemePalette(themeMode);
+  const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const STATUS_CONFIG = useMemo(() => getStatusConfig(palette), [palette]);
   const [items, setItems] = useState([]);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -184,9 +187,27 @@ export default function BorrowingsScreen() {
         {isSettled ? (
           <View style={styles.settledBox}>
             <Ionicons name="checkmark-circle" size={16} color={palette.green} />
-            <Text style={styles.settledText}>
-              Settled via {paymentRecord?.payment_method || 'payment'} on {formatShortDate(paymentRecord?.payment_date || paymentRecord?.createdAt)}
-            </Text>
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={styles.settledText}>
+                Settled via {paymentRecord?.payment_method || 'payment'} on {formatShortDate(paymentRecord?.payment_date || paymentRecord?.createdAt)}
+              </Text>
+              <StyledButton
+                title="Export Receipt PDF"
+                variant="outline"
+                small
+                onPress={() => exportReceiptPdf({
+                  paymentId: paymentRecord?._id,
+                  paymentDate: paymentRecord?.payment_date || paymentRecord?.createdAt,
+                  amount: paymentRecord?.amount,
+                  paymentMethod: paymentRecord?.payment_method,
+                  bookTitle: item.bookId?.title,
+                  bookAuthor: item.bookId?.author,
+                  borrowerName: user?.name,
+                  dueDate: item.due_date,
+                  borrowDate: item.borrow_date,
+                }, { palette })}
+              />
+            </View>
           </View>
         ) : canSettle ? (
           <View style={styles.actionRow}>
@@ -199,8 +220,8 @@ export default function BorrowingsScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.scroll, { backgroundColor: themePalette.background }]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={themePalette.green} />}
+      contentContainerStyle={[styles.scroll, { backgroundColor: palette.background }]}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={palette.green} />}
     >
       <View style={[styles.container, baseStyles.webCenter]}>
         <BrandHeader
@@ -209,37 +230,37 @@ export default function BorrowingsScreen() {
           avatarUri={user?.profileImageUrl}
         />
 
-        <View style={[styles.heroCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
+        <View style={[styles.heroCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
           <View style={styles.heroRow}>
             <View style={styles.heroCopy}>
-              <Text style={styles.eyebrow}>Borrowing overview</Text>
-              <Text style={styles.heroTitle}>Everything you need to manage your returns</Text>
-              <Text style={styles.heroText}>
+              <Text style={[styles.eyebrow, { color: palette.green }]}>Borrowing overview</Text>
+              <Text style={[styles.heroTitle, { color: palette.gray800 }]}>Everything you need to manage your returns</Text>
+              <Text style={[styles.heroText, { color: palette.gray500 }]}>
                 Review your borrowing calendar, check overdue items, and settle penalties from one screen.
               </Text>
             </View>
             <View style={styles.heroBadge}>
               <Ionicons name="calendar-outline" size={16} color={palette.green} />
-              <Text style={styles.heroBadgeText}>{monthTitle}</Text>
+              <Text style={[styles.heroBadgeText, { color: palette.green }]}>{monthTitle}</Text>
             </View>
           </View>
 
           <View style={styles.summaryRow}>
-            <View style={[styles.summaryCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
-              <Text style={styles.summaryValue}>{items.length}</Text>
-              <Text style={styles.summaryLabel}>Requests</Text>
+            <View style={[styles.summaryCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+              <Text style={[styles.summaryValue, { color: palette.gray800 }]}>{items.length}</Text>
+              <Text style={[styles.summaryLabel, { color: palette.gray500 }]}>Requests</Text>
             </View>
-            <View style={[styles.summaryCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
-              <Text style={styles.summaryValue}>{activeCount}</Text>
-              <Text style={styles.summaryLabel}>Active</Text>
+            <View style={[styles.summaryCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+              <Text style={[styles.summaryValue, { color: palette.gray800 }]}>{activeCount}</Text>
+              <Text style={[styles.summaryLabel, { color: palette.gray500 }]}>Active</Text>
             </View>
-            <View style={[styles.summaryCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
-              <Text style={styles.summaryValue}>{overdueCount}</Text>
-              <Text style={styles.summaryLabel}>Overdue</Text>
+            <View style={[styles.summaryCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+              <Text style={[styles.summaryValue, { color: palette.gray800 }]}>{overdueCount}</Text>
+              <Text style={[styles.summaryLabel, { color: palette.gray500 }]}>Overdue</Text>
             </View>
-            <View style={[styles.summaryCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
-              <Text style={styles.summaryValue}>₱{totalPenaltyDue.toFixed(2)}</Text>
-              <Text style={styles.summaryLabel}>Due now</Text>
+            <View style={[styles.summaryCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+              <Text style={[styles.summaryValue, { color: palette.gray800 }]}>₱{totalPenaltyDue.toFixed(2)}</Text>
+              <Text style={[styles.summaryLabel, { color: palette.gray500 }]}>Due now</Text>
             </View>
           </View>
         </View>
@@ -249,8 +270,8 @@ export default function BorrowingsScreen() {
             <Card style={styles.calendarCard}>
               <View style={styles.sectionHeader}>
                 <View>
-                  <Text style={styles.sectionKicker}>Calendar</Text>
-                  <Text style={styles.sectionTitle}>Full month view</Text>
+                  <Text style={[styles.sectionKicker, { color: palette.green }]}>Calendar</Text>
+                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Full month view</Text>
                 </View>
                 <View style={styles.calendarNav}>
                   <StyledButton
@@ -279,18 +300,18 @@ export default function BorrowingsScreen() {
               </View>
 
               <View style={styles.calendarMetaRow}>
-                <Text style={styles.calendarMonthLabel}>{monthTitle}</Text>
-                <Text style={styles.calendarHint}>Tap a day to inspect the due items for that date.</Text>
+                <Text style={[styles.calendarMonthLabel, { color: palette.gray800 }]}>{monthTitle}</Text>
+                <Text style={[styles.calendarHint, { color: palette.gray500 }]}>Tap a day to inspect the due items for that date.</Text>
               </View>
 
               <View style={styles.selectedDayPanel}>
                 <View style={styles.selectedDayHeader}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.selectedDayKicker}>Selected Day</Text>
-                    <Text style={styles.selectedDayTitle}>{selectedDayLabel}</Text>
+                    <Text style={[styles.selectedDayKicker, { color: palette.green }]}>Selected Day</Text>
+                    <Text style={[styles.selectedDayTitle, { color: palette.gray800 }]}>{selectedDayLabel}</Text>
                   </View>
                   <View style={styles.selectedDayBadge}>
-                    <Text style={styles.selectedDayBadgeText}>{selectedDayDueCount} due</Text>
+                    <Text style={[styles.selectedDayBadgeText, { color: palette.green }]}>{selectedDayDueCount} due</Text>
                   </View>
                 </View>
                 {selectedDayDueCount ? (
@@ -303,21 +324,21 @@ export default function BorrowingsScreen() {
                             <Ionicons name={cfg.icon} size={16} color={cfg.color} />
                           </View>
                           <View style={styles.detailBody}>
-                            <Text style={styles.detailTitle}>{item.bookId?.title || 'Book'}</Text>
-                            <Text style={styles.detailMeta}>{item.status} · Due {formatShortDate(item.due_date)}</Text>
+                            <Text style={[styles.detailTitle, { color: palette.gray800 }]}>{item.bookId?.title || 'Book'}</Text>
+                            <Text style={[styles.detailMeta, { color: palette.gray500 }]}>{item.status} · Due {formatShortDate(item.due_date)}</Text>
                           </View>
                         </View>
                       );
                     })}
                   </View>
                 ) : (
-                  <Text style={styles.emptyText}>No borrowings are due on this date.</Text>
+                  <Text style={[styles.emptyText, { color: palette.gray500 }]}>No borrowings are due on this date.</Text>
                 )}
               </View>
 
               <View style={styles.weekdayRow}>
                 {daysOfWeek.map((day) => (
-                  <Text key={day} style={styles.weekdayLabel}>{day}</Text>
+                  <Text key={day} style={[styles.weekdayLabel, { color: palette.gray500 }]}>{day}</Text>
                 ))}
               </View>
 
@@ -338,14 +359,19 @@ export default function BorrowingsScreen() {
                       key={day.toISOString()}
                       style={[
                         styles.dayCell,
-                        { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 },
+                        { backgroundColor: palette.surface, borderColor: palette.gray100 },
                         !isCurrentMonth && styles.dayCellMuted,
-                        isSelected && { backgroundColor: themePalette.greenLight, borderColor: themePalette.green },
-                        isToday && { borderColor: themePalette.chestnut },
+                        isSelected && { backgroundColor: palette.greenLight, borderColor: palette.green },
+                        isToday && { borderColor: palette.chestnut },
                       ]}
                       onPress={() => setSelectedDate(new Date(day))}
                     >
-                      <Text style={[styles.dayNumber, !isCurrentMonth && styles.dayNumberMuted, isSelected && styles.dayNumberSelected]}>
+                      <Text style={[
+                        styles.dayNumber,
+                        { color: palette.gray800 },
+                        !isCurrentMonth && { color: palette.gray400 },
+                        isSelected && { color: palette.green },
+                      ]}>
                         {day.getDate()}
                       </Text>
                       <View style={styles.dayIndicators}>
@@ -363,11 +389,11 @@ export default function BorrowingsScreen() {
             <Card>
               <View style={styles.sectionHeader}>
                 <View>
-                  <Text style={styles.sectionKicker}>Selected Day</Text>
-                  <Text style={styles.sectionTitle}>Borrowings due on {selectedDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}</Text>
+                  <Text style={[styles.sectionKicker, { color: palette.green }]}>Selected Day</Text>
+                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Borrowings due on {selectedDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}</Text>
                 </View>
                 <View style={styles.sectionBadge}>
-                  <Text style={styles.sectionBadgeText}>{selectedDayBorrowings.length} items</Text>
+                  <Text style={[styles.sectionBadgeText, { color: palette.green }]}>{selectedDayBorrowings.length} items</Text>
                 </View>
               </View>
 
@@ -382,8 +408,8 @@ export default function BorrowingsScreen() {
                           <Ionicons name={cfg.icon} size={16} color={cfg.color} />
                         </View>
                         <View style={styles.detailBody}>
-                          <Text style={styles.detailTitle}>{item.bookId?.title || 'Book'}</Text>
-                          <Text style={styles.detailMeta}>{item.status} · Due {formatShortDate(item.due_date)}</Text>
+                          <Text style={[styles.detailTitle, { color: palette.gray800 }]}>{item.bookId?.title || 'Book'}</Text>
+                          <Text style={[styles.detailMeta, { color: palette.gray500 }]}>{item.status} · Due {formatShortDate(item.due_date)}</Text>
                         </View>
                         <Text style={[styles.detailBadge, isSettled ? { color: palette.green } : { color: cfg.color }]}>
                           {isSettled ? 'Settled' : `₱${Number(item.penaltyAmount || 0).toFixed(2)}`}
@@ -400,8 +426,8 @@ export default function BorrowingsScreen() {
             <Card>
               <View style={styles.sectionHeader}>
                 <View>
-                  <Text style={styles.sectionKicker}>Borrowings</Text>
-                  <Text style={styles.sectionTitle}>All your requests and returns</Text>
+                  <Text style={[styles.sectionKicker, { color: palette.green }]}>Borrowings</Text>
+                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>All your requests and returns</Text>
                 </View>
               </View>
 
@@ -421,21 +447,21 @@ export default function BorrowingsScreen() {
             <Card>
               <View style={styles.sectionHeader}>
                 <View>
-                  <Text style={styles.sectionKicker}>Payment</Text>
-                  <Text style={styles.sectionTitle}>Settle your penalties</Text>
+                  <Text style={[styles.sectionKicker, { color: palette.green }]}>Payment</Text>
+                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Settle your penalties</Text>
                 </View>
               </View>
-              <Text style={styles.sideText}>
+              <Text style={[styles.sideText, { color: palette.gray500 }]}>
                 Overdue items can be settled directly from this page. Choose a record, confirm the amount, and submit the payment.
               </Text>
               <View style={styles.paymentSummaryRow}>
-                <View style={[styles.paymentSummaryCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
-                  <Text style={styles.summaryValue}>{payments.length}</Text>
-                  <Text style={styles.summaryLabel}>Settled</Text>
+                <View style={[styles.paymentSummaryCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+                  <Text style={[styles.summaryValue, { color: palette.gray800 }]}>{payments.length}</Text>
+                  <Text style={[styles.summaryLabel, { color: palette.gray500 }]}>Settled</Text>
                 </View>
-                <View style={[styles.paymentSummaryCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]}>
-                  <Text style={styles.summaryValue}>₱{totalPenaltyDue.toFixed(2)}</Text>
-                  <Text style={styles.summaryLabel}>Outstanding</Text>
+                <View style={[styles.paymentSummaryCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+                  <Text style={[styles.summaryValue, { color: palette.gray800 }]}>₱{totalPenaltyDue.toFixed(2)}</Text>
+                  <Text style={[styles.summaryLabel, { color: palette.gray500 }]}>Outstanding</Text>
                 </View>
               </View>
             </Card>
@@ -443,8 +469,8 @@ export default function BorrowingsScreen() {
             <Card>
               <View style={styles.sectionHeader}>
                 <View>
-                  <Text style={styles.sectionKicker}>Payment History</Text>
-                  <Text style={styles.sectionTitle}>Recent settlements</Text>
+                  <Text style={[styles.sectionKicker, { color: palette.green }]}>Payment History</Text>
+                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Recent settlements</Text>
                 </View>
               </View>
               {payments.length ? (
@@ -452,14 +478,14 @@ export default function BorrowingsScreen() {
                   {payments.slice(0, 6).map((payment) => (
                     <View key={payment._id} style={styles.paymentItem}>
                       <View style={styles.paymentLeft}>
-                        <Text style={styles.paymentAmount}>₱{Number(payment.amount || 0).toFixed(2)}</Text>
-                        <Text style={styles.paymentMeta}>
+                        <Text style={[styles.paymentAmount, { color: palette.gray800 }]}>₱{Number(payment.amount || 0).toFixed(2)}</Text>
+                        <Text style={[styles.paymentMeta, { color: palette.gray500 }]}>
                           {payment.borrowingId?.bookId?.title || 'Borrowing'}
                         </Text>
                       </View>
                       <View style={styles.paymentRight}>
-                        <Text style={styles.paymentMethod}>{payment.payment_method}</Text>
-                        <Text style={styles.paymentDate}>{formatShortDate(payment.payment_date || payment.createdAt)}</Text>
+                        <Text style={[styles.paymentMethod, { color: palette.green }]}>{payment.payment_method}</Text>
+                        <Text style={[styles.paymentDate, { color: palette.gray400 }]}>{formatShortDate(payment.payment_date || payment.createdAt)}</Text>
                       </View>
                     </View>
                   ))}
@@ -474,18 +500,18 @@ export default function BorrowingsScreen() {
 
       <Modal visible={paymentModalVisible} transparent animationType="fade" onRequestClose={() => setPaymentModalVisible(false)}>
         <Pressable style={styles.modalBackdrop} onPress={() => setPaymentModalVisible(false)}>
-          <Pressable style={[styles.modalCard, { backgroundColor: themePalette.surface, borderColor: themePalette.gray100 }]} onPress={() => null}>
+          <Pressable style={[styles.modalCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]} onPress={() => null}>
             <View style={styles.modalHeader}>
               <View>
-                <Text style={styles.modalKicker}>Payment Settlement</Text>
-                <Text style={styles.modalTitle}>{paymentTarget?.bookId?.title || 'Borrowing'}</Text>
+                <Text style={[styles.modalKicker, { color: palette.green }]}>Payment Settlement</Text>
+                <Text style={[styles.modalTitle, { color: palette.gray800 }]}>{paymentTarget?.bookId?.title || 'Borrowing'}</Text>
               </View>
               <Pressable onPress={() => setPaymentModalVisible(false)} style={styles.closeButton}>
                 <Ionicons name="close" size={18} color={palette.gray700} />
               </Pressable>
             </View>
 
-            <Text style={styles.modalText}>
+            <Text style={[styles.modalText, { color: palette.gray500 }]}>
               Confirm the penalty amount and choose a payment method. The payment will be recorded in the system.
             </Text>
 
@@ -524,7 +550,7 @@ export default function BorrowingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette) => StyleSheet.create({
   scroll: {
     flexGrow: 1,
     backgroundColor: palette.background,
@@ -534,7 +560,7 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   heroCard: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: palette.gray100,
@@ -754,7 +780,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: palette.gray100,
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     padding: 6,
     justifyContent: 'space-between',
   },
@@ -980,7 +1006,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   modalCard: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderRadius: radii.xl,
     padding: spacing.lg,
     maxWidth: 560,

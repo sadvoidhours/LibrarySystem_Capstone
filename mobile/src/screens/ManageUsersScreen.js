@@ -28,6 +28,7 @@ const FILTERS = [
   { key: 'pending', label: 'Pending' },
   { key: 'verified', label: 'Verified' },
   { key: 'rejected', label: 'Rejected' },
+  { key: 'archived', label: 'Archived' },
 ];
 
 const SORT_OPTIONS = [
@@ -50,6 +51,30 @@ const roleLabel = {
   faculty: 'Faculty',
   admin: 'Admin',
   superadmin: 'Superadmin',
+};
+
+const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+
+const formatDate = (value) => {
+  if (!value) {
+    return 'N/A';
+  }
+
+  return new Date(value).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const isInactiveOverOneYear = (user) => {
+  const anchor = user?.lastActiveAt || user?.createdAt;
+
+  if (!anchor) {
+    return false;
+  }
+
+  return Date.now() - new Date(anchor).getTime() >= ONE_YEAR_MS;
 };
 
 export default function ManageUsersScreen() {
@@ -90,6 +115,8 @@ export default function ManageUsersScreen() {
 
       if (filter === 'staff') {
         params.role = 'staff';
+      } else if (filter === 'archived') {
+        params.archived = 'true';
       } else if (filter === 'pending' || filter === 'verified' || filter === 'rejected') {
         params.verificationStatus = filter;
       } else if (filter !== 'all') {
@@ -210,27 +237,56 @@ export default function ManageUsersScreen() {
     }
   };
 
-  const deleteUser = () => {
+  const archiveUser = () => {
     if (!selectedUser) {
       return;
     }
 
     Alert.alert(
-      'Delete user',
-      `Remove ${selectedUser.name} from the system? This action cannot be undone.`,
+      'Archive user',
+      `Archive ${selectedUser.name} from the system? This account will be hidden from active lists.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete',
+          text: 'Archive',
           style: 'destructive',
           onPress: async () => {
             try {
               setSaving(true);
-              await api.delete(`/superadmin/users/${selectedUser._id}`);
+              await api.patch(`/superadmin/users/${selectedUser._id}/archive`);
               closeActions();
               await loadUsers({ nextPage: 1, append: false });
             } catch (error) {
-              Alert.alert('Error', error.response?.data?.message || 'Unable to delete user');
+              Alert.alert('Error', error.response?.data?.message || 'Unable to archive user');
+            } finally {
+              setSaving(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const restoreUser = () => {
+    if (!selectedUser) {
+      return;
+    }
+
+    Alert.alert(
+      'Restore user',
+      `Restore ${selectedUser.name} and allow them to sign in again?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Restore',
+          onPress: async () => {
+            try {
+              setSaving(true);
+              await api.patch(`/superadmin/users/${selectedUser._id}/restore`);
+              closeActions();
+              await loadUsers({ nextPage: 1, append: false });
+            } catch (error) {
+              Alert.alert('Error', error.response?.data?.message || 'Unable to restore user');
             } finally {
               setSaving(false);
             }
@@ -261,6 +317,16 @@ export default function ManageUsersScreen() {
               <View style={[styles.tag, { backgroundColor: palette.greenLight }]}>
                 <Text style={[styles.tagText, { color: palette.green }]}>{roleLabel[item.role] || item.role}</Text>
               </View>
+              {item.isArchived ? (
+                <View style={[styles.tag, { backgroundColor: palette.orangeLight }]}>
+                  <Text style={[styles.tagText, { color: palette.orange }]}>Archived</Text>
+                </View>
+              ) : null}
+              {item.isArchived && isInactiveOverOneYear(item) ? (
+                <View style={[styles.tag, { backgroundColor: palette.gray100 }]}>
+                  <Text style={[styles.tagText, { color: palette.gray600 }]}>Inactive 1y+</Text>
+                </View>
+              ) : null}
               <View style={[styles.tag, { backgroundColor: palette.gray100 }]}>
                 <Text style={[styles.tagText, { color: palette.gray600 }]}>
                   {statusLabel[item.verificationStatus] || item.verificationStatus}
@@ -275,7 +341,7 @@ export default function ManageUsersScreen() {
 
         <View style={styles.cardActions}>
           <StyledButton
-            title="Actions"
+            title={item.isArchived ? 'View' : 'Actions'}
             variant="outlineGreen"
             small
             onPress={() => openActions(item)}
@@ -449,7 +515,7 @@ export default function ManageUsersScreen() {
           >
             <View style={styles.modalHeader}>
               <View>
-                <Text style={[styles.modalKicker, { color: palette.green }]}>Account Actions</Text>
+                <Text style={[styles.modalKicker, { color: palette.green }]}>{selectedUser?.isArchived ? 'Archived Account' : 'Account Actions'}</Text>
                 <Text style={[styles.modalTitle, { color: palette.gray800 }]}>{selectedUser?.name}</Text>
               </View>
               <Pressable onPress={closeActions} style={styles.closeButton}>
@@ -461,60 +527,90 @@ export default function ManageUsersScreen() {
               {selectedUser?.email}
             </Text>
 
-            <View style={styles.roleGrid}>
-              {ROLE_OPTIONS.map((role) => {
-                const active = selectedRole === role;
-                return (
-                  <Pressable
-                    key={role}
-                    onPress={() => setSelectedRole(role)}
-                    style={[
-                      styles.roleChip,
-                      {
-                        backgroundColor: active ? palette.chestnut : palette.surfaceAlt,
-                        borderColor: active ? palette.chestnut : palette.gray200,
-                      },
-                    ]}
-                  >
-                    <Text style={[styles.roleChipText, { color: active ? palette.white : palette.gray700 }]}>
-                      {roleLabel[role]}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            {selectedUser?.isArchived ? (
+              <View style={styles.modalNoteBlock}>
+                <Text style={[styles.modalNote, { color: palette.gray500 }]}>This account is archived and hidden from the active account list.</Text>
+                <Text style={[styles.modalNote, { color: palette.gray500 }]}>Last active: {formatDate(selectedUser.lastActiveAt || selectedUser.createdAt)}</Text>
+                <Text style={[styles.modalNote, { color: palette.gray500 }]}>Archived since: {formatDate(selectedUser.archivedAt)}</Text>
+                {isInactiveOverOneYear(selectedUser) ? (
+                  <Text style={[styles.modalNote, { color: palette.orange }]}>Inactive for 1 year or more.</Text>
+                ) : null}
+              </View>
+            ) : (
+              <View style={styles.roleGrid}>
+                {ROLE_OPTIONS.map((role) => {
+                  const active = selectedRole === role;
+                  return (
+                    <Pressable
+                      key={role}
+                      onPress={() => setSelectedRole(role)}
+                      style={[
+                        styles.roleChip,
+                        {
+                          backgroundColor: active ? palette.chestnut : palette.surfaceAlt,
+                          borderColor: active ? palette.chestnut : palette.gray200,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.roleChipText, { color: active ? palette.white : palette.gray700 }]}>
+                        {roleLabel[role]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
 
             <View style={styles.modalActions}>
-              <StyledButton
-                title="Save Role"
-                variant="success"
-                onPress={() => updateRole(selectedRole)}
-                loading={saving}
-                style={styles.modalButton}
-              />
-              {selectedUser && ['student', 'faculty'].includes(selectedUser.role) ? (
-                <View style={styles.modalSecondaryRow}>
+              {selectedUser?.isArchived ? null : (
+                <>
                   <StyledButton
-                    title="Verify"
-                    variant="outlineGreen"
-                    onPress={() => verifyUser(selectedUser)}
+                    title="Save Role"
+                    variant="success"
+                    onPress={() => updateRole(selectedRole)}
                     loading={saving}
                     style={styles.modalButton}
                   />
+                  {selectedUser && ['student', 'faculty'].includes(selectedUser.role) ? (
+                    <View style={styles.modalSecondaryRow}>
+                      <StyledButton
+                        title="Verify"
+                        variant="outlineGreen"
+                        onPress={() => verifyUser(selectedUser)}
+                        loading={saving}
+                        style={styles.modalButton}
+                      />
+                      <StyledButton
+                        title="Reject"
+                        variant="danger"
+                        onPress={() => rejectUser(selectedUser)}
+                        loading={saving}
+                        style={styles.modalButton}
+                      />
+                    </View>
+                  ) : null}
                   <StyledButton
-                    title="Reject"
-                    variant="danger"
-                    onPress={() => rejectUser(selectedUser)}
+                    title="Archive Account"
+                    variant="outline"
+                    onPress={archiveUser}
                     loading={saving}
                     style={styles.modalButton}
                   />
-                </View>
+                </>
+              )}
+              {selectedUser?.isArchived ? (
+                <StyledButton
+                  title="Restore Account"
+                  variant="success"
+                  onPress={restoreUser}
+                  loading={saving}
+                  style={styles.modalButton}
+                />
               ) : null}
               <StyledButton
-                title="Delete Account"
-                variant="danger"
-                onPress={deleteUser}
-                loading={saving}
+                title="Close"
+                variant={selectedUser?.isArchived ? 'success' : 'outline'}
+                onPress={closeActions}
                 style={styles.modalButton}
               />
             </View>
@@ -755,6 +851,13 @@ const styles = StyleSheet.create({
   modalText: {
     ...fonts.sm,
     lineHeight: 20,
+  },
+  modalNote: {
+    ...fonts.sm,
+    lineHeight: 20,
+  },
+  modalNoteBlock: {
+    gap: 4,
   },
   closeButton: {
     width: 34,

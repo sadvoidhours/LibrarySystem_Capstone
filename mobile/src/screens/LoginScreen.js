@@ -3,7 +3,7 @@ import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, To
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearAuthFeedback, login } from '../store/slices/authSlice';
-import { baseStyles, fonts, palette, radii, shadows, spacing } from '../theme/colors';
+import { baseStyles, fonts, getThemePalette, palette, radii, shadows, spacing } from '../theme/colors';
 import Card from '../components/Card';
 import StyledInput from '../components/StyledInput';
 import StyledButton from '../components/StyledButton';
@@ -13,6 +13,7 @@ const PTC_EMAIL_REGEX = /^[a-z]+@paterostechnologicalcollege\.edu\.ph$/;
 export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
+  const p = palette; // pre-auth always light
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [localError, setLocalError] = useState('');
@@ -41,32 +42,29 @@ export default function LoginScreen({ navigation }) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { backgroundColor: p.background }]}
         keyboardShouldPersistTaps="handled"
       >
         <View style={[styles.container, baseStyles.webCenter]}>
-          {/* Back to Home */}
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => navigation.navigate('Landing')}
           >
-            <Ionicons name="arrow-back" size={18} color={palette.green} />
-            <Text style={styles.backText}>Back to Home</Text>
+            <Ionicons name="arrow-back" size={18} color={p.green} />
+            <Text style={[styles.backText, { color: p.green }]}>Back to Home</Text>
           </TouchableOpacity>
 
-          {/* Header */}
           <View style={styles.header}>
-            <View style={styles.logoWrap}>
+            <View style={[styles.logoWrap, { backgroundColor: p.greenLight }]}>
               <Image source={require('../../assets/logo.png')} style={styles.logo} />
             </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>Student / Faculty Access</Text>
+            <View style={[styles.badge, { backgroundColor: p.greenLight }]}>
+              <Text style={[styles.badgeText, { color: p.green }]}>Student / Faculty Access</Text>
             </View>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to your library account</Text>
+            <Text style={[styles.title, { color: p.gray800 }]}>Welcome Back</Text>
+            <Text style={[styles.subtitle, { color: p.gray500 }]}>Sign in to your library account</Text>
           </View>
 
-          {/* Form Card */}
           <Card style={styles.form}>
             <StyledInput
               label="Email"
@@ -85,20 +83,19 @@ export default function LoginScreen({ navigation }) {
             />
 
             {displayError ? (
-              <View style={styles.errorBox}>
-                <Ionicons name="alert-circle" size={16} color={palette.red} />
-                <Text style={styles.errorText}>{displayError}</Text>
+              <View style={[styles.errorBox, { backgroundColor: p.redLight }]}>
+                <Ionicons name="alert-circle" size={16} color={p.red} />
+                <Text style={[styles.errorText, { color: p.red }]}>{displayError}</Text>
               </View>
             ) : null}
 
             <StyledButton title="Sign In" variant="success" onPress={onLogin} loading={loading} />
           </Card>
 
-          {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerLabel}>Don't have an account?</Text>
+            <Text style={[styles.footerLabel, { color: p.gray500 }]}>Don't have an account?</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.footerLink}>Create Account</Text>
+              <Text style={[styles.footerLink, { color: p.green }]}>Create Account</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -111,7 +108,6 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     justifyContent: 'center',
-    backgroundColor: palette.background,
   },
   container: {
     padding: spacing.xl,
@@ -128,7 +124,6 @@ const styles = StyleSheet.create({
   backText: {
     ...fonts.sm,
     ...fonts.semibold,
-    color: palette.green,
   },
   header: {
     alignItems: 'center',
@@ -138,13 +133,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 6,
     borderRadius: radii.full,
-    backgroundColor: palette.greenLight,
     marginBottom: spacing.xs,
   },
   badgeText: {
     ...fonts.xs,
     ...fonts.semibold,
-    color: palette.green,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
@@ -152,7 +145,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: radii.full,
     padding: 4,
-    backgroundColor: palette.greenLight,
     ...shadows.sm,
     marginBottom: spacing.xs,
   },
@@ -165,12 +157,10 @@ const styles = StyleSheet.create({
     ...fonts.xl,
     ...fonts.bold,
     textAlign: 'center',
-    color: palette.gray800,
   },
   subtitle: {
     ...fonts.sm,
     textAlign: 'center',
-    color: palette.gray500,
     marginBottom: spacing.sm,
   },
   form: {
@@ -181,13 +171,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: palette.redLight,
     padding: spacing.md,
     borderRadius: radii.sm,
   },
   errorText: {
     ...fonts.sm,
-    color: palette.red,
     flex: 1,
   },
   footer: {
@@ -199,11 +187,9 @@ const styles = StyleSheet.create({
   },
   footerLabel: {
     ...fonts.sm,
-    color: palette.gray500,
   },
   footerLink: {
     ...fonts.sm,
     ...fonts.bold,
-    color: palette.green,
   },
 });

@@ -12,11 +12,11 @@ const { calculatePenalty } = require('../services/penalty.service');
 const DEMO_PREFIX = 'SEEDED-DEMO';
 
 const demoUsers = [
-  { name: 'Mo Avengoza', email: 'moavengoza@paterostechnologicalcollege.edu.ph', role: 'superadmin', barcodeString: 'PTC-USER-0001', isVerified: true, verificationStatus: 'verified' },
-  { name: 'Joshua Adrian Bellino', email: 'jabellino@paterostechnologicalcollege.edu.ph', role: 'admin', barcodeString: 'PTC-USER-0002', isVerified: true, verificationStatus: 'verified' },
-  { name: 'Christian Mark Almonte', email: 'cmalmonte@paterostechnologicalcollege.edu.ph', role: 'admin', barcodeString: 'PTC-USER-0003', isVerified: true, verificationStatus: 'verified' },
-  { name: 'Kevinson Cadena', email: 'kcadena@paterostechnologicalcollege.edu.ph', role: 'faculty', barcodeString: 'PTC-USER-0004', isVerified: true, verificationStatus: 'verified', studentIdNumber: 'FAC-1003' },
-  { name: 'Nadzmaa Amerol Annanggo', email: 'naannanggo@paterostechnologicalcollege.edu.ph', role: 'student', barcodeString: 'PTC-USER-1000', isVerified: true, verificationStatus: 'verified', studentIdNumber: '2024-0000' }
+  { name: 'Mo Avengoza', full_name: 'Mo Avengoza', username: 'mo.avengoza', email: 'moavengoza@paterostechnologicalcollege.edu.ph', phone: '', role: 'superadmin', barcodeString: 'PTC-USER-0001', isVerified: true, verificationStatus: 'verified' },
+  { name: 'Joshua Adrian Bellino', full_name: 'Joshua Adrian Bellino', username: 'joshua.bellino', email: 'jabellino@paterostechnologicalcollege.edu.ph', phone: '', role: 'admin', barcodeString: 'PTC-USER-0002', isVerified: true, verificationStatus: 'verified' },
+  { name: 'Christian Mark Almonte', full_name: 'Christian Mark Almonte', username: 'christian.almonte', email: 'cmalmonte@paterostechnologicalcollege.edu.ph', phone: '', role: 'admin', barcodeString: 'PTC-USER-0003', isVerified: true, verificationStatus: 'verified' },
+  { name: 'Kevinson Cadena', full_name: 'Kevinson Cadena', username: 'kevinson.cadena', email: 'kcadena@paterostechnologicalcollege.edu.ph', phone: '', role: 'faculty', barcodeString: 'PTC-USER-0004', isVerified: true, verificationStatus: 'verified', studentIdNumber: 'FAC-1003' },
+  { name: 'Nadzmaa Amerol Annanggo', full_name: 'Nadzmaa Amerol Annanggo', username: 'nadzmaa.annganggo', email: 'naannanggo@paterostechnologicalcollege.edu.ph', phone: '', role: 'student', barcodeString: 'PTC-USER-1000', isVerified: true, verificationStatus: 'verified', studentIdNumber: '2024-0000' }
 ];
 
 const legacyDemoEmails = [
@@ -91,16 +91,24 @@ const borrowingTemplates = [
   }
 ];
 
-const resetSeededBorrowings = async () => {
-  const seededBorrowings = await Borrowing.find({ remarks: { $regex: `^${DEMO_PREFIX}` } }).select('_id');
-  const borrowingIds = seededBorrowings.map((item) => item._id);
+const resetAllCollections = async () => {
+  const [auditLogs, notifications, payments, borrowings, books, users] = await Promise.all([
+    mongoose.connection.collection('auditlogs').deleteMany({}),
+    mongoose.connection.collection('notifications').deleteMany({}),
+    mongoose.connection.collection('payments').deleteMany({}),
+    mongoose.connection.collection('borrowings').deleteMany({}),
+    mongoose.connection.collection('books').deleteMany({}),
+    mongoose.connection.collection('users').deleteMany({})
+  ]);
 
-  if (borrowingIds.length > 0) {
-    await Payment.deleteMany({ borrowingId: { $in: borrowingIds } });
-    await Borrowing.deleteMany({ _id: { $in: borrowingIds } });
-  }
-
-  return borrowingIds.length;
+  return {
+    auditLogs: auditLogs.deletedCount,
+    notifications: notifications.deletedCount,
+    payments: payments.deletedCount,
+    borrowings: borrowings.deletedCount,
+    books: books.deletedCount,
+    users: users.deletedCount
+  };
 };
 
 const seedUsers = async () => {
@@ -111,8 +119,11 @@ const seedUsers = async () => {
     const update = {
       $set: {
         name: user.name,
+        full_name: user.full_name || user.name,
+        username: user.username || '',
         email: user.email,
         passwordHash,
+        phone: user.phone || '',
         role: user.role,
         barcodeString: user.barcodeString,
         isVerified: user.isVerified,
@@ -244,10 +255,18 @@ const run = async () => {
     const shouldReset = process.argv.includes('--reset');
 
     if (shouldReset) {
-      const removed = await resetSeededBorrowings();
-      console.log(`Reset complete. Removed ${removed} seeded borrowings and related payments.`);
+      const removed = await resetAllCollections();
+      console.log(
+        `Reset complete. Removed ${removed.users} users, ${removed.books} books, ${removed.borrowings} borrowings, ${removed.payments} payments, ${removed.notifications} notifications, and ${removed.auditLogs} audit logs.`
+      );
     } else {
-      await resetSeededBorrowings();
+      const seededBorrowings = await Borrowing.find({ remarks: { $regex: `^${DEMO_PREFIX}` } }).select('_id');
+      const borrowingIds = seededBorrowings.map((item) => item._id);
+
+      if (borrowingIds.length > 0) {
+        await Payment.deleteMany({ borrowingId: { $in: borrowingIds } });
+        await Borrowing.deleteMany({ _id: { $in: borrowingIds } });
+      }
     }
 
     const removedUsers = await removeLegacySeededUsers();

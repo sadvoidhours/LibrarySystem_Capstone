@@ -1,7 +1,7 @@
 import { DefaultTheme } from '@react-navigation/native';
 import { Platform } from 'react-native';
 
-/* ───────── colour palette ───────── */
+/* ───────── colour palette (light) ───────── */
 export const palette = {
   /* primary greens */
   green:        '#2E7D32',
@@ -10,7 +10,7 @@ export const palette = {
   greenMint:    '#A5D6A7',
   greenPastel:  '#C8E6C9',
 
-  /* brand aliases → now green-based so the whole app recolours */
+  /* brand aliases → green-based */
   chestnut:     '#2E7D32',
   chestnutDark: '#1B5E20',
   chestnutLight:'#43A047',
@@ -19,7 +19,7 @@ export const palette = {
   olive:        '#388E3C',
   oliveLight:   '#81C784',
 
-  /* neutrals – clean & modern */
+  /* neutrals */
   white:        '#FFFFFF',
   background:   '#F9FBF9',
   surface:      '#FFFFFF',
@@ -47,64 +47,64 @@ export const palette = {
   purpleLight:  '#F3E5F5',
 };
 
+/* ───────── colour palette (dark) ───────── */
 const darkPalette = {
-  green:        '#66BB6A',
-  greenDark:    '#43A047',
-  greenLight:   '#17331B',
-  greenMint:    '#81C784',
-  greenPastel:  '#204626',
+  green:        '#81C784',
+  greenDark:    '#66BB6A',
+  greenLight:   '#1A2E1D',
+  greenMint:    '#A5D6A7',
+  greenPastel:  '#243D28',
 
-  chestnut:     '#66BB6A',
-  chestnutDark: '#43A047',
-  chestnutLight:'#81C784',
-  yellow:       '#81C784',
-  yellowSoft:   '#17331B',
-  olive:        '#81C784',
-  oliveLight:   '#204626',
+  chestnut:     '#81C784',
+  chestnutDark: '#66BB6A',
+  chestnutLight:'#A5D6A7',
+  yellow:       '#A5D6A7',
+  yellowSoft:   '#1A2E1D',
+  olive:        '#A5D6A7',
+  oliveLight:   '#2E4A33',
 
-  white:        '#101610',
-  background:   '#0D120E',
-  surface:      '#141B15',
-  surfaceAlt:   '#1A241C',
-  gray50:       '#141B15',
-  gray100:      '#1A241C',
-  gray200:      '#253128',
-  gray300:      '#3A473D',
-  gray400:      '#6E7D72',
-  gray500:      '#95A196',
-  gray600:      '#B6C0B8',
-  gray700:      '#D3DBD5',
-  gray800:      '#F4F7F5',
+  white:        '#FFFFFF',
+  background:   '#111A13',
+  surface:      '#182019',
+  surfaceAlt:   '#1E281F',
+  gray50:       '#182019',
+  gray100:      '#1E281F',
+  gray200:      '#2A3A2D',
+  gray300:      '#3F5242',
+  gray400:      '#6E8372',
+  gray500:      '#98AC9C',
+  gray600:      '#B8CAB9',
+  gray700:      '#D6E2D8',
+  gray800:      '#ECF1ED',
 
   red:          '#FF8A80',
-  redLight:     '#351719',
+  redLight:     '#3A1C1E',
   blue:         '#90CAF9',
-  blueLight:    '#15263A',
+  blueLight:    '#1A2A3D',
   orange:       '#FFB74D',
-  orangeLight:  '#33210F',
+  orangeLight:  '#3A2810',
   teal:         '#80CBC4',
-  tealLight:    '#12312D',
+  tealLight:    '#16352F',
   purple:       '#CE93D8',
-  purpleLight:  '#2A1B30',
+  purpleLight:  '#2E1D33',
 };
 
 export const getThemePalette = (mode = 'light') => (mode === 'dark' ? darkPalette : palette);
 
 /* ───────── navigation theme ───────── */
 export const createAppTheme = (mode = 'light') => {
-  const activePalette = getThemePalette(mode);
-
+  const p = getThemePalette(mode);
   return {
     ...DefaultTheme,
     dark: mode === 'dark',
     colors: {
       ...DefaultTheme.colors,
-      primary:      activePalette.green,
-      background:   activePalette.background,
-      card:         activePalette.surface,
-      text:         activePalette.gray800,
-      border:       activePalette.gray200,
-      notification: activePalette.green,
+      primary:      p.green,
+      background:   p.background,
+      card:         p.surface,
+      text:         p.gray800,
+      border:       p.gray200,
+      notification: p.green,
     },
   };
 };
@@ -134,14 +134,21 @@ export const shadows = {
 };
 
 /* ───────── typography ───────── */
+export const fontFamily = Platform.select({
+  web: '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif',
+  ios: 'System',
+  android: 'Roboto',
+  default: 'System',
+});
+
 export const fonts = {
-  xs:   { fontSize: 11, lineHeight: 16 },
-  sm:   { fontSize: 13, lineHeight: 18 },
-  base: { fontSize: 15, lineHeight: 22 },
-  md:   { fontSize: 17, lineHeight: 24 },
-  lg:   { fontSize: 20, lineHeight: 28 },
-  xl:   { fontSize: 24, lineHeight: 32 },
-  xxl:  { fontSize: 30, lineHeight: 38 },
+  xs:   { fontSize: 11, lineHeight: 16, fontFamily },
+  sm:   { fontSize: 13, lineHeight: 18, fontFamily },
+  base: { fontSize: 15, lineHeight: 22, fontFamily },
+  md:   { fontSize: 17, lineHeight: 24, fontFamily },
+  lg:   { fontSize: 20, lineHeight: 28, fontFamily },
+  xl:   { fontSize: 24, lineHeight: 32, fontFamily },
+  xxl:  { fontSize: 30, lineHeight: 38, fontFamily },
   bold:      { fontWeight: '700' },
   semibold:  { fontWeight: '600' },
   medium:    { fontWeight: '500' },
@@ -167,10 +174,10 @@ export const radii = {
 };
 
 /* ───────── shared base styles ───────── */
-export const baseStyles = {
+export const createBaseStyles = (p) => ({
   screenContainer: {
     flex: 1,
-    backgroundColor: palette.background,
+    backgroundColor: p.background,
     padding: spacing.lg,
   },
   webCenter: {
@@ -178,4 +185,7 @@ export const baseStyles = {
     maxWidth: 1120,
     alignSelf: 'center',
   },
-};
+});
+
+/* backwards-compat default export (light) */
+export const baseStyles = createBaseStyles(palette);

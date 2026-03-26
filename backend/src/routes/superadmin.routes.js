@@ -10,6 +10,7 @@ const {
   updateUserRole,
   deleteBookRecord,
   deleteUserRecord,
+  restoreUserRecord,
   getAuditLogs,
   generateBookBarcodes,
   sendMailtrapTest
@@ -25,7 +26,8 @@ router.get('/admins', listUsers);
 router.get('/users', listUsers);
 router.patch('/users/:id/role', body('role').isIn(['student', 'faculty', 'admin', 'superadmin']), validate, updateUserRole);
 router.delete('/books/:id', deleteBookRecord);
-router.delete('/users/:id', deleteUserRecord);
+router.patch('/users/:id/archive', deleteUserRecord);
+router.patch('/users/:id/restore', restoreUserRecord);
 router.get('/audit-logs', getAuditLogs);
 router.post('/barcodes/books/batch', generateBookBarcodes);
 router.post('/mailtrap/test', body('to').optional().isEmail(), body('subject').optional().isString().isLength({ min: 1, max: 120 }), body('message').optional().isString().isLength({ min: 1, max: 2000 }), validate, sendMailtrapTest);

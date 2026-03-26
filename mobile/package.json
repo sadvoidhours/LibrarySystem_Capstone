@@ -21,6 +21,8 @@
     "expo-asset": "~11.1.7",
     "expo-camera": "~16.1.11",
     "expo-image-picker": "^55.0.13",
+    "expo-print": "^55.0.9",
+    "expo-sharing": "^55.0.14",
     "expo-status-bar": "~2.0.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",

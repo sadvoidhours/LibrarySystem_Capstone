@@ -7,11 +7,13 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "seed:reset-all": "node src/seeders/resetAllSeedData.js",
     "seed:filipino-books": "node src/seeders/seedFilipinoBooks.js",
     "seed:filipino-books:reset": "node src/seeders/seedFilipinoBooks.js --reset",
     "seed:users-transactions": "node src/seeders/seedUsersAndTransactions.js",
     "seed:users-transactions:reset": "node src/seeders/seedUsersAndTransactions.js --reset",
-    "seed:demo": "npm run seed:filipino-books && npm run seed:users-transactions"
+    "seed:demo": "npm run seed:reset-all && npm run seed:filipino-books && npm run seed:users-transactions",
+    "seed:demo:reset": "npm run seed:reset-all && npm run seed:filipino-books && npm run seed:users-transactions"
   },
   "dependencies": {
     "axios": "^1.8.4",

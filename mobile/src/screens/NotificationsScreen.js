@@ -52,7 +52,7 @@ export default function NotificationsScreen() {
     <Pressable onPress={() => !item.is_read && markRead(item._id)}>
       <Card style={[styles.card, { borderColor: palette.gray100, backgroundColor: item.is_read ? palette.surface : palette.greenLight }]}>
         <View style={styles.row}>
-          <View style={[styles.iconWrap, { backgroundColor: palette.white }]}>
+          <View style={[styles.iconWrap, { backgroundColor: palette.surface }]}>
             <Ionicons name={item.is_read ? 'notifications-outline' : 'notifications'} size={20} color={palette.chestnut} />
           </View>
           <View style={styles.body}>

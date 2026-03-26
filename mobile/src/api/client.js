@@ -8,10 +8,20 @@ export const setAuthToken = (token) => {
 };
 
 const resolveApiBaseUrl = () => {
-  const configuredBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
+  const configuredBaseUrl = String(process.env.EXPO_PUBLIC_API_BASE_URL || '').trim();
 
-  if (!configuredBaseUrl.includes('localhost') && !configuredBaseUrl.includes('127.0.0.1')) {
-    return configuredBaseUrl;
+  if (configuredBaseUrl) {
+    return configuredBaseUrl.replace(/\/+$/, '');
+  }
+
+  const defaultBaseUrl = 'http://localhost:5000/api';
+
+  if (Platform.OS === 'web') {
+    return `${window.location.origin.replace(/\/$/, '')}/api`;
+  }
+
+  if (!defaultBaseUrl.includes('localhost') && !defaultBaseUrl.includes('127.0.0.1')) {
+    return defaultBaseUrl;
   }
 
   const scriptURL = NativeModules?.SourceCode?.scriptURL || '';
@@ -19,13 +29,13 @@ const resolveApiBaseUrl = () => {
 
   if (!host) {
     if (Platform.OS === 'android') {
-      return configuredBaseUrl.replace('localhost', '10.0.2.2').replace('127.0.0.1', '10.0.2.2');
+      return defaultBaseUrl.replace('localhost', '10.0.2.2').replace('127.0.0.1', '10.0.2.2');
     }
 
-    return configuredBaseUrl;
+    return defaultBaseUrl;
   }
 
-  return configuredBaseUrl.replace('localhost', host).replace('127.0.0.1', host);
+  return defaultBaseUrl.replace('localhost', host).replace('127.0.0.1', host);
 };
 
 const api = axios.create({

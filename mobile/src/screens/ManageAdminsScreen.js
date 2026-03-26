@@ -104,18 +104,18 @@ export default function ManageAdminsScreen() {
     }
   };
 
-  const deleteUser = (user) => {
-    Alert.alert('Delete account', `Remove ${user.name} from staff accounts?`, [
+  const archiveUser = (user) => {
+    Alert.alert('Archive account', `Archive ${user.name} from staff accounts?`, [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Delete',
+        text: 'Archive',
         style: 'destructive',
         onPress: async () => {
           try {
-            await api.delete(`/superadmin/users/${user._id}`);
+            await api.patch(`/superadmin/users/${user._id}/archive`);
             await loadAdmins({ nextPage: 1, append: false });
           } catch (error) {
-            Alert.alert('Error', error.response?.data?.message || 'Unable to delete account');
+            Alert.alert('Error', error.response?.data?.message || 'Unable to archive account');
           }
         },
       },
@@ -174,10 +174,10 @@ export default function ManageAdminsScreen() {
             />
           ) : null}
           <StyledButton
-            title="Delete"
-            variant="danger"
+            title="Archive"
+            variant="outline"
             small
-            onPress={() => deleteUser(item)}
+            onPress={() => archiveUser(item)}
             style={styles.actionButton}
           />
         </View>

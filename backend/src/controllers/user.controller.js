@@ -5,6 +5,10 @@ const Borrowing = require('../models/Borrowing');
 const QRCode = require('qrcode');
 const { sendVerificationEmail, sendRejectionEmail } = require('../services/mailtrap.service');
 
+const touchUserActivity = async (userId) => {
+  await User.updateOne({ _id: userId }, { $set: { lastActiveAt: new Date() } });
+};
+
 const getMe = async (req, res) => {
   const user = await User.findById(req.user._id).select('-passwordHash');
   const borrowings = await Borrowing.find({ userId: req.user._id })
@@ -16,12 +20,16 @@ const getMe = async (req, res) => {
 };
 
 const updateMe = async (req, res) => {
-  const { name, profileImageUrl, themePreference } = req.body;
+  const { name, phone, profileImageUrl, themePreference } = req.body;
 
   const updates = {};
 
   if (typeof name === 'string' && name.trim()) {
     updates.name = name.trim();
+  }
+
+  if (typeof phone === 'string') {
+    updates.phone = phone.trim();
   }
 
   if (typeof profileImageUrl === 'string') {
@@ -38,7 +46,19 @@ const updateMe = async (req, res) => {
     { new: true }
   ).select('-passwordHash');
 
+  await touchUserActivity(req.user._id);
+
   return res.json(updated);
+};
+
+const deleteMe = async (req, res) => {
+  const deleted = await User.findByIdAndDelete(req.user._id);
+
+  if (!deleted) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  return res.json({ message: 'Account deleted successfully' });
 };
 
 const changePasswordValidation = [
@@ -61,6 +81,7 @@ const changePassword = async (req, res) => {
 
   user.passwordHash = await bcrypt.hash(newPassword, 10);
   await user.save();
+  await touchUserActivity(req.user._id);
 
   return res.json({ message: 'Password updated successfully' });
 };
@@ -89,7 +110,8 @@ const listPendingUsers = async (req, res) => {
   const users = await User.find({
     role: { $in: ['student', 'faculty'] },
     isVerified: false,
-    verificationStatus: 'pending'
+    verificationStatus: 'pending',
+    isArchived: { $ne: true }
   })
     .select('-passwordHash')
     .sort({ createdAt: -1 });
@@ -157,6 +179,7 @@ const rejectUser = async (req, res) => {
 module.exports = {
   getMe,
   updateMe,
+  deleteMe,
   changePasswordValidation,
   changePassword,
   myBarcodeQR,

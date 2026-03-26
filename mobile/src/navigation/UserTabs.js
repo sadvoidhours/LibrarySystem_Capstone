@@ -32,7 +32,7 @@ export default function UserTabs() {
         headerShadowVisible: false,
         headerTitleAlign: 'center',
         tabBarStyle: {
-          backgroundColor: palette.white,
+          backgroundColor: palette.surface,
           borderTopColor: palette.gray100,
           borderTopWidth: 1,
           paddingTop: 6,
