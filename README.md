@@ -25,6 +25,50 @@ Mobile-based Library Management System for **Pateros Technological College** wit
 - `backend/` – Express API, MongoDB models, RBAC, circulation, reports, audit logs
 - `mobile/` – Expo app with role-based navigation and dashboard flows
 
+## Deployment
+
+The backend and mobile app are deployed separately. The backend runs on Vercel and the mobile app is built with Expo EAS.
+
+### Backend on Vercel
+
+1. Open Vercel and create a new project from this repository.
+2. Set the project root directory to `backend/`.
+3. Add the required production environment variables:
+   - `MONGO_URI`
+   - `JWT_SECRET`
+   - `REFRESH_TOKEN_SECRET`
+   - `JWT_EXPIRES_IN`
+   - `REFRESH_TOKEN_EXPIRES_IN`
+   - `CORS_ORIGIN`
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+   - `MAILTRAP_HOST`
+   - `MAILTRAP_PORT`
+   - `MAILTRAP_USER`
+   - `MAILTRAP_PASS`
+   - `MAILTRAP_FROM`
+   - `APP_LANDING_URL`
+4. Deploy the project.
+5. Confirm `GET /health` and `GET /` return OK on the deployed API URL.
+6. Verify the cron jobs are present in `backend/vercel.json` and enabled in Vercel.
+7. Test login, refresh, and logout once the API is live.
+
+### Mobile with EAS
+
+1. Open the `mobile/` folder in your local environment.
+2. Install dependencies and copy the env template if needed.
+3. Set `EXPO_PUBLIC_API_BASE_URL` to the deployed Vercel API URL ending in `/api`.
+4. Log in to Expo with `npx eas login`.
+5. Initialize the project with `npx eas init` if it has not been linked yet.
+6. Build the app with the appropriate profile:
+   - `npm run build:android`
+   - `npm run build:ios`
+   - `npm run build:preview:android`
+   - `npm run build:preview:ios`
+7. Rebuild the app whenever the API URL changes.
+8. Use Expo Go or a development build for local testing, and EAS production builds for release.
+
 ## Core Features Implemented
 
 ### User (Student / Faculty)
@@ -163,3 +207,4 @@ Default API URL: `http://localhost:5000`
 ## API Health Check
 
 - `GET /health`
+- `GET /`

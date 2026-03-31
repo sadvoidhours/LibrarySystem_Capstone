@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/archive-inactive-accounts",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/due-reminders",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/overdue-notices",
+      "schedule": "0 9 * * *"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}
