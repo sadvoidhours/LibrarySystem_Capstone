@@ -1,6 +1,7 @@
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/cloudinary');
+const asyncHandler = require('../utils/asyncHandler');
 
 const storage = new CloudinaryStorage({
   cloudinary,
@@ -18,7 +19,7 @@ const upload = multer({ storage });
 
 const uploadSingle = (fieldName = 'image') => upload.single(fieldName);
 
-const uploadImage = (req, res) => {
+const uploadImage = asyncHandler((req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No image file uploaded' });
   }
@@ -27,6 +28,6 @@ const uploadImage = (req, res) => {
     url: req.file.path,
     public_id: req.file.filename
   });
-};
+});
 
 module.exports = { uploadSingle, uploadImage };

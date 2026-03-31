@@ -4,7 +4,8 @@ const notificationSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     message: { type: String, required: true, trim: true },
-    is_read: { type: Boolean, default: false, index: true }
+    is_read: { type: Boolean, default: false, index: true },
+    dedupeKey: { type: String, default: '', sparse: true, index: true }
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

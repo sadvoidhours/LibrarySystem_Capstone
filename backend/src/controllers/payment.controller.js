@@ -3,6 +3,7 @@ const Payment = require('../models/Payment');
 const Borrowing = require('../models/Borrowing');
 const { notifyUser } = require('../services/notification.service');
 const { logAudit } = require('../services/audit.service');
+const asyncHandler = require('../utils/asyncHandler');
 
 const paymentValidation = [
   body('borrowingId').isMongoId(),
@@ -10,8 +11,11 @@ const paymentValidation = [
   body('payment_method').trim().notEmpty()
 ];
 
-const myPayments = async (req, res) => {
-  const payments = await Payment.find()
+const myPayments = asyncHandler(async (req, res) => {
+  const userBorrowings = await Borrowing.find({ userId: req.user._id }).select('_id');
+  const borrowingIds = userBorrowings.map((b) => b._id);
+
+  const items = await Payment.find({ borrowingId: { $in: borrowingIds } })
     .populate({
       path: 'borrowingId',
       select: 'userId bookId status penaltyAmount due_date return_date',
@@ -19,14 +23,10 @@ const myPayments = async (req, res) => {
     })
     .sort({ createdAt: -1 });
 
-  const items = payments.filter(
-    (payment) => payment.borrowingId?.userId?.toString() === req.user._id.toString()
-  );
-
   return res.json(items);
-};
+});
 
-const listPayments = async (req, res) => {
+const listPayments = asyncHandler(async (req, res) => {
   const payments = await Payment.find()
     .populate({
       path: 'borrowingId',
@@ -40,9 +40,9 @@ const listPayments = async (req, res) => {
     .sort({ createdAt: -1 });
 
   return res.json(payments);
-};
+});
 
-const recordPayment = async (req, res) => {
+const recordPayment = asyncHandler(async (req, res) => {
   const { borrowingId, amount, payment_method } = req.body;
 
   const borrowing = await Borrowing.findById(borrowingId).populate('userId', 'name email');
@@ -88,6 +88,6 @@ const recordPayment = async (req, res) => {
   }
 
   return res.status(201).json(payment);
-};
+});
 
 module.exports = { paymentValidation, myPayments, listPayments, recordPayment };

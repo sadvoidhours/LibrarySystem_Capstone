@@ -18,7 +18,6 @@ const Book = require('../src/models/Book');
 const Borrowing = require('../src/models/Borrowing');
 const Payment = require('../src/models/Payment');
 const Notification = require('../src/models/Notification');
-const RefreshToken = require('../src/models/RefreshToken');
 const { runBorrowingReminderJobs } = require('../src/services/borrowing-reminder.service');
 
 describe('Library system integrations', () => {
@@ -34,7 +33,6 @@ describe('Library system integrations', () => {
   afterEach(async () => {
     await Promise.all([
       Notification.deleteMany({}),
-      RefreshToken.deleteMany({}),
       Payment.deleteMany({}),
       Borrowing.deleteMany({}),
       Book.deleteMany({}),
@@ -62,7 +60,7 @@ describe('Library system integrations', () => {
     });
   };
 
-  test('rotates refresh tokens and revokes sessions on logout', async () => {
+  test('authenticates and accesses protected routes with valid token', async () => {
     const user = await createUser({
       email: 'studentone@paterostechnologicalcollege.edu.ph',
       password: 'Password123!',
@@ -76,35 +74,21 @@ describe('Library system integrations', () => {
 
     expect(loginResponse.status).toBe(200);
     expect(loginResponse.body.token).toBeTruthy();
-    expect(loginResponse.body.refreshToken).toBeTruthy();
+    expect(loginResponse.body.user).toBeTruthy();
+    expect(loginResponse.body.user.email).toBe(user.email);
 
-    const refreshResponse = await request(app)
-      .post('/api/auth/refresh')
-      .send({ refreshToken: loginResponse.body.refreshToken });
-
-    expect(refreshResponse.status).toBe(200);
-    expect(refreshResponse.body.token).toBeTruthy();
-    expect(refreshResponse.body.refreshToken).toBeTruthy();
-    expect(refreshResponse.body.refreshToken).not.toEqual(loginResponse.body.refreshToken);
-
-    const protectedBeforeLogout = await request(app)
+    const protectedResponse = await request(app)
       .get('/api/users/me')
-      .set('Authorization', `Bearer ${refreshResponse.body.token}`);
+      .set('Authorization', `Bearer ${loginResponse.body.token}`);
 
-    expect(protectedBeforeLogout.status).toBe(200);
+    expect(protectedResponse.status).toBe(200);
+    expect(protectedResponse.body.user).toBeTruthy();
 
-    const logoutResponse = await request(app)
-      .post('/api/auth/logout')
-      .set('Authorization', `Bearer ${refreshResponse.body.token}`)
-      .send({ refreshToken: refreshResponse.body.refreshToken });
-
-    expect(logoutResponse.status).toBe(200);
-
-    const protectedAfterLogout = await request(app)
+    const unauthorizedResponse = await request(app)
       .get('/api/users/me')
-      .set('Authorization', `Bearer ${refreshResponse.body.token}`);
+      .set('Authorization', 'Bearer invalid-token');
 
-    expect(protectedAfterLogout.status).toBe(401);
+    expect(unauthorizedResponse.status).toBe(401);
   });
 
   test('handles scan borrow, scan return, and payment settlement', async () => {

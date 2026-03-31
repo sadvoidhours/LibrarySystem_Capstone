@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearAuthFeedback, register } from '../store/slices/authSlice';
@@ -15,7 +15,7 @@ export default function RegisterScreen({ navigation }) {
   const { loading, error, registerMessage } = useSelector((state) => state.auth);
   const p = palette; // pre-auth always light
   const [localError, setLocalError] = useState('');
-  const [form, setForm] = useState({ name: '', email: '', phone: '', studentIdNumber: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', studentIdNumber: '', password: '', role: 'student' });
 
   const clearErrors = () => {
     if (localError) setLocalError('');
@@ -34,6 +34,7 @@ export default function RegisterScreen({ navigation }) {
       phone: form.phone.trim(),
       studentIdNumber: form.studentIdNumber.trim(),
       password: form.password,
+      role: form.role,
     };
     if (!payload.name || !payload.email || !payload.studentIdNumber || !payload.password) {
       setLocalError('All fields are required.');
@@ -82,6 +83,19 @@ export default function RegisterScreen({ navigation }) {
             <StyledInput label="Mobile Number" placeholder="09XXXXXXXXX" keyboardType="phone-pad" value={form.phone} onChangeText={(v) => update('phone', v)} />
             <StyledInput label="Student ID Number" placeholder="20XX-XXXXX" value={form.studentIdNumber} onChangeText={(v) => update('studentIdNumber', v)} />
             <StyledInput label="Password" placeholder="Min. 6 characters" secureTextEntry value={form.password} onChangeText={(v) => update('password', v)} />
+
+            <View style={styles.roleRow}>
+              <Text style={[styles.roleLabel, { color: p.gray600 }]}>I am a:</Text>
+              <View style={styles.roleOptions}>
+                {['student', 'faculty'].map((r) => (
+                  <Pressable key={r} onPress={() => update('role', r)}>
+                    <View style={[styles.roleChip, { backgroundColor: form.role === r ? p.green : p.surface, borderColor: form.role === r ? p.green : p.gray200 }]}>
+                      <Text style={[styles.roleChipText, { color: form.role === r ? p.white : p.gray600 }]}>{r.charAt(0).toUpperCase() + r.slice(1)}</Text>
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
 
             {displayError ? (
               <View style={[styles.errorBox, { backgroundColor: p.redLight }]}>
@@ -174,6 +188,27 @@ const styles = StyleSheet.create({
   form: {
     gap: spacing.md,
     padding: spacing.xl,
+  },
+  roleRow: {
+    gap: spacing.sm,
+  },
+  roleLabel: {
+    ...fonts.sm,
+    ...fonts.semibold,
+  },
+  roleOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  roleChip: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 10,
+    borderRadius: radii.full,
+    borderWidth: 1,
+  },
+  roleChipText: {
+    ...fonts.sm,
+    ...fonts.semibold,
   },
   errorBox: {
     flexDirection: 'row',

@@ -1,5 +1,6 @@
 const { body } = require('express-validator');
 const Book = require('../models/Book');
+const asyncHandler = require('../utils/asyncHandler');
 
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -63,7 +64,7 @@ const normalizeBook = (book) => {
   };
 };
 
-const listBooks = async (req, res) => {
+const listBooks = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, q = '', category = '' } = req.query;
   const skip = (Number(page) - 1) * Number(limit);
 
@@ -76,7 +77,7 @@ const listBooks = async (req, res) => {
           ]
         }
       : {}),
-    ...(category ? { category: { $regex: `^${category}$`, $options: 'i' } } : {})
+    ...(category ? { category: { $regex: `^${escapeRegex(category)}$`, $options: 'i' } } : {})
   };
 
   const [items, total] = await Promise.all([
@@ -85,9 +86,9 @@ const listBooks = async (req, res) => {
   ]);
 
   return res.json({ items: items.map(normalizeBook), page: Number(page), limit: Number(limit), total });
-};
+});
 
-const createBook = async (req, res) => {
+const createBook = asyncHandler(async (req, res) => {
   const requestedTotal = parseCopyCount(req.body.total_copies, 1);
   const requestedAvailable = parseCopyCount(req.body.available_copies, requestedTotal);
   const copyCounts = normalizeCopyCounts(
@@ -105,9 +106,9 @@ const createBook = async (req, res) => {
 
   const book = await Book.create(payload);
   return res.status(201).json(book);
-};
+});
 
-const updateBook = async (req, res) => {
+const updateBook = asyncHandler(async (req, res) => {
   const payload = pickBookFields(req.body);
   const currentBook = await Book.findById(req.params.id);
 
@@ -141,16 +142,16 @@ const updateBook = async (req, res) => {
 
   const book = await Book.findByIdAndUpdate(req.params.id, payload, { new: true });
   return res.json(book);
-};
+});
 
-const deleteBook = async (req, res) => {
+const deleteBook = asyncHandler(async (req, res) => {
   const deleted = await Book.findByIdAndDelete(req.params.id);
   if (!deleted) {
     return res.status(404).json({ message: 'Book not found' });
   }
 
   return res.json({ message: 'Book deleted' });
-};
+});
 
 module.exports = {
   createBookValidation,

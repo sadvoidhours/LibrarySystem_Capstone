@@ -2,7 +2,10 @@ require('dotenv').config();
 
 const app = require('./app');
 const connectDB = require('./config/db');
+const { validateEnv } = require('./config/env');
 const { startInactiveAccountArchiveJob } = require('./services/inactive-account.service');
+
+validateEnv();
 
 const PORT = process.env.PORT || 5000;
 

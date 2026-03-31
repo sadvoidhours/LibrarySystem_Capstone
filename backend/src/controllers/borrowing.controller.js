@@ -6,6 +6,7 @@ const User = require('../models/User');
 const { calculatePenalty } = require('../services/penalty.service');
 const { notifyUser } = require('../services/notification.service');
 const { logAudit } = require('../services/audit.service');
+const asyncHandler = require('../utils/asyncHandler');
 
 const DEFAULT_BORROW_DAYS = Number(process.env.DEFAULT_BORROW_DAYS || 7);
 
@@ -39,15 +40,15 @@ const scanReturnValidation = [
   body('bookBarcode').notEmpty()
 ];
 
-const myBorrowings = async (req, res) => {
+const myBorrowings = asyncHandler(async (req, res) => {
   const borrowings = await Borrowing.find({ userId: req.user._id })
     .populate('bookId', 'title author coverImageUrl barcodeString')
     .sort({ createdAt: -1 });
 
   return res.json(borrowings);
-};
+});
 
-const requestBorrow = async (req, res) => {
+const requestBorrow = asyncHandler(async (req, res) => {
   const { bookId } = req.body;
 
   const book = await Book.findById(bookId);
@@ -79,9 +80,9 @@ const requestBorrow = async (req, res) => {
   });
 
   return res.status(201).json(borrowing);
-};
+});
 
-const approveBorrow = async (req, res) => {
+const approveBorrow = asyncHandler(async (req, res) => {
   const { dueDays, remarks = '' } = req.body;
   const resolvedDueDays = resolveDueDays(dueDays);
 
@@ -126,9 +127,9 @@ const approveBorrow = async (req, res) => {
   });
 
   return res.json(borrowing);
-};
+});
 
-const rejectBorrow = async (req, res) => {
+const rejectBorrow = asyncHandler(async (req, res) => {
   const { remarks = '' } = req.body;
   const borrowing = await Borrowing.findById(req.params.id);
 
@@ -154,9 +155,9 @@ const rejectBorrow = async (req, res) => {
   });
 
   return res.json(borrowing);
-};
+});
 
-const scanBorrow = async (req, res) => {
+const scanBorrow = asyncHandler(async (req, res) => {
   const { userBarcode, bookBarcode, dueDays } = req.body;
   const resolvedDueDays = resolveDueDays(dueDays);
 
@@ -206,9 +207,9 @@ const scanBorrow = async (req, res) => {
   });
 
   return res.status(201).json(borrowing[0]);
-};
+});
 
-const scanReturn = async (req, res) => {
+const scanReturn = asyncHandler(async (req, res) => {
   const { userBarcode, bookBarcode } = req.body;
 
   const user = await User.findOne({ barcodeString: userBarcode });
@@ -233,17 +234,19 @@ const scanReturn = async (req, res) => {
 
   const session = await mongoose.startSession();
 
-  await session.withTransaction(async () => {
-    book.available_copies += 1;
-    await book.save({ session });
+  try {
+    await session.withTransaction(async () => {
+      book.available_copies += 1;
+      await book.save({ session });
 
-    borrowing.return_date = returnDate;
-    borrowing.penaltyAmount = penaltyAmount;
-    borrowing.status = 'Returned';
-    await borrowing.save({ session });
-  });
-
-  session.endSession();
+      borrowing.return_date = returnDate;
+      borrowing.penaltyAmount = penaltyAmount;
+      borrowing.status = 'Returned';
+      await borrowing.save({ session });
+    });
+  } finally {
+    session.endSession();
+  }
 
   const message =
     penaltyAmount > 0
@@ -260,16 +263,16 @@ const scanReturn = async (req, res) => {
   });
 
   return res.json({ borrowing, penaltyAmount });
-};
+});
 
-const pendingBorrowings = async (req, res) => {
+const pendingBorrowings = asyncHandler(async (req, res) => {
   const items = await Borrowing.find({ status: 'Pending' })
     .populate('userId', 'name email role')
     .populate('bookId', 'title author barcodeString')
     .sort({ createdAt: -1 });
 
   return res.json(items);
-};
+});
 
 module.exports = {
   requestBorrowValidation,

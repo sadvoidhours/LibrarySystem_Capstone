@@ -33,7 +33,7 @@ export const login = createAsyncThunk('auth/login', async ({ email, password }, 
 
 export const register = createAsyncThunk(
   'auth/register',
-  async ({ name, email, phone, studentIdNumber, password }, { rejectWithValue }) => {
+  async ({ name, email, phone, studentIdNumber, password, role = 'student' }, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/auth/register', {
         name,
@@ -41,7 +41,7 @@ export const register = createAsyncThunk(
         phone,
         studentIdNumber,
         password,
-        role: 'student'
+        role
       });
 
       return data;

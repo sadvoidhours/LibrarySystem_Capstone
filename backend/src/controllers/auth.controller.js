@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const { body } = require('express-validator');
 const User = require('../models/User');
 const { signToken } = require('../utils/jwt');
+const asyncHandler = require('../utils/asyncHandler');
 const { archiveUserRecord, isInactiveForOneYear } = require('../services/inactive-account.service');
 
 const PTC_EMAIL_REGEX = /^[a-z]+@paterostechnologicalcollege\.edu\.ph$/;
@@ -27,7 +28,7 @@ const loginValidation = [
   body('password').notEmpty()
 ];
 
-const register = async (req, res) => {
+const register = asyncHandler(async (req, res) => {
   const { name, phone, studentIdNumber, password, role } = req.body;
   const email = normalizeEmail(req.body.email);
 
@@ -69,9 +70,9 @@ const register = async (req, res) => {
       barcodeString: user.barcodeString
     }
   });
-};
+});
 
-const login = async (req, res) => {
+const login = asyncHandler(async (req, res) => {
   const { password } = req.body;
   const email = normalizeEmail(req.body.email);
 
@@ -126,7 +127,7 @@ const login = async (req, res) => {
       barcodeString: user.barcodeString
     }
   });
-};
+});
 
 module.exports = {
   registerValidation,

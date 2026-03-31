@@ -5,8 +5,8 @@ const { paymentValidation, recordPayment, myPayments, listPayments } = require('
 
 const router = express.Router();
 
-router.get('/my', protect, authorize('student', 'admin', 'superadmin'), myPayments);
+router.get('/my', protect, authorize('student', 'faculty', 'admin', 'superadmin'), myPayments);
 router.get('/', protect, authorize('admin', 'superadmin'), listPayments);
-router.post('/', protect, authorize('student', 'admin', 'superadmin'), paymentValidation, validate, recordPayment);
+router.post('/', protect, authorize('student', 'faculty', 'admin', 'superadmin'), paymentValidation, validate, recordPayment);
 
 module.exports = router;

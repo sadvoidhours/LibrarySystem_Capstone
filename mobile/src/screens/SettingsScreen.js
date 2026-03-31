@@ -20,8 +20,7 @@ import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import StyledButton from '../components/StyledButton';
 import StyledInput from '../components/StyledInput';
-import { logout } from '../store/slices/authSlice';
-import { changePassword, updateProfile } from '../store/slices/authSlice';
+import { logout, changePassword, updateProfile } from '../store/slices/authSlice';
 import { getThemePalette, radii, spacing, fonts, shadows, baseStyles } from '../theme/colors';
 
 const THEME_OPTIONS = {

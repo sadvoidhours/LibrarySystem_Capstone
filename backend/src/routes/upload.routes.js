@@ -7,7 +7,7 @@ const router = express.Router();
 router.post(
   '/image',
   protect,
-  authorize('admin', 'superadmin'),
+  authorize('student', 'faculty', 'admin', 'superadmin'),
   uploadSingle('image'),
   uploadImage
 );

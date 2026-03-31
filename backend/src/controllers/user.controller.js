@@ -3,13 +3,14 @@ const { body } = require('express-validator');
 const User = require('../models/User');
 const Borrowing = require('../models/Borrowing');
 const QRCode = require('qrcode');
+const asyncHandler = require('../utils/asyncHandler');
 const { sendVerificationEmail, sendRejectionEmail } = require('../services/mailtrap.service');
 
 const touchUserActivity = async (userId) => {
   await User.updateOne({ _id: userId }, { $set: { lastActiveAt: new Date() } });
 };
 
-const getMe = async (req, res) => {
+const getMe = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select('-passwordHash');
   const borrowings = await Borrowing.find({ userId: req.user._id })
     .populate('bookId', 'title author coverImageUrl')
@@ -17,9 +18,9 @@ const getMe = async (req, res) => {
     .limit(10);
 
   return res.json({ user, borrowings });
-};
+});
 
-const updateMe = async (req, res) => {
+const updateMe = asyncHandler(async (req, res) => {
   const { name, phone, profileImageUrl, themePreference } = req.body;
 
   const updates = {};
@@ -49,24 +50,28 @@ const updateMe = async (req, res) => {
   await touchUserActivity(req.user._id);
 
   return res.json(updated);
-};
+});
 
-const deleteMe = async (req, res) => {
-  const deleted = await User.findByIdAndDelete(req.user._id);
+const deleteMe = asyncHandler(async (req, res) => {
+  const archived = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { isArchived: true, archivedAt: new Date() } },
+    { new: true }
+  ).select('-passwordHash');
 
-  if (!deleted) {
+  if (!archived) {
     return res.status(404).json({ message: 'User not found' });
   }
 
-  return res.json({ message: 'Account deleted successfully' });
-};
+  return res.json({ message: 'Account archived successfully' });
+});
 
 const changePasswordValidation = [
   body('currentPassword').notEmpty(),
   body('newPassword').isLength({ min: 6 })
 ];
 
-const changePassword = async (req, res) => {
+const changePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
   const user = await User.findById(req.user._id);
@@ -84,9 +89,9 @@ const changePassword = async (req, res) => {
   await touchUserActivity(req.user._id);
 
   return res.json({ message: 'Password updated successfully' });
-};
+});
 
-const myBarcodeQR = async (req, res) => {
+const myBarcodeQR = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select('barcodeString name role');
 
   if (!user || !user.barcodeString) {
@@ -104,9 +109,9 @@ const myBarcodeQR = async (req, res) => {
       role: user.role
     }
   });
-};
+});
 
-const listPendingUsers = async (req, res) => {
+const listPendingUsers = asyncHandler(async (req, res) => {
   const users = await User.find({
     role: { $in: ['student', 'faculty'] },
     isVerified: false,
@@ -117,9 +122,9 @@ const listPendingUsers = async (req, res) => {
     .sort({ createdAt: -1 });
 
   return res.json(users);
-};
+});
 
-const verifyUser = async (req, res) => {
+const verifyUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select('-passwordHash');
 
   if (!user) {
@@ -147,9 +152,9 @@ const verifyUser = async (req, res) => {
   }
 
   return res.json({ message: 'User verified successfully', emailSent, user });
-};
+});
 
-const rejectUser = async (req, res) => {
+const rejectUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select('-passwordHash');
 
   if (!user) {
@@ -174,7 +179,7 @@ const rejectUser = async (req, res) => {
   }
 
   return res.json({ message: 'User registration rejected', emailSent, user });
-};
+});
 
 module.exports = {
   getMe,

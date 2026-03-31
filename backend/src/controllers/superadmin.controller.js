@@ -7,6 +7,7 @@ const Borrowing = require('../models/Borrowing');
 const Payment = require('../models/Payment');
 const AuditLog = require('../models/AuditLog');
 const { logAudit } = require('../services/audit.service');
+const asyncHandler = require('../utils/asyncHandler');
 const { sendArchiveEmail, sendRestoreEmail, sendTestEmail } = require('../services/mailtrap.service');
 
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -46,12 +47,16 @@ const buildUserSearchFilter = ({ role, verificationStatus, search, archived }) =
   return filter;
 };
 
-const createAdmin = async (req, res) => {
+const createAdmin = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  const exists = await User.findOne({ email, isArchived: { $ne: true } });
-  if (exists) {
+  const exists = await User.findOne({ email });
+  if (exists && !exists.isArchived) {
     return res.status(409).json({ message: 'Email already exists' });
+  }
+
+  if (exists && exists.isArchived) {
+    await User.findByIdAndDelete(exists._id);
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -60,10 +65,12 @@ const createAdmin = async (req, res) => {
     email,
     passwordHash,
     role,
-    barcodeString: '',
     isVerified: true,
     verificationStatus: 'verified'
   });
+
+  user.barcodeString = user._id.toString();
+  await user.save();
 
   await logAudit({
     actorId: req.user._id,
@@ -78,9 +85,9 @@ const createAdmin = async (req, res) => {
     email: user.email,
     role: user.role
   });
-};
+});
 
-const getOverview = async (req, res) => {
+const getOverview = asyncHandler(async (req, res) => {
   const [
     totalUsers,
     staffUsers,
@@ -138,9 +145,9 @@ const getOverview = async (req, res) => {
     recentAuditLogs,
     recentUsers
   });
-};
+});
 
-const listUsers = async (req, res) => {
+const listUsers = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, role = 'all', verificationStatus, search, sort = 'newest', archived } = req.query;
   const filter = buildUserSearchFilter({ role, verificationStatus, search, archived });
   const skip = (Number(page) - 1) * Number(limit);
@@ -164,9 +171,9 @@ const listUsers = async (req, res) => {
   ]);
 
   return res.json({ items, page: Number(page), limit: Number(limit), total });
-};
+});
 
-const updateUserRole = async (req, res) => {
+const updateUserRole = asyncHandler(async (req, res) => {
   const { role } = req.body;
   const updated = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-passwordHash');
 
@@ -182,9 +189,9 @@ const updateUserRole = async (req, res) => {
   });
 
   return res.json(updated);
-};
+});
 
-const deleteBookRecord = async (req, res) => {
+const deleteBookRecord = asyncHandler(async (req, res) => {
   const deleted = await Book.findByIdAndDelete(req.params.id);
 
   if (!deleted) {
@@ -199,9 +206,9 @@ const deleteBookRecord = async (req, res) => {
   });
 
   return res.json({ message: 'Book record deleted' });
-};
+});
 
-const deleteUserRecord = async (req, res) => {
+const deleteUserRecord = asyncHandler(async (req, res) => {
   if (req.user._id.toString() === req.params.id) {
     return res.status(400).json({ message: 'You cannot delete your own account' });
   }
@@ -230,9 +237,9 @@ const deleteUserRecord = async (req, res) => {
   }
 
   return res.json({ message: 'User record archived' });
-};
+});
 
-const restoreUserRecord = async (req, res) => {
+const restoreUserRecord = asyncHandler(async (req, res) => {
   const restored = await User.findByIdAndUpdate(
     req.params.id,
     { $set: { isArchived: false, archivedAt: null } },
@@ -257,9 +264,9 @@ const restoreUserRecord = async (req, res) => {
   });
 
   return res.json({ message: 'User record restored', user: restored });
-};
+});
 
-const getAuditLogs = async (req, res) => {
+const getAuditLogs = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, actorRole, action, search, range = 'all' } = req.query;
   const skip = (Number(page) - 1) * Number(limit);
 
@@ -270,13 +277,13 @@ const getAuditLogs = async (req, res) => {
   }
 
   if (action) {
-    filter.action = { $regex: action, $options: 'i' };
+    filter.action = { $regex: escapeRegex(action), $options: 'i' };
   }
 
   if (search) {
     filter.$or = [
-      { action: { $regex: search, $options: 'i' } },
-      { actorRole: { $regex: search, $options: 'i' } }
+      { action: { $regex: escapeRegex(search), $options: 'i' } },
+      { actorRole: { $regex: escapeRegex(search), $options: 'i' } }
     ];
   }
 
@@ -303,9 +310,9 @@ const getAuditLogs = async (req, res) => {
   ]);
 
   return res.json({ items, page: Number(page), limit: Number(limit), total });
-};
+});
 
-const generateBookBarcodes = async (req, res) => {
+const generateBookBarcodes = asyncHandler(async (req, res) => {
   const { bookIds = [] } = req.body;
 
   const books = await Book.find({ _id: { $in: bookIds } });
@@ -338,9 +345,9 @@ const generateBookBarcodes = async (req, res) => {
   });
 
   return res.json(results);
-};
+});
 
-const sendMailtrapTest = async (req, res) => {
+const sendMailtrapTest = asyncHandler(async (req, res) => {
   const to = req.body.to || req.user.email;
   const { subject, message } = req.body;
 
@@ -362,7 +369,7 @@ const sendMailtrapTest = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: error.message || 'Unable to send Mailtrap test email' });
   }
-};
+});
 
 module.exports = {
   createAdminValidation,
