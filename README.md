@@ -27,7 +27,16 @@ Mobile-based Library Management System for **Pateros Technological College** wit
 
 ## Deployment
 
-The backend and mobile app are deployed separately. The backend runs on Render and the mobile app is built with Expo EAS.
+The web frontend runs on Vercel and the backend API runs on Render. The mobile app can still be built separately with Expo EAS if needed.
+
+### Frontend on Vercel
+
+1. Open Vercel and create a new project from the `mobile/` folder.
+2. Set the project root directory to `mobile/`.
+3. Use the Expo web build settings in [mobile/vercel.json](mobile/vercel.json).
+4. Set `EXPO_PUBLIC_API_BASE_URL` to your Render backend URL ending in `/api`.
+5. Add the Vercel frontend URL to `CORS_ORIGIN` in the backend Render environment variables.
+6. Deploy the project and verify the site loads and can reach the backend.
 
 ### Backend on Render
 

@@ -9,6 +9,16 @@
 
 ## Production Deployment
 
+### Web Frontend on Vercel
+
+1. Create a new Vercel project from the `mobile/` folder.
+2. Use the Vercel config in [mobile/vercel.json](mobile/vercel.json).
+3. Set `EXPO_PUBLIC_API_BASE_URL` to the Render backend URL ending in `/api`.
+4. Make sure the backend `CORS_ORIGIN` includes the Vercel frontend URL.
+5. Deploy and test the login flow from the browser.
+
+### Native App Builds
+
 1. Set `EXPO_PUBLIC_API_BASE_URL` to the deployed Render backend URL ending in `/api`.
 2. Install Expo tooling if needed with `npx eas login` and `npx eas init`.
 3. Build a production Android or iOS app with EAS.

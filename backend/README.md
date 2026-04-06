@@ -31,6 +31,8 @@
 	- `BREVO_SMTP_PASS`
 	- `BREVO_FROM`
 	- `APP_LANDING_URL`
+
+Set `CORS_ORIGIN` to include your Vercel frontend URL.
 5. Deploy the project.
 6. Confirm the deployed API responds on `GET /health` and `GET /`.
 7. Configure Render cron jobs or an external scheduler to call:
