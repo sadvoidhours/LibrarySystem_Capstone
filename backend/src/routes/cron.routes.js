@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { asyncHandler } = require('../utils/asyncHandler');
+const asyncHandler = require('../utils/asyncHandler');
 const { authorizeCronRequest } = require('../middlewares/cron.middleware');
 const { archiveInactiveAccounts } = require('../services/inactive-account.service');
 const { runBorrowingReminderJobs } = require('../services/borrowing-reminder.service');

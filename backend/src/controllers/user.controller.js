@@ -4,7 +4,7 @@ const User = require('../models/User');
 const Borrowing = require('../models/Borrowing');
 const QRCode = require('qrcode');
 const asyncHandler = require('../utils/asyncHandler');
-const { sendVerificationEmail, sendRejectionEmail } = require('../services/mailtrap.service');
+const { sendVerificationEmail, sendRejectionEmail } = require('../services/brevo.service');
 
 const touchUserActivity = async (userId) => {
   await User.updateOne({ _id: userId }, { $set: { lastActiveAt: new Date() } });

@@ -7,10 +7,10 @@ const createTransporter = () => {
     return transporter;
   }
 
-  const host = process.env.MAILTRAP_HOST;
-  const port = Number(process.env.MAILTRAP_PORT || 587);
-  const user = process.env.MAILTRAP_USER;
-  const pass = process.env.MAILTRAP_PASS;
+  const host = process.env.BREVO_SMTP_HOST;
+  const port = Number(process.env.BREVO_SMTP_PORT || 587);
+  const user = process.env.BREVO_SMTP_USER;
+  const pass = process.env.BREVO_SMTP_PASS;
 
   if (!host || !user || !pass) {
     return null;
@@ -29,14 +29,14 @@ const createTransporter = () => {
   return transporter;
 };
 
-const sendMailtrapEmail = async ({ to, subject, text, html }) => {
+const sendBrevoEmail = async ({ to, subject, text, html }) => {
   const transport = createTransporter();
 
   if (!transport) {
-    throw new Error('Mailtrap is not configured');
+    throw new Error('Brevo is not configured');
   }
 
-  const from = process.env.MAILTRAP_FROM || 'PTC Library System <no-reply@ptc-library.local>';
+  const from = process.env.BREVO_FROM || 'PTC Library System <no-reply@ptc-library.local>';
 
   await transport.sendMail({
     from,
@@ -90,7 +90,7 @@ const sendVerificationEmail = async (user) => {
     footerNote: 'If you did not expect this email, you can safely ignore it.',
   });
 
-  await sendMailtrapEmail({
+  await sendBrevoEmail({
     to: user.email,
     subject,
     text,
@@ -124,7 +124,7 @@ const sendRejectionEmail = async (user, reason = '') => {
     footerNote: 'You may resubmit or contact support if you believe this was a mistake.',
   });
 
-  await sendMailtrapEmail({
+  await sendBrevoEmail({
     to: user.email,
     subject,
     text,
@@ -157,7 +157,7 @@ const sendArchiveEmail = async (user, reason = '') => {
     footerNote: 'This account can be restored by a superadmin if needed.',
   });
 
-  await sendMailtrapEmail({
+  await sendBrevoEmail({
     to: user.email,
     subject,
     text,
@@ -190,7 +190,7 @@ const sendRestoreEmail = async (user) => {
     footerNote: 'If you did not request this change, contact the library office.',
   });
 
-  await sendMailtrapEmail({
+  await sendBrevoEmail({
     to: user.email,
     subject,
     text,
@@ -199,24 +199,24 @@ const sendRestoreEmail = async (user) => {
 };
 
 const sendTestEmail = async ({ to, subject, message }) => {
-  const emailSubject = subject || 'Mailtrap test from PTC Library System';
-  const emailMessage = message || 'This is a Mailtrap test message from the PTC Library System backend.';
+  const emailSubject = subject || 'Brevo test from PTC Library System';
+  const emailMessage = message || 'This is a Brevo test message from the PTC Library System backend.';
 
-  await sendMailtrapEmail({
+  await sendBrevoEmail({
     to,
     subject: emailSubject,
     text: emailMessage,
     html: buildEmailShell({
       title: emailSubject,
-      eyebrow: 'Mailtrap test',
+      eyebrow: 'Brevo test',
       bodyHtml: `<p style="margin:0;">${emailMessage}</p>`,
-      footerNote: 'This email was sent through the Mailtrap test endpoint.',
+      footerNote: 'This email was sent through the Brevo test endpoint.',
     }),
   });
 };
 
 module.exports = {
-  sendMailtrapEmail,
+  sendBrevoEmail,
   sendVerificationEmail,
   sendRejectionEmail,
   sendArchiveEmail,

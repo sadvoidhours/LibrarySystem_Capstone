@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { sendArchiveEmail } = require('./mailtrap.service');
+const { sendArchiveEmail } = require('./brevo.service');
 
 const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 

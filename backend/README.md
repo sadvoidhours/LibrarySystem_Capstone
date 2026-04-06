@@ -25,11 +25,11 @@
 	- `CLOUDINARY_CLOUD_NAME`
 	- `CLOUDINARY_API_KEY`
 	- `CLOUDINARY_API_SECRET`
-	- `MAILTRAP_HOST`
-	- `MAILTRAP_PORT`
-	- `MAILTRAP_USER`
-	- `MAILTRAP_PASS`
-	- `MAILTRAP_FROM`
+	- `BREVO_SMTP_HOST`
+	- `BREVO_SMTP_PORT`
+	- `BREVO_SMTP_USER`
+	- `BREVO_SMTP_PASS`
+	- `BREVO_FROM`
 	- `APP_LANDING_URL`
 5. Deploy the project.
 6. Confirm the deployed API responds on `GET /health` and `GET /`.
@@ -54,11 +54,11 @@
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
-- `MAILTRAP_HOST`
-- `MAILTRAP_PORT`
-- `MAILTRAP_USER`
-- `MAILTRAP_PASS`
-- `MAILTRAP_FROM`
+- `BREVO_SMTP_HOST`
+- `BREVO_SMTP_PORT`
+- `BREVO_SMTP_USER`
+- `BREVO_SMTP_PASS`
+- `BREVO_FROM`
 - `APP_LANDING_URL` (optional, used in email buttons)
 
 ## Main Route Groups
@@ -73,9 +73,9 @@
 - `/api/superadmin`
 - `/api/uploads`
 
-## Mailtrap Test Endpoint
+## Brevo Test Endpoint
 
-- `POST /api/superadmin/mailtrap/test`
+- `POST /api/superadmin/brevo/test`
 - Requires a `superadmin` token
 - Optional body fields:
 	- `to`

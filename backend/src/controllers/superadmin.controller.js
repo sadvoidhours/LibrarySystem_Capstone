@@ -8,7 +8,7 @@ const Payment = require('../models/Payment');
 const AuditLog = require('../models/AuditLog');
 const { logAudit } = require('../services/audit.service');
 const asyncHandler = require('../utils/asyncHandler');
-const { sendArchiveEmail, sendRestoreEmail, sendTestEmail } = require('../services/mailtrap.service');
+const { sendArchiveEmail, sendRestoreEmail, sendTestEmail } = require('../services/brevo.service');
 
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -347,7 +347,7 @@ const generateBookBarcodes = asyncHandler(async (req, res) => {
   return res.json(results);
 });
 
-const sendMailtrapTest = asyncHandler(async (req, res) => {
+const sendBrevoTest = asyncHandler(async (req, res) => {
   const to = req.body.to || req.user.email;
   const { subject, message } = req.body;
 
@@ -361,13 +361,13 @@ const sendMailtrapTest = asyncHandler(async (req, res) => {
     await logAudit({
       actorId: req.user._id,
       actorRole: req.user.role,
-      action: 'MAILTRAP_TEST_EMAIL_SENT',
+      action: 'BREVO_TEST_EMAIL_SENT',
       metadata: { to }
     });
 
-    return res.json({ message: 'Mailtrap test email sent', to });
+    return res.json({ message: 'Brevo test email sent', to });
   } catch (error) {
-    return res.status(500).json({ message: error.message || 'Unable to send Mailtrap test email' });
+    return res.status(500).json({ message: error.message || 'Unable to send Brevo test email' });
   }
 });
 
@@ -382,5 +382,5 @@ module.exports = {
   restoreUserRecord,
   getAuditLogs,
   generateBookBarcodes,
-  sendMailtrapTest
+  sendBrevoTest
 };

@@ -44,11 +44,11 @@ The backend and mobile app are deployed separately. The backend runs on Render a
    - `CLOUDINARY_CLOUD_NAME`
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
-   - `MAILTRAP_HOST`
-   - `MAILTRAP_PORT`
-   - `MAILTRAP_USER`
-   - `MAILTRAP_PASS`
-   - `MAILTRAP_FROM`
+   - `BREVO_SMTP_HOST`
+   - `BREVO_SMTP_PORT`
+   - `BREVO_SMTP_USER`
+   - `BREVO_SMTP_PASS`
+   - `BREVO_FROM`
    - `APP_LANDING_URL`
 4. Deploy the project.
 5. Confirm `GET /health` and `GET /` return OK on the deployed API URL.

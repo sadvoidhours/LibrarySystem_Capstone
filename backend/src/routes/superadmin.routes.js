@@ -13,7 +13,7 @@ const {
   restoreUserRecord,
   getAuditLogs,
   generateBookBarcodes,
-  sendMailtrapTest
+  sendBrevoTest
 } = require('../controllers/superadmin.controller');
 
 const router = express.Router();
@@ -30,6 +30,6 @@ router.patch('/users/:id/archive', deleteUserRecord);
 router.patch('/users/:id/restore', restoreUserRecord);
 router.get('/audit-logs', getAuditLogs);
 router.post('/barcodes/books/batch', generateBookBarcodes);
-router.post('/mailtrap/test', body('to').optional().isEmail(), body('subject').optional().isString().isLength({ min: 1, max: 120 }), body('message').optional().isString().isLength({ min: 1, max: 2000 }), validate, sendMailtrapTest);
+router.post('/brevo/test', body('to').optional().isEmail(), body('subject').optional().isString().isLength({ min: 1, max: 120 }), body('message').optional().isString().isLength({ min: 1, max: 2000 }), validate, sendBrevoTest);
 
 module.exports = router;
