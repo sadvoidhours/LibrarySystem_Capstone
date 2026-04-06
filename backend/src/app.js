@@ -32,6 +32,10 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'PTC Library API is running' });
 });
 
+app.get('/api', (req, res) => {
+  res.json({ status: 'ok', message: 'PTC Library API endpoint root is ready' });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
