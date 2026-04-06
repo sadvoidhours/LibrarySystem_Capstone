@@ -11,7 +11,15 @@ const resolveApiBaseUrl = () => {
   const configuredBaseUrl = String(process.env.EXPO_PUBLIC_API_BASE_URL || '').trim();
 
   if (configuredBaseUrl) {
-    return configuredBaseUrl.replace(/\/+$/, '');
+    const normalizedBaseUrl = configuredBaseUrl.replace(/\/+$/, '');
+    const localhostMatch = normalizedBaseUrl.match(/^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i);
+
+    if (localhostMatch) {
+      const [, host, port = '', path = '/api'] = localhostMatch;
+      return `http://${host}${port}${path || '/api'}`.replace(/\/+$/, '');
+    }
+
+    return normalizedBaseUrl;
   }
 
   const defaultBaseUrl = 'http://localhost:5000/api';

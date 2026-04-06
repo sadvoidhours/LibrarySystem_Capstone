@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "PTC Library",
-    "slug": "ptc-library-mobile",
+    "slug": "library-management-system",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
@@ -25,7 +25,11 @@
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.ptc.librarymobile"
+      "package": "com.ptc.librarymobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro"
@@ -38,6 +42,12 @@
         }
       ],
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "78e82ebb-3456-42d2-a73b-bf565d867987"
+      }
+    },
+    "owner": "jomuelmarks-organization"
   }
 }

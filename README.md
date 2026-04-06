@@ -5,7 +5,7 @@ Mobile-based Library Management System for **Pateros Technological College** wit
 - Librarian Admin (`admin`)
 - Superadmin (`superadmin`)
 
-## Tech Stack
+## Tech Stack 
 
 ### Mobile App
 - React Native (Expo)
@@ -27,12 +27,12 @@ Mobile-based Library Management System for **Pateros Technological College** wit
 
 ## Deployment
 
-The backend and mobile app are deployed separately. The backend runs on Vercel and the mobile app is built with Expo EAS.
+The backend and mobile app are deployed separately. The backend runs on Render and the mobile app is built with Expo EAS.
 
-### Backend on Vercel
+### Backend on Render
 
-1. Open Vercel and create a new project from this repository.
-2. Set the project root directory to `backend/`.
+1. Open Render and create a new web service from this repository.
+2. Set the service root directory to `backend/`.
 3. Add the required production environment variables:
    - `MONGO_URI`
    - `JWT_SECRET`
@@ -40,6 +40,7 @@ The backend and mobile app are deployed separately. The backend runs on Vercel a
    - `JWT_EXPIRES_IN`
    - `REFRESH_TOKEN_EXPIRES_IN`
    - `CORS_ORIGIN`
+   - `CRON_SECRET`
    - `CLOUDINARY_CLOUD_NAME`
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
@@ -51,14 +52,14 @@ The backend and mobile app are deployed separately. The backend runs on Vercel a
    - `APP_LANDING_URL`
 4. Deploy the project.
 5. Confirm `GET /health` and `GET /` return OK on the deployed API URL.
-6. Verify the cron jobs are present in `backend/vercel.json` and enabled in Vercel.
+6. Configure Render cron jobs or an external scheduler to call the `/api/cron/*` endpoints with `x-cron-secret`.
 7. Test login, refresh, and logout once the API is live.
 
 ### Mobile with EAS
 
 1. Open the `mobile/` folder in your local environment.
 2. Install dependencies and copy the env template if needed.
-3. Set `EXPO_PUBLIC_API_BASE_URL` to the deployed Vercel API URL ending in `/api`.
+3. Set `EXPO_PUBLIC_API_BASE_URL` to the deployed Render API URL ending in `/api`.
 4. Log in to Expo with `npx eas login`.
 5. Initialize the project with `npx eas init` if it has not been linked yet.
 6. Build the app with the appropriate profile:
@@ -208,3 +209,5 @@ Default API URL: `http://localhost:5000`
 
 - `GET /health`
 - `GET /`
+
+- Goodluck

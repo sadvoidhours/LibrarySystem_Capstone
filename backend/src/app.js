@@ -10,6 +10,7 @@ const borrowingRoutes = require('./routes/borrowing.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const reportRoutes = require('./routes/report.routes');
+const cronRoutes = require('./routes/cron.routes');
 const superadminRoutes = require('./routes/superadmin.routes');
 const uploadRoutes = require('./routes/upload.routes');
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
@@ -27,6 +28,10 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'PTC Library API is running' });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -38,6 +43,7 @@ app.use('/api/borrowings', borrowingRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/cron', cronRoutes);
 app.use('/api/superadmin', superadminRoutes);
 app.use('/api/uploads', uploadRoutes);
 
