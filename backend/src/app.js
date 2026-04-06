@@ -22,7 +22,19 @@ const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5000,http://lo
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-app.use(cors({ origin: corsOrigins, credentials: true }));
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (corsOrigins.includes(origin)) {
+    return true;
+  }
+
+  return /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+};
+
+app.use(cors({ origin: (origin, callback) => callback(null, isAllowedOrigin(origin)), credentials: true }));
 app.use(helmet());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
