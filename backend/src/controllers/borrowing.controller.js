@@ -10,6 +10,12 @@ const asyncHandler = require('../utils/asyncHandler');
 
 const DEFAULT_BORROW_DAYS = Number(process.env.DEFAULT_BORROW_DAYS || 7);
 
+const createHttpError = (status, message) => {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+};
+
 const resolveDueDays = (value) => {
   const parsed = Number.parseInt(value, 10);
 
@@ -95,6 +101,17 @@ const approveBorrow = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Only pending requests can be approved' });
   }
 
+  const conflictingBorrowing = await Borrowing.findOne({
+    _id: { $ne: borrowing._id },
+    userId: borrowing.userId,
+    bookId: borrowing.bookId,
+    status: { $in: ['Active', 'Overdue'] }
+  });
+
+  if (conflictingBorrowing) {
+    return res.status(409).json({ message: 'This book is already borrowed by the selected user.' });
+  }
+
   const session = await mongoose.startSession();
 
   try {
@@ -111,7 +128,16 @@ const approveBorrow = asyncHandler(async (req, res) => {
       borrowing.borrow_date = new Date();
       borrowing.due_date = new Date(Date.now() + resolvedDueDays * 24 * 60 * 60 * 1000);
       borrowing.remarks = remarks;
-      await borrowing.save({ session });
+
+      try {
+        await borrowing.save({ session });
+      } catch (error) {
+        if (error?.code === 11000) {
+          throw createHttpError(409, 'This book is already borrowed by the selected user.');
+        }
+
+        throw error;
+      }
     });
   } finally {
     session.endSession();
@@ -158,18 +184,35 @@ const rejectBorrow = asyncHandler(async (req, res) => {
 });
 
 const scanBorrow = asyncHandler(async (req, res) => {
-  const { userBarcode, bookBarcode, dueDays } = req.body;
+  const userBarcodeValue = String(req.body.userBarcode || '').trim();
+  const bookBarcodeValue = String(req.body.bookBarcode || '').trim();
+  const { dueDays } = req.body;
   const resolvedDueDays = resolveDueDays(dueDays);
 
-  const user = await User.findOne({ barcodeString: userBarcode });
-  const book = await Book.findOne({ barcodeString: bookBarcode });
+  const user = await User.findOne({ barcodeString: userBarcodeValue });
+  const book = await Book.findOne({ barcodeString: bookBarcodeValue });
 
-  if (!user || !book) {
-    return res.status(404).json({ message: 'User or book barcode not found' });
+  if (!user) {
+    return res.status(404).json({ message: 'User barcode not found' });
   }
 
-  if (book.available_copies < 1) {
-    return res.status(400).json({ message: 'No available copies for this book' });
+  if (!book) {
+    return res.status(404).json({ message: 'Book barcode not found' });
+  }
+
+  const existingBorrowing = await Borrowing.findOne({
+    userId: user._id,
+    bookId: book._id,
+    status: { $in: ['Active', 'Overdue'] }
+  })
+    .populate('userId', 'name email role barcodeString')
+    .populate('bookId', 'title author barcodeString');
+
+  if (existingBorrowing) {
+    return res.status(200).json({
+      borrowing: existingBorrowing,
+      message: 'This book is already borrowed by the selected user.'
+    });
   }
 
   const session = await mongoose.startSession();
@@ -177,21 +220,36 @@ const scanBorrow = asyncHandler(async (req, res) => {
 
   try {
     await session.withTransaction(async () => {
-      book.available_copies -= 1;
-      await book.save({ session });
-
-      borrowing = await Borrowing.create(
-        [
-          {
-            userId: user._id,
-            bookId: book._id,
-            status: 'Active',
-            borrow_date: new Date(),
-            due_date: new Date(Date.now() + resolvedDueDays * 24 * 60 * 60 * 1000)
-          }
-        ],
-        { session }
+      const updatedBook = await Book.findOneAndUpdate(
+        { _id: book._id, available_copies: { $gt: 0 } },
+        { $inc: { available_copies: -1 } },
+        { new: true, session }
       );
+
+      if (!updatedBook) {
+        throw createHttpError(400, 'No available copies for this book');
+      }
+
+      try {
+        borrowing = await Borrowing.create(
+          [
+            {
+              userId: user._id,
+              bookId: book._id,
+              status: 'Active',
+              borrow_date: new Date(),
+              due_date: new Date(Date.now() + resolvedDueDays * 24 * 60 * 60 * 1000)
+            }
+          ],
+          { session }
+        );
+      } catch (error) {
+        if (error?.code === 11000) {
+          throw createHttpError(409, 'This book is already borrowed by the selected user.');
+        }
+
+        throw error;
+      }
     });
   } finally {
     session.endSession();
@@ -210,22 +268,44 @@ const scanBorrow = asyncHandler(async (req, res) => {
 });
 
 const scanReturn = asyncHandler(async (req, res) => {
-  const { userBarcode, bookBarcode } = req.body;
+  const userBarcodeValue = String(req.body.userBarcode || '').trim();
+  const bookBarcodeValue = String(req.body.bookBarcode || '').trim();
 
-  const user = await User.findOne({ barcodeString: userBarcode });
-  const book = await Book.findOne({ barcodeString: bookBarcode });
+  const user = await User.findOne({ barcodeString: userBarcodeValue });
+  const book = await Book.findOne({ barcodeString: bookBarcodeValue });
 
-  if (!user || !book) {
-    return res.status(404).json({ message: 'User or book barcode not found' });
+  if (!user) {
+    return res.status(404).json({ message: 'User barcode not found' });
   }
 
-  const borrowing = await Borrowing.findOne({
+  if (!book) {
+    return res.status(404).json({ message: 'Book barcode not found' });
+  }
+
+  let borrowing = await Borrowing.findOne({
     userId: user._id,
     bookId: book._id,
     status: { $in: ['Active', 'Overdue'] }
   }).sort({ createdAt: -1 });
 
   if (!borrowing) {
+    const lastReturnedBorrowing = await Borrowing.findOne({
+      userId: user._id,
+      bookId: book._id,
+      status: 'Returned'
+    })
+      .sort({ updatedAt: -1 })
+      .populate('userId', 'name email role barcodeString')
+      .populate('bookId', 'title author barcodeString');
+
+    if (lastReturnedBorrowing) {
+      return res.status(200).json({
+        borrowing: lastReturnedBorrowing,
+        penaltyAmount: lastReturnedBorrowing.penaltyAmount || 0,
+        message: 'This book has already been returned.'
+      });
+    }
+
     return res.status(404).json({ message: 'No active borrowing found for this user and book' });
   }
 
@@ -236,13 +316,36 @@ const scanReturn = asyncHandler(async (req, res) => {
 
   try {
     await session.withTransaction(async () => {
-      book.available_copies += 1;
-      await book.save({ session });
+      const updatedBorrowing = await Borrowing.findOneAndUpdate(
+        {
+          _id: borrowing._id,
+          status: { $in: ['Active', 'Overdue'] }
+        },
+        {
+          $set: {
+            return_date: returnDate,
+            penaltyAmount,
+            status: 'Returned'
+          }
+        },
+        { new: true, session }
+      );
 
-      borrowing.return_date = returnDate;
-      borrowing.penaltyAmount = penaltyAmount;
-      borrowing.status = 'Returned';
-      await borrowing.save({ session });
+      if (!updatedBorrowing) {
+        throw createHttpError(409, 'This book has already been returned.');
+      }
+
+      const updatedBook = await Book.findOneAndUpdate(
+        { _id: book._id },
+        { $inc: { available_copies: 1 } },
+        { new: true, session }
+      );
+
+      if (!updatedBook) {
+        throw createHttpError(500, 'Unable to update book availability.');
+      }
+
+      borrowing = updatedBorrowing;
     });
   } finally {
     session.endSession();

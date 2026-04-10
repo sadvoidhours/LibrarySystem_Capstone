@@ -21,6 +21,15 @@ const borrowingSchema = new mongoose.Schema(
 
 borrowingSchema.index({ userId: 1, status: 1 });
 borrowingSchema.index({ bookId: 1, status: 1 });
+borrowingSchema.index(
+  { userId: 1, bookId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ['Active', 'Overdue'] }
+    }
+  }
+);
 
 borrowingSchema.set('toJSON', { virtuals: true });
 borrowingSchema.set('toObject', { virtuals: true });

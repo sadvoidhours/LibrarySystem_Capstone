@@ -3,6 +3,8 @@ import { NativeModules, Platform } from 'react-native';
 
 let tokenRef = null;
 
+const PRODUCTION_API_BASE_URL = 'https://librarysystem-capstone.onrender.com/api';
+
 export const setAuthToken = (token) => {
   tokenRef = token;
 };
@@ -22,16 +24,15 @@ const resolveApiBaseUrl = () => {
     return normalizedBaseUrl;
   }
 
-  const defaultBaseUrl = 'http://localhost:5000/api';
-
   if (Platform.OS === 'web') {
     return `${window.location.origin.replace(/\/$/, '')}/api`;
   }
 
-  if (!defaultBaseUrl.includes('localhost') && !defaultBaseUrl.includes('127.0.0.1')) {
-    return defaultBaseUrl;
+  if (!__DEV__) {
+    return PRODUCTION_API_BASE_URL;
   }
 
+  const defaultBaseUrl = 'http://localhost:5000/api';
   const scriptURL = NativeModules?.SourceCode?.scriptURL || '';
   const host = scriptURL ? scriptURL.split('://')[1]?.split(':')[0] : '';
 

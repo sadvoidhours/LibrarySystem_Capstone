@@ -1,48 +1,51 @@
-# PTC Library Management System (Capstone)
+# PTC Library Management System
 
-Mobile-based Library Management System for **Pateros Technological College** with RBAC for:
-- Student/Faculty (`student`, `faculty`)
-- Librarian Admin (`admin`)
-- Superadmin (`superadmin`)
+Production-ready library system for **Pateros Technological College** with role-based access for:
+- `student`
+- `faculty`
+- `admin`
+- `superadmin`
 
-## Tech Stack 
+The final flow supports end-to-end circulation from mobile barcode scanning through backend transaction processing, penalties, notifications, audit logging, and reports.
 
-### Mobile App
-- React Native (Expo)
-- React Navigation (Stack + Tabs)
+## What Is Production Ready
+
+- Borrow and return transactions can be completed from the scanner UI.
+- Repeated scans are handled safely so the same action does not create duplicate active borrowings or double returns.
+- Backend borrowing rules enforce one active/overdue borrowing per user and book pair.
+- Mobile builds are ready for Expo Go, preview, and production EAS builds.
+- Backend deployment is configured for Render, with the web/mobile frontend pointing to the production API URL.
+- Integration tests cover authentication, scanner flows, payment settlement, and reminder jobs.
+
+## Tech Stack
+
+### Mobile
+- React Native with Expo
+- React Navigation
 - Redux Toolkit
-- Axios
-- Barcode scanning: `expo-barcode-scanner`
+- Axios API client
+- `expo-camera` barcode scanning
 
-### Backend API
-- Node.js + Express (REST)
-- MongoDB Atlas + Mongoose
-- JWT authentication + role-based middleware
-- Cloudinary uploads via signed backend flow
+### Backend
+- Node.js + Express
+- MongoDB + Mongoose
+- JWT authentication and role-based authorization
+- MongoDB transactions for circulation updates
+- Cloudinary uploads and Brevo notifications
 
-## Project Structure
+## Deployment Targets
 
-- `backend/` – Express API, MongoDB models, RBAC, circulation, reports, audit logs
-- `mobile/` – Expo app with role-based navigation and dashboard flows
+- Backend API: Render
+- Web frontend: Vercel
+- Native mobile builds: Expo EAS
 
-## Deployment
-
-The web frontend runs on Vercel and the backend API runs on Render. The mobile app can still be built separately with Expo EAS if needed.
-
-### Frontend on Vercel
-
-1. Open Vercel and create a new project from the `mobile/` folder.
-2. Set the project root directory to `mobile/`.
-3. Use the Expo web build settings in [mobile/vercel.json](mobile/vercel.json).
-4. Set `EXPO_PUBLIC_API_BASE_URL` to your Render backend URL ending in `/api`.
-5. Add the Vercel frontend URL to `CORS_ORIGIN` in the backend Render environment variables.
-6. Deploy the project and verify the site loads and can reach the backend.
+## Production Deployment
 
 ### Backend on Render
 
-1. Open Render and create a new web service from this repository.
-2. Set the service root directory to `backend/`.
-3. Add the required production environment variables:
+1. Create a Render web service from the `backend/` folder.
+2. Set the start command to `npm start`.
+3. Add the production environment variables:
    - `MONGO_URI`
    - `JWT_SECRET`
    - `REFRESH_TOKEN_SECRET`
@@ -59,164 +62,111 @@ The web frontend runs on Vercel and the backend API runs on Render. The mobile a
    - `BREVO_SMTP_PASS`
    - `BREVO_FROM`
    - `APP_LANDING_URL`
-4. Deploy the project.
-5. Confirm `GET /health` and `GET /` return OK on the deployed API URL.
-6. Configure Render cron jobs or an external scheduler to call the `/api/cron/*` endpoints with `x-cron-secret`.
-7. Test login, refresh, and logout once the API is live.
+4. Confirm the deployed API responds on `GET /health` and `GET /`.
+5. Configure cron jobs or an external scheduler to call the `/api/cron/*` endpoints with `x-cron-secret`.
 
-### Mobile with EAS
+### Web Frontend on Vercel
 
-1. Open the `mobile/` folder in your local environment.
-2. Install dependencies and copy the env template if needed.
+1. Create a Vercel project from the `mobile/` folder.
+2. Set the project root to `mobile/`.
+3. Use the Expo web build settings in [mobile/vercel.json](mobile/vercel.json).
+4. Set `EXPO_PUBLIC_API_BASE_URL` to the deployed Render API URL ending in `/api`.
+5. Add the Vercel URL to `CORS_ORIGIN` on the backend.
+
+### Native Mobile Builds
+
+1. Open the `mobile/` folder locally.
+2. Install dependencies and configure `.env` if needed.
 3. Set `EXPO_PUBLIC_API_BASE_URL` to the deployed Render API URL ending in `/api`.
-4. Log in to Expo with `npx eas login`.
-5. Initialize the project with `npx eas init` if it has not been linked yet.
-6. Build the app with the appropriate profile:
-   - `npm run build:android`
-   - `npm run build:ios`
+4. Log in to Expo with `npm exec --yes eas-cli -- login`.
+5. Initialize EAS if needed with `npm exec --yes eas-cli -- init`.
+6. Build with the appropriate script:
    - `npm run build:preview:android`
    - `npm run build:preview:ios`
-7. Rebuild the app whenever the API URL changes.
-8. Use Expo Go or a development build for local testing, and EAS production builds for release.
+   - `npm run build:android`
+   - `npm run build:ios`
+7. Rebuild whenever the API URL changes.
 
-## Core Features Implemented
+## Core Features
 
-### User (Student / Faculty)
+### Student / Faculty
 - JWT login
-- Profile endpoint and update endpoint
-- Digital barcode ID (`/api/users/me/barcode`) with QR image generation
-- Catalog search/filter (`/api/books`)
-- Borrow request submission (`/api/borrowings/request`)
-- Borrow history (`/api/borrowings/my`)
-- Notifications (`/api/notifications/my`)
-- Penalty visibility in Philippine Peso (₱)
+- Profile update
+- Digital barcode ID generation
+- Catalog search and filtering
+- Borrow request submission
+- Borrow history
+- Notifications
+- Penalty display in Philippine Peso
 
-### Admin (Librarian)
-- Admin dashboard metrics (`/api/reports/overview`)
-- Scanner-based borrow/return (`/api/borrowings/scan/borrow`, `/api/borrowings/scan/return`)
-- Catalog CRUD (`/api/books`)
-- Automatic penalty computation on return (₱ per day)
-- Penalty payment recording (`/api/payments`)
-- Borrowing and penalty reports (`/api/reports/*`)
+### Admin
+- Dashboard metrics
+- Scanner-based borrow and return
+- Safe repeat-scan handling
+- Catalog CRUD
+- Automatic penalty computation on return
+- Payment recording
+- Borrowing and penalty reports
 
 ### Superadmin
-- Admin account creation (`/api/superadmin/admins`)
-- Role override (`/api/superadmin/users/:id/role`)
-- Delete book/user records
-- Audit log access (`/api/superadmin/audit-logs`)
-- Batch barcode generation for books (`/api/superadmin/barcodes/books/batch`)
+- Admin account creation
+- Role override
+- Delete book and user records
+- Audit log access
+- Batch barcode generation for books
 
-## Database Collections
+## Main API Groups
 
-Implemented Mongoose models:
-- `User`
-- `Book`
-- `Borrowing`
-- `Payment`
-- `Notification`
-- `AuditLog`
+- `/api/auth`
+- `/api/users`
+- `/api/books`
+- `/api/borrowings`
+- `/api/notifications`
+- `/api/payments`
+- `/api/reports`
+- `/api/superadmin`
+- `/api/uploads`
+- `/api/cron`
 
-Indexed fields include:
-- `userId`
-- `bookId`
-- `barcodeString`
-- other commonly queried fields (`email`, `status`, etc.)
+## Scanner Flow
 
-## Setup Instructions
+The scanner screen supports:
 
-## 1) Backend
+- User and book barcode capture
+- Borrow mode with due-day selection
+- Return mode
+- Manual barcode entry fallback
+- Duplicate-scan protection in the UI and backend
 
-1. Open terminal in `backend/`
-2. Install dependencies:
-   - `npm install`
-3. Copy env template:
-   - copy `.env.example` to `.env`
-4. Fill required variables:
-   - `MONGO_URI`
-   - `JWT_SECRET`
-   - `CLOUDINARY_CLOUD_NAME`
-   - `CLOUDINARY_API_KEY`
-   - `CLOUDINARY_API_SECRET`
-   - `MAILTRAP_HOST`
-   - `MAILTRAP_PORT`
-   - `MAILTRAP_USER`
-   - `MAILTRAP_PASS`
-   - `MAILTRAP_FROM`
-   - `APP_LANDING_URL` (optional, used in email buttons)
-5. Start API:
-   - `npm run dev`
+## Setup for Local Development
 
-### Mailtrap Test Route
+### Backend
 
-- `POST /api/superadmin/mailtrap/test`
-- Use a superadmin token
-- Optional request body fields:
-  - `to`
-  - `subject`
-  - `message`
+1. Open a terminal in `backend/`.
+2. Run `npm install`.
+3. Copy `.env.example` to `.env`.
+4. Fill in the required secrets and service credentials.
+5. Start the API with `npm run dev`.
 
-Default API URL: `http://localhost:5000`
+### Mobile
 
-### Seeder Commands (run inside `backend/`)
+1. Open a terminal in `mobile/`.
+2. Run `npm install`.
+3. Copy `.env.example` to `.env` if needed.
+4. Set `EXPO_PUBLIC_API_BASE_URL` to your local or deployed API.
+5. Start the app with `npm start`.
 
-- Seed Filipino books:
-   - `npm run seed:filipino-books`
+## Seeder Commands
 
-- Reset seeded Filipino books then re-seed:
-   - `npm run seed:filipino-books:reset`
+Run inside `backend/`:
 
-- Seed demo users + borrowing transactions:
-   - `npm run seed:users-transactions`
+- `npm run seed:filipino-books`
+- `npm run seed:filipino-books:reset`
+- `npm run seed:users-transactions`
+- `npm run seed:users-transactions:reset`
+- `npm run seed:demo`
 
-- Reset demo transactions then re-seed:
-   - `npm run seed:users-transactions:reset`
-
-- Seed full demo dataset (books + users + transactions):
-   - `npm run seed:demo`
-
-### Seeded Account Credentials
-
-- Default password for all seeded accounts:
-   - `admin12345`
-
-- Superadmin:
-   - `moavengoza@paterostechnologicalcollege.edu.ph`
-
-- Admins:
-   - `jabellino@paterostechnologicalcollege.edu.ph`
-   - `cmalmonte@paterostechnologicalcollege.edu.ph`
-
-- Faculty:
-   - `kcadena@paterostechnologicalcollege.edu.ph`
-
-- Student:
-   - `naannanggo@paterostechnologicalcollege.edu.ph`
-
-## 2) Mobile
-
-1. Open terminal in `mobile/`
-2. Install dependencies:
-   - `npm install`
-3. Copy env template:
-   - copy `.env.example` to `.env`
-4. Set API URL:
-   - `EXPO_PUBLIC_API_BASE_URL=http://<your-ip-or-host>:5000/api`
-5. Start app:
-   - `npm start`
-
-> Use local network IP for physical device testing.
-
-## Notes for Deployment Readiness
-
-- Enable HTTPS and secure secrets via environment manager
-- Add refresh token strategy and token revocation for production security
-- Add background jobs for due reminders/overdue notification pushes
-- Add full e2e and integration tests for circulation/payment flows
-- Add PDF export templates for printable reports and barcode sheets
-
-## API Health Check
+## API Health Checks
 
 - `GET /health`
 - `GET /`
-
-- Goodluck

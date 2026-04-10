@@ -75,6 +75,12 @@ Set `CORS_ORIGIN` to include your Vercel frontend URL.
 - `/api/superadmin`
 - `/api/uploads`
 
+## Scan Transactions
+
+- `POST /api/borrowings/scan/borrow`
+- `POST /api/borrowings/scan/return`
+- Repeated scans are treated as safe retries instead of creating duplicate active borrowings or double-returning a book.
+
 ## Brevo Test Endpoint
 
 - `POST /api/superadmin/brevo/test`

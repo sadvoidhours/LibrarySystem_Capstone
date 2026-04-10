@@ -41,7 +41,8 @@
           "cameraPermission": "Allow PTC Library to access your camera for barcode scanning."
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ],
     "extra": {
       "eas": {

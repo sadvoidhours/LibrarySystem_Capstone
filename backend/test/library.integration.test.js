@@ -135,6 +135,18 @@ describe('Library system integrations', () => {
     const borrowed = await Borrowing.findById(borrowResponse.body._id || borrowResponse.body.id);
     expect(borrowed).toBeTruthy();
 
+    const duplicateBorrowResponse = await request(app)
+      .post('/api/borrowings/scan/borrow')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({
+        userBarcode: student.barcodeString,
+        bookBarcode: book.barcodeString,
+        dueDays: 7
+      });
+
+    expect(duplicateBorrowResponse.status).toBe(200);
+    expect(duplicateBorrowResponse.body.message).toMatch(/already borrowed/i);
+
     borrowed.due_date = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
     borrowed.status = 'Active';
     await borrowed.save();
@@ -150,6 +162,17 @@ describe('Library system integrations', () => {
     expect(returnResponse.status).toBe(200);
     expect(returnResponse.body.penaltyAmount).toBeGreaterThanOrEqual(0);
 
+    const duplicateReturnResponse = await request(app)
+      .post('/api/borrowings/scan/return')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({
+        userBarcode: student.barcodeString,
+        bookBarcode: book.barcodeString
+      });
+
+    expect(duplicateReturnResponse.status).toBe(200);
+    expect(duplicateReturnResponse.body.message).toMatch(/already been returned/i);
+
     const paymentResponse = await request(app)
       .post('/api/payments')
       .set('Authorization', `Bearer ${adminLogin.body.token}`)
@@ -163,6 +186,59 @@ describe('Library system integrations', () => {
     expect(paymentResponse.body.borrowingId).toBeTruthy();
   });
 
+  test('rejects approving a pending borrowing when an active one already exists', async () => {
+    const admin = await createUser({
+      email: 'adminduplicate@paterostechnologicalcollege.edu.ph',
+      password: 'Password123!',
+      role: 'admin',
+      barcodeString: 'PTC-USER-9010'
+    });
+
+    const student = await createUser({
+      email: 'studentduplicate@paterostechnologicalcollege.edu.ph',
+      password: 'Password123!',
+      role: 'student',
+      barcodeString: 'PTC-USER-9011'
+    });
+
+    const book = await Book.create({
+      title: 'Approval Conflict Book',
+      author: 'Library QA',
+      category: 'Testing',
+      total_copies: 1,
+      available_copies: 0,
+      barcodeString: 'PTC-FIL-9010'
+    });
+
+    await Borrowing.create({
+      userId: student._id,
+      bookId: book._id,
+      status: 'Active',
+      borrow_date: new Date(),
+      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    });
+
+    const pendingBorrowing = await Borrowing.create({
+      userId: student._id,
+      bookId: book._id,
+      status: 'Pending'
+    });
+
+    const adminLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ email: admin.email, password: 'Password123!' });
+
+    expect(adminLogin.status).toBe(200);
+
+    const approveResponse = await request(app)
+      .patch(`/api/borrowings/${pendingBorrowing._id}/approve`)
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({ dueDays: 7 });
+
+    expect(approveResponse.status).toBe(409);
+    expect(approveResponse.body.message).toMatch(/already borrowed/i);
+  });
+
   test('creates due reminders and overdue notifications once', async () => {
     const user = await createUser({
       email: 'studentthree@paterostechnologicalcollege.edu.ph',
@@ -171,7 +247,7 @@ describe('Library system integrations', () => {
       barcodeString: 'PTC-USER-9004'
     });
 
-    const book = await Book.create({
+    const dueSoonBook = await Book.create({
       title: 'Reminder Book',
       author: 'Library QA',
       category: 'Testing',
@@ -180,9 +256,18 @@ describe('Library system integrations', () => {
       barcodeString: 'PTC-FIL-9002'
     });
 
+    const overdueBook = await Book.create({
+      title: 'Overdue Reminder Book',
+      author: 'Library QA',
+      category: 'Testing',
+      total_copies: 1,
+      available_copies: 0,
+      barcodeString: 'PTC-FIL-9003'
+    });
+
     await Borrowing.create({
       userId: user._id,
-      bookId: book._id,
+      bookId: dueSoonBook._id,
       status: 'Active',
       borrow_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
       due_date: new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -190,7 +275,7 @@ describe('Library system integrations', () => {
 
     const overdue = await Borrowing.create({
       userId: user._id,
-      bookId: book._id,
+      bookId: overdueBook._id,
       status: 'Active',
       borrow_date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
       due_date: new Date(Date.now() - 24 * 60 * 60 * 1000)

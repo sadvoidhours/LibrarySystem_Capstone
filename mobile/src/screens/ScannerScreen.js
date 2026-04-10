@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useSelector } from 'react-redux';
@@ -9,6 +9,11 @@ import Card from '../components/Card';
 import StyledInput from '../components/StyledInput';
 import StyledButton from '../components/StyledButton';
 
+const TRANSACTION_MODES = [
+  { key: 'borrow', label: 'Borrow', variant: 'success' },
+  { key: 'return', label: 'Return', variant: 'danger' },
+];
+
 export default function ScannerScreen() {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
@@ -16,24 +21,58 @@ export default function ScannerScreen() {
 
   const [userBarcode, setUserBarcode] = useState('');
   const [bookBarcode, setBookBarcode] = useState('');
+  const [transactionMode, setTransactionMode] = useState('borrow');
   const [scanTarget, setScanTarget] = useState(null);
+  const [dueDays, setDueDays] = useState('7');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('Ready to scan a user or book barcode.');
   const [permission, requestPermission] = useCameraPermissions();
+  const scanLockRef = useRef(false);
 
-  const borrow = async () => {
-    try {
-      await api.post('/borrowings/scan/borrow', { userBarcode, bookBarcode });
-      Alert.alert('Success', 'Borrow transaction completed.');
-    } catch (error) {
-      Alert.alert('Error', error.response?.data?.message || 'Borrow failed');
-    }
+  const resetForm = () => {
+    setUserBarcode('');
+    setBookBarcode('');
+    setDueDays('7');
+    setScanTarget(null);
+    scanLockRef.current = false;
+    setStatusMessage('Ready to scan a user or book barcode.');
   };
 
-  const returnBook = async () => {
+  const submitTransaction = async () => {
+    const trimmedUserBarcode = userBarcode.trim();
+    const trimmedBookBarcode = bookBarcode.trim();
+
+    if (!trimmedUserBarcode || !trimmedBookBarcode) {
+      Alert.alert('Missing barcode', 'Scan or enter both the user and book barcodes first.');
+      return;
+    }
+
     try {
-      await api.post('/borrowings/scan/return', { userBarcode, bookBarcode });
-      Alert.alert('Success', 'Return transaction completed.');
+      setIsSubmitting(true);
+
+      if (transactionMode === 'borrow') {
+        await api.post('/borrowings/scan/borrow', {
+          userBarcode: trimmedUserBarcode,
+          bookBarcode: trimmedBookBarcode,
+          dueDays: Number(dueDays) || 7,
+        });
+        Alert.alert('Success', 'Borrow transaction completed.');
+        setStatusMessage('Borrow transaction completed successfully.');
+      } else {
+        await api.post('/borrowings/scan/return', {
+          userBarcode: trimmedUserBarcode,
+          bookBarcode: trimmedBookBarcode,
+        });
+        Alert.alert('Success', 'Return transaction completed.');
+        setStatusMessage('Return transaction completed successfully.');
+      }
+
+      resetForm();
     } catch (error) {
-      Alert.alert('Error', error.response?.data?.message || 'Return failed');
+      Alert.alert('Error', error.response?.data?.message || 'Transaction failed');
+      setStatusMessage(error.response?.data?.message || 'Transaction failed.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -45,13 +84,25 @@ export default function ScannerScreen() {
         return;
       }
     }
+    scanLockRef.current = false;
+    setStatusMessage(`Scanning ${target} barcode...`);
     setScanTarget(target);
   };
 
   const onScan = ({ data }) => {
+    if (scanLockRef.current) {
+      return;
+    }
+
+    scanLockRef.current = true;
     if (scanTarget === 'user') setUserBarcode(data);
     if (scanTarget === 'book') setBookBarcode(data);
+    setStatusMessage(`${scanTarget === 'user' ? 'User' : 'Book'} barcode captured.`);
     setScanTarget(null);
+
+    setTimeout(() => {
+      scanLockRef.current = false;
+    }, 600);
   };
 
   return (
@@ -59,6 +110,23 @@ export default function ScannerScreen() {
       <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor: palette.background }]} keyboardShouldPersistTaps="handled">
         <View style={[styles.container, baseStyles.webCenter]}>
           <BrandHeader title="Scanner Circulation" subtitle="Scan user and book barcodes" />
+
+          <Card style={styles.statusCard}>
+            <Text style={[styles.statusTitle, { color: palette.gray800 }]}>Transaction mode</Text>
+            <View style={styles.modeRow}>
+              {TRANSACTION_MODES.map((mode) => (
+                <StyledButton
+                  key={mode.key}
+                  title={mode.label}
+                  variant={transactionMode === mode.key ? mode.variant : 'outline'}
+                  small
+                  onPress={() => setTransactionMode(mode.key)}
+                  style={styles.modeButton}
+                />
+              ))}
+            </View>
+            <Text style={[styles.statusMessage, { color: palette.gray500 }]}>{statusMessage}</Text>
+          </Card>
 
           {scanTarget && (
             <View style={styles.scannerWrap}>
@@ -98,12 +166,27 @@ export default function ScannerScreen() {
             <View style={styles.formGap}>
               <StyledInput label="User Barcode" placeholder="User barcode" value={userBarcode} onChangeText={setUserBarcode} />
               <StyledInput label="Book Barcode" placeholder="Book barcode" value={bookBarcode} onChangeText={setBookBarcode} />
+              {transactionMode === 'borrow' ? (
+                <StyledInput
+                  label="Due Days"
+                  placeholder="7"
+                  value={dueDays}
+                  onChangeText={setDueDays}
+                  keyboardType="numeric"
+                />
+              ) : null}
             </View>
           </Card>
 
           <View style={styles.actionRow}>
-            <StyledButton title="Borrow" variant="success" onPress={borrow} style={{ flex: 1 }} />
-            <StyledButton title="Return" variant="danger" onPress={returnBook} style={{ flex: 1 }} />
+            <StyledButton title="Reset" variant="outline" onPress={resetForm} style={{ flex: 1 }} disabled={isSubmitting} />
+            <StyledButton
+              title={transactionMode === 'borrow' ? 'Complete Borrow' : 'Complete Return'}
+              variant={transactionMode === 'borrow' ? 'success' : 'danger'}
+              onPress={submitTransaction}
+              style={{ flex: 1 }}
+              loading={isSubmitting}
+            />
           </View>
         </View>
       </ScrollView>
@@ -114,6 +197,22 @@ export default function ScannerScreen() {
 const createStyles = (p) => StyleSheet.create({
   scroll: { flexGrow: 1 },
   container: { padding: spacing.lg, gap: spacing.lg },
+  statusCard: { gap: spacing.sm },
+  statusTitle: {
+    ...fonts.base,
+    ...fonts.bold,
+  },
+  statusMessage: {
+    ...fonts.sm,
+    lineHeight: 18,
+  },
+  modeRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  modeButton: {
+    flex: 1,
+  },
   scannerWrap: {
     height: 220,
     borderRadius: radii.lg,
