@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchNotifications, markNotificationRead } from '../store/slices/notificationsSlice';
@@ -73,59 +73,64 @@ export default function NotificationsScreen() {
     { key: 'read', label: `Read (${items.length - unreadCount})` },
   ];
 
+  const listHeader = (
+    <>
+      <BrandHeader title="Notifications" subtitle="Due date reminders and overdue notices" />
+      <View style={[styles.heroCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+        <View style={styles.heroCopy}>
+          <Text style={[styles.heroKicker, { color: palette.green }]}>Inbox</Text>
+          <Text style={[styles.heroTitle, { color: palette.gray800 }]}>Stay informed without digging through menus</Text>
+          <Text style={[styles.heroText, { color: palette.gray500 }]}>Unread alerts stay highlighted. Tap a card to mark it as read.</Text>
+        </View>
+        <View style={[styles.heroStats, isWide && styles.heroStatsWide]}>
+          <View style={[styles.statCard, { backgroundColor: palette.greenLight }]}>
+            <Text style={[styles.statValue, { color: palette.green }]}>{items.length}</Text>
+            <Text style={[styles.statLabel, { color: palette.gray600 }]}>Total</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: palette.yellowSoft }]}>
+            <Text style={[styles.statValue, { color: palette.chestnut }]}>{unreadCount}</Text>
+            <Text style={[styles.statLabel, { color: palette.gray600 }]}>Unread</Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: palette.blueLight }]}>
+            <Text style={[styles.statValue, { color: palette.blue }]}>{todayCount}</Text>
+            <Text style={[styles.statLabel, { color: palette.gray600 }]}>Today</Text>
+          </View>
+        </View>
+      </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+        {filterOptions.map((option) => {
+          const active = filter === option.key;
+          return (
+            <Pressable key={option.key} onPress={() => setFilter(option.key)}>
+              <View
+                style={[
+                  styles.filterChip,
+                  {
+                    backgroundColor: active ? palette.chestnut : palette.surface,
+                    borderColor: active ? palette.chestnut : palette.gray200,
+                  },
+                ]}
+              >
+                <Text style={[styles.filterText, { color: active ? palette.white : palette.gray600 }]}>
+                  {option.label}
+                </Text>
+              </View>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </>
+  );
+
   return (
     <View style={[styles.screen, { backgroundColor: palette.background }]}>
       <View style={[styles.container, baseStyles.webCenter]}>
-        <BrandHeader title="Notifications" subtitle="Due date reminders and overdue notices" />
-        <View style={[styles.heroCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
-          <View style={styles.heroCopy}>
-            <Text style={[styles.heroKicker, { color: palette.green }]}>Inbox</Text>
-            <Text style={[styles.heroTitle, { color: palette.gray800 }]}>Stay informed without digging through menus</Text>
-            <Text style={[styles.heroText, { color: palette.gray500 }]}>Unread alerts stay highlighted. Tap a card to mark it as read.</Text>
-          </View>
-          <View style={[styles.heroStats, isWide && styles.heroStatsWide]}>
-            <View style={[styles.statCard, { backgroundColor: palette.greenLight }]}>
-              <Text style={[styles.statValue, { color: palette.green }]}>{items.length}</Text>
-              <Text style={[styles.statLabel, { color: palette.gray600 }]}>Total</Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: palette.yellowSoft }]}>
-              <Text style={[styles.statValue, { color: palette.chestnut }]}>{unreadCount}</Text>
-              <Text style={[styles.statLabel, { color: palette.gray600 }]}>Unread</Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: palette.blueLight }]}>
-              <Text style={[styles.statValue, { color: palette.blue }]}>{todayCount}</Text>
-              <Text style={[styles.statLabel, { color: palette.gray600 }]}>Today</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.filterRow}>
-          {filterOptions.map((option) => {
-            const active = filter === option.key;
-            return (
-              <Pressable key={option.key} onPress={() => setFilter(option.key)}>
-                <View
-                  style={[
-                    styles.filterChip,
-                    {
-                      backgroundColor: active ? palette.chestnut : palette.surface,
-                      borderColor: active ? palette.chestnut : palette.gray200,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.filterText, { color: active ? palette.white : palette.gray600 }]}>
-                    {option.label}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
-
         <FlatList
           data={visibleItems}
           keyExtractor={(item) => item._id}
           renderItem={renderItem}
+          ListHeaderComponent={listHeader}
           contentContainerStyle={styles.list}
           ListEmptyComponent={<EmptyState icon="notifications-off-outline" message="No notifications match this filter." />}
           refreshControl={<RefreshControl refreshing={false} onRefresh={() => dispatch(fetchNotifications())} tintColor={palette.green} />}
@@ -173,7 +178,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    minWidth: 100,
+    minWidth: 80,
     borderRadius: radii.lg,
     padding: spacing.md,
     gap: 2,

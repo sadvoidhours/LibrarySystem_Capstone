@@ -286,7 +286,7 @@ const createStyles = (p) => StyleSheet.create({
   formGap: { gap: spacing.md },
   row: { flexDirection: 'row', gap: spacing.sm },
   actionRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
-  list: { gap: spacing.sm, paddingBottom: spacing.lg },
+  list: { gap: spacing.sm, paddingBottom: spacing.lg, paddingHorizontal: spacing.lg },
   listView: { flex: 1 },
   bookCard: { padding: spacing.md, gap: spacing.xs },
   previewRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xs },

@@ -153,6 +153,8 @@ function MapSection() {
 function CampusSlideshow() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const [current, setCurrent] = useState(0);
+  const { width } = useWindowDimensions();
+  const isCompact = width < 600;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -173,7 +175,7 @@ function CampusSlideshow() {
   }, []);
 
   return (
-    <View style={styles.slideshowWrap}>
+    <View style={[styles.slideshowWrap, isCompact && { height: 280 }]}>
       <Animated.Image
         source={CAMPUS_IMAGES[current].source}
         style={[styles.slideshowImage, { opacity: fadeAnim }]}
@@ -200,6 +202,7 @@ export default function LandingScreen({ navigation }) {
   const { width } = useWindowDimensions();
   const isWide = width >= 960;
   const isCompact = width < 600;
+  const heroMinHeight = isCompact ? Math.min(900, Math.max(600, Math.round(width * 1.2))) : 560;
 
   return (
     <ScrollView
@@ -209,7 +212,7 @@ export default function LandingScreen({ navigation }) {
     >
       <ImageBackground
         source={require('../../assets/img2.jpg')}
-        style={[styles.heroBg, isCompact && styles.heroBgCompact]}
+        style={[styles.heroBg, isCompact && styles.heroBgCompact, { minHeight: heroMinHeight }]}
         resizeMode="cover"
       >
         <View style={styles.heroOverlay} />
@@ -273,7 +276,7 @@ export default function LandingScreen({ navigation }) {
                 <View style={[styles.highlightRow, styles.highlightRowCompact]}>
                   {LANDING_HIGHLIGHTS.map((item) => (
                     <View key={item} style={styles.highlightPill}>
-                      <Ionicons name="checkmark-circle" size={14} color={palette.greenLight} />
+                      <Ionicons name="checkmark-circle" size={14} color={palette.green} />
                       <Text style={styles.highlightText}>{item}</Text>
                     </View>
                   ))}
@@ -411,7 +414,6 @@ const styles = StyleSheet.create({
     }),
   },
   heroBgCompact: {
-    minHeight: 1080,
     paddingTop: spacing.xxl,
     paddingBottom: spacing.xxl * 1.75,
     justifyContent: 'flex-start',

@@ -106,7 +106,7 @@ export default function ReportsScreen() {
 const createStyles = (p) => StyleSheet.create({
   scroll: { flexGrow: 1 },
   container: { padding: spacing.lg, gap: spacing.lg },
-  statsRow: { flexDirection: 'row', gap: spacing.sm },
+  statsRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
   sectionTitle: { ...fonts.base, ...fonts.bold, marginBottom: spacing.md },
   empty: { ...fonts.sm },
   paymentRow: {

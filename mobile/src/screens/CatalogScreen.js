@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Modal, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/client';
@@ -203,6 +203,7 @@ export default function CatalogScreen() {
           ]}
           onPress={() => null}
         >
+          <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: '100%' }}>
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: palette.gray800 }]} numberOfLines={2}>{selectedBook.title}</Text>
             <Pressable onPress={() => setSelectedBook(null)} style={styles.closeButton}>
@@ -278,6 +279,7 @@ export default function CatalogScreen() {
               style={{ flex: 1 }}
             />
           </View>
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import React, { useRef } from 'react';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text } from 'react-native';
 import { useSelector } from 'react-redux';
 import { fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
@@ -8,43 +8,65 @@ export default function StyledButton({
 }) {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
   const variants = {
     primary:      { bg: palette.chestnut,      text: palette.white },
     secondary:    { bg: palette.gray200,       text: palette.gray700 },
     success:      { bg: palette.green,         text: palette.white },
     danger:       { bg: palette.red,           text: palette.white },
-    outline:      { bg: 'transparent',         text: palette.chestnut, border: palette.chestnut },
-    outlineGreen: { bg: 'transparent',         text: palette.green, border: palette.green },
-    outlineWhite: { bg: palette.white,         text: palette.green, border: palette.white },
+    outline:      { bg: palette.surfaceAlt,    text: palette.chestnut, border: palette.chestnut, shadow: false },
+    outlineGreen: { bg: palette.greenLight,    text: palette.green, border: palette.green, shadow: false },
+    outlineWhite: { bg: 'transparent',         text: palette.white, border: palette.white },
   };
 
   const v = variants[variant] || variants.primary;
   const isDisabled = disabled || loading;
 
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 6,
+    }).start();
+  };
+
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        small && styles.small,
-        { backgroundColor: v.bg },
-        v.border && { borderWidth: 1.5, borderColor: v.border },
-        shadows.sm,
-        isDisabled && styles.disabled,
-        style,
-      ]}
-      onPress={onPress}
-      activeOpacity={0.75}
-      disabled={isDisabled}
-    >
-      {loading ? (
-        <ActivityIndicator color={v.text} size="small" />
-      ) : (
-        <>
-          {icon || null}
-          <Text style={[styles.text, small && styles.smallText, { color: v.text }]}>{title}</Text>
-        </>
-      )}
-    </TouchableOpacity>
+    <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
+      <Pressable
+        style={[
+          styles.button,
+          small && styles.small,
+          { backgroundColor: v.bg },
+          v.border && { borderWidth: 1.5, borderColor: v.border },
+          v.shadow === false ? null : shadows.sm,
+          isDisabled && styles.disabled,
+        ]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={isDisabled}
+      >
+        {loading ? (
+          <ActivityIndicator color={v.text} size="small" />
+        ) : (
+          <>
+            {icon || null}
+            <Text style={[styles.text, small && styles.smallText, { color: v.text }]}>{title}</Text>
+          </>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 

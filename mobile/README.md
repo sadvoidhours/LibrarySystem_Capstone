@@ -34,12 +34,29 @@ If you change `EXPO_PUBLIC_API_BASE_URL`, fully stop Expo Go/Metro and start it 
 
 For Expo Go development, update `mobile/.env`, restart Metro with `npm start`, and scan the app again. For release builds, the app falls back to the deployed Render API if no env value is available, but you should still rebuild after the URL changes because any override is embedded at build time.
 
+### Build an APK
+
+Use the preview Android EAS profile to generate a shareable APK for testing or internal distribution.
+
+1. Open `mobile/` in a terminal.
+2. Install dependencies with `npm install`.
+3. Make sure the Expo project is linked and EAS config exists. If `eas.json` is missing, run `npm exec --yes eas-cli -- init` once.
+4. Set `EXPO_PUBLIC_API_BASE_URL` to your Render API URL ending in `/api`.
+5. Log in to Expo with `npm exec --yes eas-cli -- login`.
+6. Run the APK build script:
+	- `npm run build:apk`
+7. Download the build link from EAS once the job completes.
+
+Notes:
+- `build:apk` uses the Android preview profile.
+- Rebuild the APK whenever the API URL changes or scanner behavior changes.
+- If you want a production-grade release build later, use `npm run build:android` after your EAS project is initialized.
+
 ### API URL note
 
-- For physical devices, `localhost` points to the phone itself. Set your backend URL to your PC LAN IP when needed.
-- The client now auto-replaces `localhost`/`127.0.0.1` with Expo host IP in development.
-- Use `http://localhost:5000/api` for local emulator testing, not `https://localhost:5000/api`.
-- In production, use the Render HTTPS API URL.
+- APK builds and other production builds should use the Render HTTPS API URL ending in `/api`.
+- If you are testing locally in Expo Go or an emulator, set `EXPO_PUBLIC_API_BASE_URL` to your local backend URL before starting Metro.
+- Rebuild the app after changing the production API URL so the bundled value stays in sync.
 
 ## Roles and Navigation
 

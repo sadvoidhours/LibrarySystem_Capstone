@@ -1,5 +1,5 @@
 import { DefaultTheme } from '@react-navigation/native';
-import { Platform } from 'react-native';
+import { Dimensions, Platform } from 'react-native';
 
 /* ───────── colour palette (light) ───────── */
 export const palette = {
@@ -156,6 +156,7 @@ export const fonts = {
 
 /* ───────── spacing ───────── */
 export const spacing = {
+  xs2: 2,
   xs: 4,
   sm: 8,
   md: 12,
@@ -189,3 +190,23 @@ export const createBaseStyles = (p) => ({
 
 /* backwards-compat default export (light) */
 export const baseStyles = createBaseStyles(palette);
+
+/* ───────── layout breakpoints ───────── */
+export const getLayout = (width) => {
+  if (!width) {
+    width = Dimensions.get('window').width;
+  }
+  return {
+    isMobile: width < 600,
+    isTablet: width >= 600 && width < 980,
+    isDesktop: width >= 980,
+    width,
+  };
+};
+
+/* ───────── animation durations ───────── */
+export const durations = {
+  fast: 120,
+  normal: 200,
+  slow: 350,
+};

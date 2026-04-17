@@ -129,8 +129,8 @@ export default function ManageAdminsScreen() {
     return (
       <Card style={styles.staffCard}>
         <View style={styles.staffRow}>
-          <View style={[styles.avatar, { backgroundColor: palette.greenLight }]}>
-            <Ionicons name="people-outline" size={22} color={palette.chestnut} />
+          <View style={[styles.avatar, { backgroundColor: palette.chestnut }]}>
+            <Ionicons name="people-outline" size={22} color={palette.white} />
           </View>
           <View style={styles.staffMeta}>
             <Text style={[styles.staffName, { color: palette.gray800 }]} numberOfLines={1}>

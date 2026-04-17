@@ -128,7 +128,7 @@ const createStyles = (palette) =>
       gap: spacing.sm,
     },
     actionButton: {
-      minWidth: 160,
+      minWidth: 120,
       flexGrow: 1,
     },
     sectionGrid: {
@@ -232,7 +232,7 @@ const createStyles = (palette) =>
     },
     passwordField: {
       flexGrow: 1,
-      minWidth: 180,
+      minWidth: 140,
     },
     helperRow: {
       flexDirection: 'row',

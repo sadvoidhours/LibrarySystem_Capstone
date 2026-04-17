@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { fonts, getThemePalette, radii, spacing } from '../theme/colors';
 import Card from './Card';
@@ -7,6 +7,8 @@ import Card from './Card';
 export default function MiniBarChart({ title, subtitle, items = [] }) {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
+  const { width } = useWindowDimensions();
+  const isMobile = width < 600;
   const maxValue = Math.max(...items.map((item) => Number(item.value) || 0), 1);
 
   return (
@@ -24,8 +26,8 @@ export default function MiniBarChart({ title, subtitle, items = [] }) {
           const heightPercent = `${Math.max(8, (value / maxValue) * 100)}%`;
           const barColor = item.color || palette.green;
           return (
-            <View key={item.label} style={styles.barGroup}>
-              <View style={[styles.barTrack, { backgroundColor: palette.gray100 }]}>
+            <View key={item.label} style={[styles.barGroup, isMobile && styles.barGroupMobile]}>
+              <View style={[styles.barTrack, isMobile && styles.barTrackMobile, { backgroundColor: palette.gray100 }]}>
                 <View style={[styles.barFill, { height: heightPercent, backgroundColor: barColor }]} />
               </View>
               <Text style={[styles.barValue, { color: palette.gray800 }]}>{value}</Text>
@@ -68,12 +70,19 @@ const styles = StyleSheet.create({
     gap: 6,
     minWidth: 56,
   },
+  barGroupMobile: {
+    minWidth: 40,
+    gap: 4,
+  },
   barTrack: {
     width: '100%',
     height: 120,
     borderRadius: radii.lg,
     overflow: 'hidden',
     justifyContent: 'flex-end',
+  },
+  barTrackMobile: {
+    height: 80,
   },
   barFill: {
     width: '100%',

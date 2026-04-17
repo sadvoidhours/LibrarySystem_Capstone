@@ -376,8 +376,8 @@ export default function ManageUsersScreen() {
 
       <Card style={styles.heroCard}>
         <View style={styles.heroRow}>
-          <View style={[styles.heroIconWrap, { backgroundColor: palette.greenLight }]}>
-            <Ionicons name="people-outline" size={24} color={palette.chestnut} />
+          <View style={[styles.heroIconWrap, { backgroundColor: palette.chestnut }]}>
+            <Ionicons name="people-outline" size={24} color={palette.white} />
           </View>
           <View style={styles.heroCopy}>
             <Text style={[styles.heroKicker, { color: palette.green }]}>Combined workspace</Text>
@@ -513,6 +513,7 @@ export default function ManageUsersScreen() {
               { backgroundColor: palette.surface, borderColor: palette.gray100 },
             ]}
           >
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: '100%' }}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={[styles.modalKicker, { color: palette.green }]}>{selectedUser?.isArchived ? 'Archived Account' : 'Account Actions'}</Text>
@@ -614,6 +615,7 @@ export default function ManageUsersScreen() {
                 style={styles.modalButton}
               />
             </View>
+            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>

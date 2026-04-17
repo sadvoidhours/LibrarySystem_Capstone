@@ -305,13 +305,12 @@ export default function BorrowingQueueScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: palette.background }]}>
       <View style={[styles.container, baseStyles.webCenter]}>
-        <BrandHeader title="Borrowing Queue" subtitle="Approve requests and settle penalties" />
-
         <ScrollView
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={palette.green} />}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          <BrandHeader title="Borrowing Queue" subtitle="Approve requests and settle penalties" />
           <Card style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View>
@@ -422,6 +421,7 @@ export default function BorrowingQueueScreen() {
       <Modal visible={Boolean(selectedBorrowing)} transparent animationType="fade" onRequestClose={closeModal}>
         <Pressable style={styles.modalBackdrop} onPress={closeModal}>
           <Pressable onPress={() => null} style={[styles.modalCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: '100%' }}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={[styles.modalKicker, { color: palette.green }]}>
@@ -481,6 +481,7 @@ export default function BorrowingQueueScreen() {
                 style={styles.modalButton}
               />
             </View>
+            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>

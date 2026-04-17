@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
@@ -7,14 +7,16 @@ import { fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors
 export default function StatCard({ icon, iconColor, label, value, accentBg, style }) {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
+  const { width } = useWindowDimensions();
+  const isMobile = width < 600;
   const resolvedIconColor = iconColor || palette.chestnut;
 
   return (
-    <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.gray100 }, shadows.sm, accentBg && { backgroundColor: accentBg }, style]}>
-      <View style={[styles.iconWrap, { backgroundColor: resolvedIconColor + '18' }]}>
-        <Ionicons name={icon || 'stats-chart'} size={22} color={resolvedIconColor} />
+    <View style={[styles.card, isMobile && styles.cardMobile, { backgroundColor: palette.surface, borderColor: palette.gray100 }, shadows.sm, accentBg && { backgroundColor: accentBg }, style]}>
+      <View style={[styles.iconWrap, isMobile && styles.iconWrapMobile, { backgroundColor: resolvedIconColor }]}>
+        <Ionicons name={icon || 'stats-chart'} size={isMobile ? 18 : 22} color={palette.white} />
       </View>
-      <Text style={[styles.value, { color: palette.gray800 }]}>{value ?? 0}</Text>
+      <Text style={[styles.value, isMobile && styles.valueMobile, { color: palette.gray800 }]}>{value ?? 0}</Text>
       <Text style={[styles.label, { color: palette.gray500 }]} numberOfLines={2}>{label}</Text>
     </View>
   );
@@ -30,16 +32,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minWidth: 100,
   },
+  cardMobile: {
+    minWidth: 80,
+    padding: spacing.sm,
+  },
   iconWrap: {
     width: 44,
     height: 44,
     borderRadius: radii.full,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
     marginBottom: spacing.xs,
+  },
+  iconWrapMobile: {
+    width: 36,
+    height: 36,
   },
   value: {
     ...fonts.xl,
+    ...fonts.bold,
+  },
+  valueMobile: {
+    ...fonts.lg,
     ...fonts.bold,
   },
   label: {

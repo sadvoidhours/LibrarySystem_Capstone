@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   container: {
-    padding: spacing.xl,
+    padding: spacing.lg,
     gap: spacing.md,
     maxWidth: 440,
   },
@@ -171,8 +171,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   logo: {
-    width: 72,
-    height: 72,
+    width: 56,
+    height: 56,
     borderRadius: radii.full,
   },
   title: {
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: spacing.md,
-    padding: spacing.xl,
+    padding: spacing.lg,
   },
   roleRow: {
     gap: spacing.sm,
@@ -199,6 +199,7 @@ const styles = StyleSheet.create({
   roleOptions: {
     flexDirection: 'row',
     gap: spacing.sm,
+    flexWrap: 'wrap',
   },
   roleChip: {
     paddingHorizontal: spacing.lg,

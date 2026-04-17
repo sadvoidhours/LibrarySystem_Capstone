@@ -501,6 +501,7 @@ export default function BorrowingsScreen() {
       <Modal visible={paymentModalVisible} transparent animationType="fade" onRequestClose={() => setPaymentModalVisible(false)}>
         <Pressable style={styles.modalBackdrop} onPress={() => setPaymentModalVisible(false)}>
           <Pressable style={[styles.modalCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]} onPress={() => null}>
+            <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: '100%' }}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={[styles.modalKicker, { color: palette.green }]}>Payment Settlement</Text>
@@ -543,6 +544,7 @@ export default function BorrowingsScreen() {
               <StyledButton title="Cancel" variant="outline" onPress={() => setPaymentModalVisible(false)} style={{ flex: 1 }} />
               <StyledButton title="Submit Payment" variant="success" loading={paymentLoading} onPress={submitPayment} style={{ flex: 1 }} />
             </View>
+            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>

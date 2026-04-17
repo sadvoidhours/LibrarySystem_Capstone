@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import api from '../api/client';
 import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
+import EmptyState from '../components/EmptyState';
 import MiniBarChart from '../components/MiniBarChart';
 import StyledButton from '../components/StyledButton';
 import { logout } from '../store/slices/authSlice';
@@ -66,8 +67,8 @@ export default function SuperadminDashboardScreen({ navigation }) {
 
   const renderMetric = ({ item }) => (
     <Card key={item.key} style={styles.metricCard}>
-      <View style={[styles.metricIcon, { backgroundColor: palette.greenLight }]}>
-        <Ionicons name={item.icon} size={18} color={palette.chestnut} />
+      <View style={styles.metricIcon}>
+        <Ionicons name={item.icon} size={18} color={palette.white} />
       </View>
       <Text style={[styles.metricValue, { color: palette.gray800 }]}>{overview?.[item.key] ?? 0}</Text>
       <Text style={[styles.metricLabel, { color: palette.gray500 }]}>{item.label}</Text>
@@ -309,7 +310,7 @@ const styles = StyleSheet.create({
   },
   heroSummaryCard: {
     flex: 1,
-    minWidth: 120,
+    minWidth: 80,
     borderRadius: radii.lg,
     padding: spacing.md,
     gap: 4,
@@ -319,7 +320,7 @@ const styles = StyleSheet.create({
   heroSummaryValue: { ...fonts.lg, ...fonts.bold },
   heroSummaryLabel: { ...fonts.xs, ...fonts.semibold, textTransform: 'uppercase', letterSpacing: 0.5 },
   heroButtons: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
-  heroButton: { flexGrow: 1, minWidth: 150 },
+  heroButton: { flexGrow: 1, minWidth: 120 },
   sectionHeader: { gap: 4 },
   sectionKicker: { ...fonts.xs, ...fonts.bold, textTransform: 'uppercase', letterSpacing: 0.8 },
   sectionTitle: { ...fonts.lg, ...fonts.bold },
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     gap: 4,
-    minWidth: 150,
+    minWidth: 100,
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
     borderRadius: radii.xl,
@@ -349,6 +350,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#2E7D32',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   metricValue: { ...fonts.xl, ...fonts.bold },
   metricLabel: { ...fonts.xs, ...fonts.semibold, textTransform: 'uppercase', letterSpacing: 0.6 },

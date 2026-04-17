@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/client';
 import { logout } from '../store/slices/authSlice';
@@ -10,9 +9,8 @@ import MiniBarChart from '../components/MiniBarChart';
 import StatCard from '../components/StatCard';
 import StyledButton from '../components/StyledButton';
 
-export default function AdminDashboardScreen() {
+export default function AdminDashboardScreen({ navigation }) {
   const dispatch = useDispatch();
-  const navigation = useNavigation();
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
   const [stats, setStats] = useState(null);
@@ -48,7 +46,7 @@ export default function AdminDashboardScreen() {
           </View>
 
           <View style={styles.heroActions}>
-            <StyledButton title="Borrowing queue" variant="success" onPress={() => navigation.navigate('Borrowings')} style={styles.heroAction} />
+              <StyledButton title="Borrowing queue" variant="success" onPress={() => navigation.navigate('Borrowings')} style={styles.heroAction} />
             <StyledButton title="Sign Out" variant="outline" onPress={() => dispatch(logout())} style={styles.heroAction} />
           </View>
         </View>
@@ -138,7 +136,7 @@ const styles = StyleSheet.create({
   },
   heroAction: {
     flexGrow: 1,
-    minWidth: 160,
+    minWidth: 120,
   },
   metricGrid: {
     flexDirection: 'row',

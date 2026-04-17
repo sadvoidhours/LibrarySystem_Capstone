@@ -409,7 +409,8 @@ const createStyles = (p) => StyleSheet.create({
   },
   heroCopy: {
     flex: 1,
-    minWidth: 220,
+    minWidth: 160,
+    flexShrink: 1,
   },
   eyebrow: {
     ...fonts.xs,
@@ -454,7 +455,7 @@ const createStyles = (p) => StyleSheet.create({
   },
   heroMiniCard: {
     flex: 1,
-    minWidth: 100,
+    minWidth: 80,
     borderRadius: radii.lg,
     padding: spacing.md,
     borderWidth: 1,
@@ -482,7 +483,7 @@ const createStyles = (p) => StyleSheet.create({
   },
   quickActionButton: {
     flex: 1,
-    minWidth: 160,
+    minWidth: 120,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -557,8 +558,8 @@ const createStyles = (p) => StyleSheet.create({
     borderWidth: 1,
   },
   qr: {
-    width: 160,
-    height: 160,
+    width: 120,
+    height: 120,
     borderRadius: radii.md,
   },
   code: {
@@ -589,7 +590,7 @@ const createStyles = (p) => StyleSheet.create({
   },
   calendarDay: {
     flex: 1,
-    minWidth: 38,
+    minWidth: 32,
     borderRadius: radii.md,
     paddingVertical: spacing.sm,
     alignItems: 'center',
