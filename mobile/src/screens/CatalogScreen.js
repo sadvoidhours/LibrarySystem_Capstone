@@ -207,7 +207,7 @@ export default function CatalogScreen() {
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: palette.gray800 }]} numberOfLines={2}>{selectedBook.title}</Text>
             <Pressable onPress={() => setSelectedBook(null)} style={styles.closeButton}>
-              <Ionicons name="close" size={18} color={palette.gray700} />
+              <Ionicons name="close-outline" size={18} color={palette.gray700} />
             </Pressable>
           </View>
 

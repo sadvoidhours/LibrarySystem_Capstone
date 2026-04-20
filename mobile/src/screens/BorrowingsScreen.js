@@ -12,10 +12,10 @@ import StyledInput from '../components/StyledInput';
 import { exportReceiptPdf } from '../utils/receipt';
 
 const getStatusConfig = (p) => ({
-  Active: { bg: p.greenLight, color: p.green, icon: 'checkmark-circle' },
-  Overdue: { bg: p.redLight, color: p.red, icon: 'alert-circle' },
-  Returned: { bg: p.blueLight, color: p.blue, icon: 'arrow-undo-circle' },
-  Pending: { bg: p.orangeLight, color: p.orange, icon: 'time' },
+  Active: { bg: p.greenLight, color: p.green, icon: 'checkmark-circle-outline' },
+  Overdue: { bg: p.redLight, color: p.red, icon: 'alert-circle-outline' },
+  Returned: { bg: p.blueLight, color: p.blue, icon: 'arrow-undo-circle-outline' },
+  Pending: { bg: p.orangeLight, color: p.orange, icon: 'time-outline' },
 });
 
 const PAYMENT_METHODS = ['Cash', 'GCash', 'Maya', 'Card'];
@@ -186,7 +186,7 @@ export default function BorrowingsScreen() {
 
         {isSettled ? (
           <View style={styles.settledBox}>
-            <Ionicons name="checkmark-circle" size={16} color={palette.green} />
+            <Ionicons name="checkmark-circle-outline" size={16} color={palette.green} />
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={styles.settledText}>
                 Settled via {paymentRecord?.payment_method || 'payment'} on {formatShortDate(paymentRecord?.payment_date || paymentRecord?.createdAt)}
@@ -508,7 +508,7 @@ export default function BorrowingsScreen() {
                 <Text style={[styles.modalTitle, { color: palette.gray800 }]}>{paymentTarget?.bookId?.title || 'Borrowing'}</Text>
               </View>
               <Pressable onPress={() => setPaymentModalVisible(false)} style={styles.closeButton}>
-                <Ionicons name="close" size={18} color={palette.gray700} />
+                <Ionicons name="close-outline" size={18} color={palette.gray700} />
               </Pressable>
             </View>
 

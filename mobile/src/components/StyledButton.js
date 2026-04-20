@@ -80,6 +80,8 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     gap: spacing.sm,
     minHeight: 48,
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   small: {
     paddingVertical: spacing.sm,

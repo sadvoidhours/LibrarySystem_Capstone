@@ -351,8 +351,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#2E7D32',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
   },
   metricValue: { ...fonts.xl, ...fonts.bold },
   metricLabel: { ...fonts.xs, ...fonts.semibold, textTransform: 'uppercase', letterSpacing: 0.6 },

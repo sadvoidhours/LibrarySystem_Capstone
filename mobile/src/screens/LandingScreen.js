@@ -27,37 +27,37 @@ const CAMPUS_IMAGES = [
 /* ── features data ── */
 const FEATURES = [
   {
-    icon: 'book',
+    icon: 'book-outline',
     color: palette.blue,
     title: 'Digital Catalog',
     desc: 'Browse and search the full book collection by title, author, or category.',
   },
   {
-    icon: 'scan',
+    icon: 'scan-outline',
     color: palette.green,
     title: 'Barcode Scanning',
     desc: 'Fast borrow & return transactions via QR and barcode scanning.',
   },
   {
-    icon: 'notifications',
+    icon: 'notifications-outline',
     color: palette.orange,
     title: 'Smart Notifications',
     desc: 'Automatic due-date reminders and overdue notices so you never miss a deadline.',
   },
   {
-    icon: 'qr-code',
+    icon: 'qr-code-outline',
     color: palette.chestnut,
     title: 'Digital ID',
     desc: 'Your personal QR barcode ID — no physical card needed.',
   },
   {
-    icon: 'cash',
+    icon: 'cash-outline',
     color: palette.olive,
     title: 'Penalty Tracking',
     desc: 'Transparent penalty computation in Philippine Peso (₱) with payment history.',
   },
   {
-    icon: 'shield-checkmark',
+    icon: 'shield-checkmark-outline',
     color: palette.red,
     title: 'Role-Based Access',
     desc: 'Separate portals for students, librarians, and system administrators.',
@@ -143,7 +143,7 @@ function MapSection() {
       activeOpacity={0.8}
       onPress={() => Linking.openURL(MAP_LINK)}
     >
-      <Ionicons name="map" size={40} color={palette.chestnut} />
+      <Ionicons name="map-outline" size={40} color={palette.chestnut} />
       <Text style={styles.mapFallbackText}>Open in Google Maps</Text>
     </TouchableOpacity>
   );
@@ -276,7 +276,7 @@ export default function LandingScreen({ navigation }) {
                 <View style={[styles.highlightRow, styles.highlightRowCompact]}>
                   {LANDING_HIGHLIGHTS.map((item) => (
                     <View key={item} style={styles.highlightPill}>
-                      <Ionicons name="checkmark-circle" size={14} color={palette.green} />
+                      <Ionicons name="checkmark-circle-outline" size={14} color={palette.green} />
                       <Text style={styles.highlightText}>{item}</Text>
                     </View>
                   ))}

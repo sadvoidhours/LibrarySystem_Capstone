@@ -23,11 +23,11 @@ const QUEUE_FILTERS = [
 ];
 
 const STATUS_CONFIG = (palette) => ({
-  Pending: { bg: palette.orangeLight, color: palette.orange, icon: 'time' },
-  Active: { bg: palette.greenLight, color: palette.green, icon: 'checkmark-circle' },
-  Overdue: { bg: palette.redLight, color: palette.red, icon: 'alert-circle' },
-  Returned: { bg: palette.blueLight, color: palette.blue, icon: 'arrow-undo-circle' },
-  Rejected: { bg: palette.gray100, color: palette.gray500, icon: 'close-circle' },
+  Pending: { bg: palette.orangeLight, color: palette.orange, icon: 'time-outline' },
+  Active: { bg: palette.greenLight, color: palette.green, icon: 'checkmark-circle-outline' },
+  Overdue: { bg: palette.redLight, color: palette.red, icon: 'alert-circle-outline' },
+  Returned: { bg: palette.blueLight, color: palette.blue, icon: 'arrow-undo-circle-outline' },
+  Rejected: { bg: palette.gray100, color: palette.gray500, icon: 'close-circle-outline' },
 });
 
 const formatDate = (value) => {
@@ -267,7 +267,7 @@ export default function BorrowingQueueScreen() {
 
         {isSettled ? (
           <View style={styles.settledBox}>
-            <Ionicons name="checkmark-circle" size={16} color={palette.green} />
+            <Ionicons name="checkmark-circle-outline" size={16} color={palette.green} />
             <Text style={[styles.settledText, { color: palette.green }]}>Penalty settled</Text>
             {payments.find((payment) => String(payment.borrowingId?._id || payment.borrowingId) === String(borrowing._id)) ? (
               <StyledButton
@@ -432,7 +432,7 @@ export default function BorrowingQueueScreen() {
                 </Text>
               </View>
               <Pressable onPress={closeModal} style={styles.closeButton}>
-                <Ionicons name="close" size={18} color={palette.gray500} />
+                <Ionicons name="close-outline" size={18} color={palette.gray500} />
               </Pressable>
             </View>
 

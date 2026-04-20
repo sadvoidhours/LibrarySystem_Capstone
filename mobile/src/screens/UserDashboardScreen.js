@@ -17,11 +17,11 @@ const QUICK_ACTIONS = [
 ];
 
 const getStatusMeta = (p) => ({
-  Pending: { label: 'Pending', color: p.orange, bg: p.orangeLight, icon: 'time' },
-  Active: { label: 'Active', color: p.green, bg: p.greenLight, icon: 'checkmark-circle' },
-  Overdue: { label: 'Overdue', color: p.red, bg: p.redLight, icon: 'alert-circle' },
-  Returned: { label: 'Returned', color: p.blue, bg: p.blueLight, icon: 'arrow-undo-circle' },
-  Rejected: { label: 'Rejected', color: p.gray600, bg: p.gray100, icon: 'close-circle' },
+  Pending: { label: 'Pending', color: p.orange, bg: p.orangeLight, icon: 'time-outline' },
+  Active: { label: 'Active', color: p.green, bg: p.greenLight, icon: 'checkmark-circle-outline' },
+  Overdue: { label: 'Overdue', color: p.red, bg: p.redLight, icon: 'alert-circle-outline' },
+  Returned: { label: 'Returned', color: p.blue, bg: p.blueLight, icon: 'arrow-undo-circle-outline' },
+  Rejected: { label: 'Rejected', color: p.gray600, bg: p.gray100, icon: 'close-circle-outline' },
 });
 
 const formatDate = (value) => {
@@ -132,7 +132,7 @@ export default function UserDashboardScreen({ navigation }) {
                     {user?.profileImageUrl ? (
                       <Image source={{ uri: user.profileImageUrl }} style={styles.heroAvatarImage} />
                     ) : (
-                      <Ionicons name="person" size={28} color={palette.green} />
+                      <Ionicons name="person-outline" size={28} color={palette.green} />
                     )}
                   </View>
                   <View style={styles.roleChip}>
@@ -159,9 +159,9 @@ export default function UserDashboardScreen({ navigation }) {
             </View>
 
             <View style={styles.statsGrid}>
-              <StatCard icon="book" iconColor={palette.blue} label="Total Borrowed" value={stats.totalBorrowed} />
-              <StatCard icon="checkmark-circle" iconColor={palette.green} label="Active" value={stats.active} />
-              <StatCard icon="alert-circle" iconColor={palette.red} label="Overdue" value={stats.overdue} />
+              <StatCard icon="book-outline" iconColor={palette.blue} label="Total Borrowed" value={stats.totalBorrowed} />
+              <StatCard icon="checkmark-circle-outline" iconColor={palette.green} label="Active" value={stats.active} />
+              <StatCard icon="alert-circle-outline" iconColor={palette.red} label="Overdue" value={stats.overdue} />
             </View>
 
             <Card style={styles.quickActionsCard}>

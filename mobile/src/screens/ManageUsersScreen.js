@@ -520,7 +520,7 @@ export default function ManageUsersScreen() {
                 <Text style={[styles.modalTitle, { color: palette.gray800 }]}>{selectedUser?.name}</Text>
               </View>
               <Pressable onPress={closeActions} style={styles.closeButton}>
-                <Ionicons name="close" size={18} color={palette.gray500} />
+                <Ionicons name="close-outline" size={18} color={palette.gray500} />
               </Pressable>
             </View>
 

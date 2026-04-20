@@ -647,14 +647,14 @@ export default function SettingsScreen() {
 
         {statusMessage ? (
           <View style={[styles.helperRow, { marginTop: spacing.md }]}>
-            <Ionicons name="checkmark-circle" size={16} color={palette.green} />
+            <Ionicons name="checkmark-circle-outline" size={16} color={palette.green} />
             <Text style={styles.message}>{statusMessage}</Text>
           </View>
         ) : null}
 
         {errorMessage ? (
           <View style={[styles.helperRow, { marginTop: spacing.md }]}>
-            <Ionicons name="alert-circle" size={16} color={palette.red} />
+            <Ionicons name="alert-circle-outline" size={16} color={palette.red} />
             <Text style={styles.error}>{errorMessage}</Text>
           </View>
         ) : null}

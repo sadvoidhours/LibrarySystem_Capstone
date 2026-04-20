@@ -99,14 +99,14 @@ export default function RegisterScreen({ navigation }) {
 
             {displayError ? (
               <View style={[styles.errorBox, { backgroundColor: p.redLight }]}>
-                <Ionicons name="alert-circle" size={16} color={p.red} />
+                <Ionicons name="alert-circle-outline" size={16} color={p.red} />
                 <Text style={[styles.errorText, { color: p.red }]}>{displayError}</Text>
               </View>
             ) : null}
 
             {registerMessage ? (
               <View style={[styles.successBox, { backgroundColor: p.greenLight }]}>
-                <Ionicons name="checkmark-circle" size={16} color={p.green} />
+                <Ionicons name="checkmark-circle-outline" size={16} color={p.green} />
                 <Text style={[styles.successText, { color: p.green }]}>{registerMessage}</Text>
               </View>
             ) : null}

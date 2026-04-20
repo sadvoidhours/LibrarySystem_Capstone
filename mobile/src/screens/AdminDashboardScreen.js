@@ -52,11 +52,11 @@ export default function AdminDashboardScreen({ navigation }) {
         </View>
 
         <View style={styles.metricGrid}>
-          <StatCard icon="book" iconColor={palette.blue} label="Total Books" value={stats?.totalBooks || 0} />
-          <StatCard icon="people" iconColor={palette.olive} label="Users" value={stats?.registeredUsers || 0} />
-          <StatCard icon="swap-horizontal" iconColor={palette.green} label="Active Borrows" value={stats?.activeBorrowings || 0} />
-          <StatCard icon="time" iconColor={palette.orange} label="Pending" value={stats?.pendingRequests || 0} />
-          <StatCard icon="cash" iconColor={palette.red} label="Penalties" value={`₱${stats?.totalPenalties || 0}`} />
+          <StatCard icon="book-outline" iconColor={palette.blue} label="Total Books" value={stats?.totalBooks || 0} />
+          <StatCard icon="people-outline" iconColor={palette.olive} label="Users" value={stats?.registeredUsers || 0} />
+          <StatCard icon="swap-horizontal-outline" iconColor={palette.green} label="Active Borrows" value={stats?.activeBorrowings || 0} />
+          <StatCard icon="time-outline" iconColor={palette.orange} label="Pending" value={stats?.pendingRequests || 0} />
+          <StatCard icon="cash-outline" iconColor={palette.red} label="Penalties" value={`₱${stats?.totalPenalties || 0}`} />
         </View>
 
         <MiniBarChart

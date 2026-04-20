@@ -14,7 +14,7 @@ export default function StatCard({ icon, iconColor, label, value, accentBg, styl
   return (
     <View style={[styles.card, isMobile && styles.cardMobile, { backgroundColor: palette.surface, borderColor: palette.gray100 }, shadows.sm, accentBg && { backgroundColor: accentBg }, style]}>
       <View style={[styles.iconWrap, isMobile && styles.iconWrapMobile, { backgroundColor: resolvedIconColor }]}>
-        <Ionicons name={icon || 'stats-chart'} size={isMobile ? 18 : 22} color={palette.white} />
+        <Ionicons name={icon || 'stats-chart-outline'} size={isMobile ? 18 : 22} color={palette.white} />
       </View>
       <Text style={[styles.value, isMobile && styles.valueMobile, { color: palette.gray800 }]}>{value ?? 0}</Text>
       <Text style={[styles.label, { color: palette.gray500 }]} numberOfLines={2}>{label}</Text>
@@ -42,8 +42,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
     marginBottom: spacing.xs,
   },
   iconWrapMobile: {
