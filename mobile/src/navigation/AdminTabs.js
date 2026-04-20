@@ -14,12 +14,12 @@ export default function AdminTabs() {
       subtitle="Librarian operations overview"
       initialRouteName="Dashboard"
       items={[
-        { section: 'Overview', name: 'Dashboard', label: 'Home', icon: 'speedometer-outline', component: AdminDashboardScreen },
-        { section: 'Work', name: 'Approvals', label: 'Approvals', icon: 'checkmark-circle-outline', component: VerifyUsersScreen },
-        { section: 'Work', name: 'Scanner', label: 'Scan', icon: 'scan-outline', component: ScannerScreen },
-        { section: 'Work', name: 'Borrowings', label: 'Loans', icon: 'book-outline', component: BorrowingQueueScreen },
-        { section: 'Manage', name: 'Books', label: 'Books', icon: 'library-outline', component: ManageBooksScreen },
-        { section: 'Manage', name: 'Reports', label: 'Reports', icon: 'stats-chart-outline', component: ReportsScreen },
+        { section: 'Overview', name: 'Dashboard', label: 'Home', icon: 'speedometer', component: AdminDashboardScreen },
+        { section: 'Work', name: 'Approvals', label: 'Approvals', icon: 'checkmark-circle', component: VerifyUsersScreen },
+        { section: 'Work', name: 'Scanner', label: 'Scan', icon: 'scan', component: ScannerScreen },
+        { section: 'Work', name: 'Borrowings', label: 'Loans', icon: 'book', component: BorrowingQueueScreen },
+        { section: 'Manage', name: 'Books', label: 'Books', icon: 'library', component: ManageBooksScreen },
+        { section: 'Manage', name: 'Reports', label: 'Reports', icon: 'stats-chart', component: ReportsScreen },
       ]}
     />
   );

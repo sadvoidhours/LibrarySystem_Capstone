@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/client';
 import { logout } from '../store/slices/authSlice';
@@ -11,17 +11,17 @@ import StatCard from '../components/StatCard';
 import StyledButton from '../components/StyledButton';
 
 const QUICK_ACTIONS = [
-  { key: 'catalog', title: 'Browse Catalog', icon: 'book-outline', screen: 'Catalog' },
-  { key: 'borrowings', title: 'My Borrowings', icon: 'library-outline', screen: 'Borrowings' },
-  { key: 'notifications', title: 'Notifications', icon: 'notifications-outline', screen: 'Notifications' },
+  { key: 'catalog', title: 'Browse Catalog', icon: 'book', screen: 'Catalog' },
+  { key: 'borrowings', title: 'My Borrowings', icon: 'library', screen: 'Borrowings' },
+  { key: 'notifications', title: 'Notifications', icon: 'notifications', screen: 'Notifications' },
 ];
 
 const getStatusMeta = (p) => ({
-  Pending: { label: 'Pending', color: p.orange, bg: p.orangeLight, icon: 'time-outline' },
-  Active: { label: 'Active', color: p.green, bg: p.greenLight, icon: 'checkmark-circle-outline' },
-  Overdue: { label: 'Overdue', color: p.red, bg: p.redLight, icon: 'alert-circle-outline' },
-  Returned: { label: 'Returned', color: p.blue, bg: p.blueLight, icon: 'arrow-undo-circle-outline' },
-  Rejected: { label: 'Rejected', color: p.gray600, bg: p.gray100, icon: 'close-circle-outline' },
+  Pending: { label: 'Pending', color: p.orange, bg: p.orangeLight, icon: 'time' },
+  Active: { label: 'Active', color: p.green, bg: p.greenLight, icon: 'checkmark-circle' },
+  Overdue: { label: 'Overdue', color: p.red, bg: p.redLight, icon: 'alert-circle' },
+  Returned: { label: 'Returned', color: p.blue, bg: p.blueLight, icon: 'arrow-undo-circle' },
+  Rejected: { label: 'Rejected', color: p.gray600, bg: p.gray100, icon: 'close-circle' },
 });
 
 const formatDate = (value) => {
@@ -132,11 +132,11 @@ export default function UserDashboardScreen({ navigation }) {
                     {user?.profileImageUrl ? (
                       <Image source={{ uri: user.profileImageUrl }} style={styles.heroAvatarImage} />
                     ) : (
-                      <Ionicons name="person-outline" size={28} color={palette.green} />
+                      <Icon name="person" size={28} color={palette.green} />
                     )}
                   </View>
                   <View style={styles.roleChip}>
-                    <Ionicons name="person-circle-outline" size={16} color={palette.green} />
+                    <Icon name="person-circle" size={16} color={palette.green} />
                     <Text style={[styles.roleChipText, { color: palette.gray700 }]}>{user?.role || 'Member'}</Text>
                   </View>
                 </View>
@@ -179,7 +179,7 @@ export default function UserDashboardScreen({ navigation }) {
                     variant="outline"
                     onPress={() => navigation.navigate(action.screen)}
                     style={styles.quickActionButton}
-                    icon={<Ionicons name={action.icon} size={16} color={palette.green} />}
+                    icon={<Icon name={action.icon} size={16} color={palette.green} />}
                   />
                 ))}
               </View>
@@ -204,7 +204,7 @@ export default function UserDashboardScreen({ navigation }) {
                     return (
                       <View key={item._id} style={[styles.listItem, { borderBottomColor: palette.gray100 }]}>
                         <View style={[styles.listIcon, { backgroundColor: meta.bg }]}>
-                          <Ionicons name={meta.icon} size={16} color={meta.color} />
+                          <Icon name={meta.icon} size={16} color={meta.color} />
                         </View>
                         <View style={styles.listBody}>
                           <Text style={[styles.listTitle, { color: palette.gray800 }]} numberOfLines={2}>{item.bookId?.title || 'Book'}</Text>
@@ -234,7 +234,7 @@ export default function UserDashboardScreen({ navigation }) {
                     return (
                       <View key={item._id} style={[styles.listItem, { borderBottomColor: palette.gray100 }]}>
                         <View style={[styles.listIcon, { backgroundColor: meta.bg }]}>
-                          <Ionicons name={meta.icon} size={16} color={meta.color} />
+                          <Icon name={meta.icon} size={16} color={meta.color} />
                         </View>
                         <View style={styles.listBody}>
                           <Text style={[styles.listTitle, { color: palette.gray800 }]} numberOfLines={2}>{item.bookId?.title || 'Book'}</Text>

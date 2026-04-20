@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/client';
 import { fetchBooks } from '../store/slices/booksSlice';
@@ -119,7 +119,7 @@ export default function CatalogScreen() {
             <Text style={[styles.heroTitle, { color: palette.gray800 }]}>Discover books faster</Text>
           </View>
           <View style={styles.heroBadge}>
-            <Ionicons name="library-outline" size={14} color={palette.green} />
+            <Icon name="library" size={14} color={palette.green} />
             <Text style={[styles.heroBadgeText, { color: palette.green }]}>{items.length} titles</Text>
           </View>
         </View>
@@ -207,7 +207,7 @@ export default function CatalogScreen() {
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: palette.gray800 }]} numberOfLines={2}>{selectedBook.title}</Text>
             <Pressable onPress={() => setSelectedBook(null)} style={styles.closeButton}>
-              <Ionicons name="close-outline" size={18} color={palette.gray700} />
+              <Icon name="close" size={18} color={palette.gray700} />
             </Pressable>
           </View>
 

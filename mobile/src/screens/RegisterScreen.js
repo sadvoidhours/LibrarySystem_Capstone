@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearAuthFeedback, register } from '../store/slices/authSlice';
 import { baseStyles, fonts, palette, radii, shadows, spacing } from '../theme/colors';
@@ -62,7 +62,7 @@ export default function RegisterScreen({ navigation }) {
       >
         <View style={[styles.container, baseStyles.webCenter]}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate('Landing')}>
-            <Ionicons name="arrow-back" size={18} color={p.green} />
+            <Icon name="arrow-back" size={18} color={p.green} />
             <Text style={[styles.backText, { color: p.green }]}>Back to Home</Text>
           </TouchableOpacity>
 
@@ -99,14 +99,14 @@ export default function RegisterScreen({ navigation }) {
 
             {displayError ? (
               <View style={[styles.errorBox, { backgroundColor: p.redLight }]}>
-                <Ionicons name="alert-circle-outline" size={16} color={p.red} />
+                <Icon name="alert-circle" size={16} color={p.red} />
                 <Text style={[styles.errorText, { color: p.red }]}>{displayError}</Text>
               </View>
             ) : null}
 
             {registerMessage ? (
               <View style={[styles.successBox, { backgroundColor: p.greenLight }]}>
-                <Ionicons name="checkmark-circle-outline" size={16} color={p.green} />
+                <Icon name="checkmark-circle" size={16} color={p.green} />
                 <Text style={[styles.successText, { color: p.green }]}>{registerMessage}</Text>
               </View>
             ) : null}

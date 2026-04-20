@@ -13,11 +13,11 @@ export default function UserTabs() {
       subtitle="Student / Faculty Portal"
       initialRouteName="Dashboard"
       items={[
-        { section: 'Main', name: 'Dashboard', label: 'Home', icon: 'home-outline', component: UserDashboardScreen },
-        { section: 'Main', name: 'Catalog', label: 'Catalog', icon: 'book-outline', component: CatalogScreen },
-        { section: 'Main', name: 'Borrowings', label: 'Loans', icon: 'library-outline', component: BorrowingsScreen },
-        { section: 'Main', name: 'Notifications', label: 'Alerts', icon: 'notifications-outline', component: NotificationsScreen },
-        { section: 'Account', name: 'Settings', label: 'Me', icon: 'settings-outline', component: SettingsScreen },
+        { section: 'Main', name: 'Dashboard', label: 'Home', icon: 'home', component: UserDashboardScreen },
+        { section: 'Main', name: 'Catalog', label: 'Catalog', icon: 'book', component: CatalogScreen },
+        { section: 'Main', name: 'Borrowings', label: 'Loans', icon: 'library', component: BorrowingsScreen },
+        { section: 'Main', name: 'Notifications', label: 'Alerts', icon: 'notifications', component: NotificationsScreen },
+        { section: 'Account', name: 'Settings', label: 'Me', icon: 'settings', component: SettingsScreen },
       ]}
     />
   );

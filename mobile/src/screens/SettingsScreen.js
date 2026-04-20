@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/client';
 import BrandHeader from '../components/BrandHeader';
@@ -25,12 +25,12 @@ import { getThemePalette, radii, spacing, fonts, shadows, baseStyles } from '../
 
 const THEME_OPTIONS = {
   light: {
-    icon: 'sunny-outline',
+    icon: 'sunny',
     title: 'Light mode',
     subtitle: 'Bright, high-contrast presentation for daytime use.',
   },
   dark: {
-    icon: 'moon-outline',
+    icon: 'moon',
     title: 'Dark mode',
     subtitle: 'Reduce glare with a softer library dashboard at night.',
   },
@@ -505,7 +505,7 @@ export default function SettingsScreen() {
               <Text style={styles.name}>{fullName || user?.name}</Text>
               <Text style={styles.email}>{user?.email}</Text>
               <View style={styles.roleBadge}>
-                <Ionicons name="id-card-outline" size={14} color={palette.green} />
+                <Icon name="id-card-outline" size={14} color={palette.green} />
                 <Text style={styles.roleText}>{user?.role ? `${user.role} account` : 'Account'}</Text>
               </View>
             </View>
@@ -517,7 +517,7 @@ export default function SettingsScreen() {
               variant="outlineGreen"
               onPress={choosePhoto}
               disabled={photoLoading}
-              icon={photoLoading ? <ActivityIndicator size="small" color={palette.green} /> : <Ionicons name="image-outline" size={16} color={palette.green} />}
+              icon={photoLoading ? <ActivityIndicator size="small" color={palette.green} /> : <Icon name="image-outline" size={16} color={palette.green} />}
               style={styles.actionButton}
             />
             <StyledButton
@@ -553,7 +553,7 @@ export default function SettingsScreen() {
                   autoCorrect={false}
                 />
                 <View style={styles.noteBox}>
-                  <Ionicons name="cloud-upload-outline" size={18} color={palette.green} />
+                  <Icon name="cloud-upload-outline" size={18} color={palette.green} />
                   <View style={styles.noteBody}>
                     <Text style={styles.noteTitle}>Upload or paste a link</Text>
                     <Text style={styles.noteText}>
@@ -578,7 +578,7 @@ export default function SettingsScreen() {
               <View style={styles.themeRow}>
                 <View style={styles.themeInfo}>
                   <View style={styles.themeIcon}>
-                    <Ionicons name={theme.icon} size={18} color={palette.green} />
+                    <Icon name={theme.icon} size={18} color={palette.green} />
                   </View>
                   <View style={styles.themeCopy}>
                     <Text style={styles.themeTitle}>{theme.title}</Text>
@@ -647,14 +647,14 @@ export default function SettingsScreen() {
 
         {statusMessage ? (
           <View style={[styles.helperRow, { marginTop: spacing.md }]}>
-            <Ionicons name="checkmark-circle-outline" size={16} color={palette.green} />
+            <Icon name="checkmark-circle-outline" size={16} color={palette.green} />
             <Text style={styles.message}>{statusMessage}</Text>
           </View>
         ) : null}
 
         {errorMessage ? (
           <View style={[styles.helperRow, { marginTop: spacing.md }]}>
-            <Ionicons name="alert-circle-outline" size={16} color={palette.red} />
+            <Icon name="alert-circle-outline" size={16} color={palette.red} />
             <Text style={styles.error}>{errorMessage}</Text>
           </View>
         ) : null}

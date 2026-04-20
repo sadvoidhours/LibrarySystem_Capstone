@@ -10,7 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
 import BrandHeader from '../components/BrandHeader';
@@ -377,7 +377,7 @@ export default function ManageUsersScreen() {
       <Card style={styles.heroCard}>
         <View style={styles.heroRow}>
           <View style={[styles.heroIconWrap, { backgroundColor: palette.chestnut }]}>
-            <Ionicons name="people-outline" size={24} color={palette.white} />
+            <Icon name="people" size={24} color={palette.white} />
           </View>
           <View style={styles.heroCopy}>
             <Text style={[styles.heroKicker, { color: palette.green }]}>Combined workspace</Text>
@@ -520,7 +520,7 @@ export default function ManageUsersScreen() {
                 <Text style={[styles.modalTitle, { color: palette.gray800 }]}>{selectedUser?.name}</Text>
               </View>
               <Pressable onPress={closeActions} style={styles.closeButton}>
-                <Ionicons name="close-outline" size={18} color={palette.gray500} />
+                <Icon name="close" size={18} color={palette.gray500} />
               </Pressable>
             </View>
 

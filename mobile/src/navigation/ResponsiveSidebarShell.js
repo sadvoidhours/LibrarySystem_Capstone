@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useSelector } from 'react-redux';
 import { getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
@@ -83,7 +83,7 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
         ) : (
           <View style={[styles.mobileTopBar, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
             <Pressable onPress={() => setSidebarOpen(true)} style={styles.menuButton}>
-              <Ionicons name="menu-outline" size={22} color={palette.gray800} />
+              <Icon name="menu" size={22} color={palette.gray800} />
             </Pressable>
             <View style={styles.mobileTitleWrap}>
               <Text style={[styles.mobileTitle, { color: palette.gray800 }]} numberOfLines={1}>
@@ -91,11 +91,11 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
               </Text>
             </View>
             <Pressable onPress={() => setSidebarOpen(true)} style={[styles.currentRouteChip, { backgroundColor: palette.greenLight }]}>
-              {activeItem?.icon ? <Ionicons name={activeItem.icon} size={14} color={palette.chestnut} /> : null}
+              {activeItem?.icon ? <Icon name={activeItem.icon} size={14} color={palette.chestnut} /> : null}
               <Text style={[styles.currentRouteText, { color: palette.chestnut }]} numberOfLines={1}>
                 {currentLabel}
               </Text>
-              <Ionicons name="chevron-down-outline" size={14} color={palette.chestnut} />
+              <Icon name="chevron-down" size={14} color={palette.chestnut} />
             </Pressable>
           </View>
         )}
@@ -142,7 +142,7 @@ function Sidebar({ title, subtitle, items, activeRoute, palette, onNavigate, onC
     <View style={[styles.sidebar, compact && styles.sidebarCompact, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
       <View style={styles.sidebarHeader}>
         <View style={[styles.brandMark, { backgroundColor: palette.chestnut }]}>
-          <Ionicons name="library-outline" size={20} color={palette.white} />
+          <Icon name="library" size={20} color={palette.white} />
         </View>
         <View style={styles.brandCopy}>
           <Text style={[styles.sidebarTitle, { color: palette.gray800 }]} numberOfLines={1}>
@@ -156,7 +156,7 @@ function Sidebar({ title, subtitle, items, activeRoute, palette, onNavigate, onC
         </View>
         {!compact ? null : (
           <Pressable onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close-outline" size={20} color={palette.gray600} />
+            <Icon name="close" size={20} color={palette.gray600} />
           </Pressable>
         )}
       </View>
@@ -183,14 +183,14 @@ function Sidebar({ title, subtitle, items, activeRoute, palette, onNavigate, onC
                       ]}
                     >
                       <View style={[styles.sidebarIconWrap, { backgroundColor: active ? palette.chestnut : palette.surfaceAlt }]}>
-                        <Ionicons name={item.icon} size={18} color={active ? palette.white : palette.gray600} />
+                        <Icon name={item.icon} size={18} color={active ? palette.white : palette.gray600} />
                       </View>
                       <View style={styles.sidebarItemTextWrap}>
                         <View style={styles.sidebarItemHeaderRow}>
                           <Text style={[styles.sidebarItemLabel, { color: active ? palette.gray800 : palette.gray600 }]}>
                             {item.label}
                           </Text>
-                          {active ? <Ionicons name="radio-button-on-outline" size={14} color={palette.chestnut} /> : null}
+                          {active ? <Icon name="radio-button-on" size={14} color={palette.chestnut} /> : null}
                         </View>
                         {!compact && item.description ? (
                           <Text style={[styles.sidebarItemDescription, { color: palette.gray500 }]} numberOfLines={2}>
@@ -211,7 +211,7 @@ function Sidebar({ title, subtitle, items, activeRoute, palette, onNavigate, onC
         <View style={[styles.sidebarFooter, { borderTopColor: palette.gray100 }]}>
           <Text style={[styles.sidebarFooterText, { color: palette.gray500 }]}>Tap a section to switch screens</Text>
           <Pressable onPress={onClose} style={[styles.closeDrawerButton, { backgroundColor: palette.chestnut }]}>
-            <Ionicons name="close-outline" size={16} color={palette.white} />
+            <Icon name="close" size={16} color={palette.white} />
             <Text style={[styles.closeDrawerText, { color: palette.white }]}>Close</Text>
           </Pressable>
         </View>

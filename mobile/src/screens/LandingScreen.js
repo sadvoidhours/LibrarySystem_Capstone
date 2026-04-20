@@ -12,7 +12,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { baseStyles, fonts, palette, radii, shadows, spacing } from '../theme/colors';
 import StyledButton from '../components/StyledButton';
 import Card from '../components/Card';
@@ -27,37 +27,37 @@ const CAMPUS_IMAGES = [
 /* ── features data ── */
 const FEATURES = [
   {
-    icon: 'book-outline',
+    icon: 'book',
     color: palette.blue,
     title: 'Digital Catalog',
     desc: 'Browse and search the full book collection by title, author, or category.',
   },
   {
-    icon: 'scan-outline',
+    icon: 'scan',
     color: palette.green,
     title: 'Barcode Scanning',
     desc: 'Fast borrow & return transactions via QR and barcode scanning.',
   },
   {
-    icon: 'notifications-outline',
+    icon: 'notifications',
     color: palette.orange,
     title: 'Smart Notifications',
     desc: 'Automatic due-date reminders and overdue notices so you never miss a deadline.',
   },
   {
-    icon: 'qr-code-outline',
+    icon: 'qr-code',
     color: palette.chestnut,
     title: 'Digital ID',
     desc: 'Your personal QR barcode ID — no physical card needed.',
   },
   {
-    icon: 'cash-outline',
+    icon: 'cash',
     color: palette.olive,
     title: 'Penalty Tracking',
     desc: 'Transparent penalty computation in Philippine Peso (₱) with payment history.',
   },
   {
-    icon: 'shield-checkmark-outline',
+    icon: 'shield-checkmark',
     color: palette.red,
     title: 'Role-Based Access',
     desc: 'Separate portals for students, librarians, and system administrators.',
@@ -65,9 +65,9 @@ const FEATURES = [
 ];
 
 const HERO_STATS = [
-  { value: '24/7', label: 'Digital access', icon: 'time-outline' },
-  { value: 'QR', label: 'Fast identification', icon: 'qr-code-outline' },
-  { value: 'Auto', label: 'Due reminders', icon: 'notifications-outline' },
+  { value: '24/7', label: 'Digital access', icon: 'time' },
+  { value: 'QR', label: 'Fast identification', icon: 'qr-code' },
+  { value: 'Auto', label: 'Due reminders', icon: 'notifications' },
 ];
 
 const PROCESS_STEPS = [
@@ -92,17 +92,17 @@ const AUDIENCE = [
   {
     title: 'Students',
     text: 'See your borrowings, QR ID, reminders, and payments in one dashboard.',
-    icon: 'school-outline',
+    icon: 'school',
   },
   {
     title: 'Faculty',
     text: 'Manage library use efficiently while staying on top of return dates.',
-    icon: 'people-outline',
+    icon: 'people',
   },
   {
     title: 'Library staff',
     text: 'Track circulation, announcements, payments, and account verification.',
-    icon: 'briefcase-outline',
+    icon: 'briefcase',
   },
 ];
 
@@ -143,7 +143,7 @@ function MapSection() {
       activeOpacity={0.8}
       onPress={() => Linking.openURL(MAP_LINK)}
     >
-      <Ionicons name="map-outline" size={40} color={palette.chestnut} />
+      <Icon name="map-outline" size={40} color={palette.chestnut} />
       <Text style={styles.mapFallbackText}>Open in Google Maps</Text>
     </TouchableOpacity>
   );
@@ -219,11 +219,11 @@ export default function LandingScreen({ navigation }) {
         <View style={[styles.heroContent, baseStyles.webCenter, isCompact && styles.heroContentCompact]}>
           <View style={styles.heroBadgeRow}>
             <View style={styles.heroBadge}>
-              <Ionicons name="library-outline" size={14} color={palette.white} />
+              <Icon name="library-outline" size={14} color={palette.white} />
               <Text style={styles.heroBadgeText}>Pateros Technological College</Text>
             </View>
             <View style={[styles.heroBadge, styles.heroBadgeSoft]}>
-              <Ionicons name="phone-portrait-outline" size={14} color={palette.white} />
+              <Icon name="phone-portrait-outline" size={14} color={palette.white} />
               <Text style={styles.heroBadgeText}>Web + mobile</Text>
             </View>
           </View>
@@ -265,7 +265,7 @@ export default function LandingScreen({ navigation }) {
                   <View style={styles.heroCompactStats}>
                     {HERO_STATS.map((stat) => (
                       <View key={stat.label} style={styles.heroCompactStatCard}>
-                        <Ionicons name={stat.icon} size={16} color={palette.green} />
+                        <Icon name={stat.icon} size={16} color={palette.green} />
                         <Text style={styles.heroCompactStatValue}>{stat.value}</Text>
                         <Text style={styles.heroCompactStatLabel}>{stat.label}</Text>
                       </View>
@@ -276,7 +276,7 @@ export default function LandingScreen({ navigation }) {
                 <View style={[styles.highlightRow, styles.highlightRowCompact]}>
                   {LANDING_HIGHLIGHTS.map((item) => (
                     <View key={item} style={styles.highlightPill}>
-                      <Ionicons name="checkmark-circle-outline" size={14} color={palette.green} />
+                      <Icon name="checkmark-circle-outline" size={14} color={palette.green} />
                       <Text style={styles.highlightText}>{item}</Text>
                     </View>
                   ))}
@@ -289,7 +289,7 @@ export default function LandingScreen({ navigation }) {
                   {HERO_STATS.map((stat) => (
                     <View key={stat.label} style={styles.heroStatCard}>
                       <View style={styles.heroStatIcon}>
-                        <Ionicons name={stat.icon} size={18} color={palette.green} />
+                        <Icon name={stat.icon} size={18} color={palette.green} />
                       </View>
                       <Text style={styles.heroStatValue}>{stat.value}</Text>
                       <Text style={styles.heroStatLabel}>{stat.label}</Text>
@@ -316,7 +316,7 @@ export default function LandingScreen({ navigation }) {
           {AUDIENCE.map((item) => (
             <Card key={item.title} style={styles.audienceCard}>
               <View style={styles.audienceIcon}>
-                <Ionicons name={item.icon} size={24} color={palette.green} />
+                <Icon name={item.icon} size={24} color={palette.green} />
               </View>
               <Text style={styles.audienceTitle}>{item.title}</Text>
               <Text style={styles.audienceText}>{item.text}</Text>
@@ -346,7 +346,7 @@ export default function LandingScreen({ navigation }) {
           {FEATURES.map((f) => (
             <Card key={f.title} style={styles.featureCard}>
               <View style={[styles.featureIcon, { backgroundColor: f.color + '18' }]}>
-                <Ionicons name={f.icon} size={24} color={f.color} />
+                <Icon name={f.icon} size={24} color={f.color} />
               </View>
               <Text style={styles.featureTitle}>{f.title}</Text>
               <Text style={styles.featureDesc}>{f.desc}</Text>

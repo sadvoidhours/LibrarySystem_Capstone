@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
@@ -13,20 +13,20 @@ import { logout } from '../store/slices/authSlice';
 import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
 const QUICK_ACTIONS = [
-  { title: 'Generate report', icon: 'stats-chart-outline', tab: 'Reports', colorKey: 'blue' },
-  { title: 'Manage accounts', icon: 'people-outline', tab: 'Accounts', colorKey: 'green' },
-  { title: 'Inspect logs', icon: 'document-text-outline', tab: 'Audit Logs', colorKey: 'blue' },
+  { title: 'Generate report', icon: 'stats-chart', tab: 'Reports', colorKey: 'blue' },
+  { title: 'Manage accounts', icon: 'people', tab: 'Accounts', colorKey: 'green' },
+  { title: 'Inspect logs', icon: 'document-text', tab: 'Audit Logs', colorKey: 'blue' },
 ];
 
 const metricCards = [
-  { key: 'totalUsers', label: 'Users', icon: 'people-outline' },
-  { key: 'staffUsers', label: 'Staff', icon: 'shield-checkmark-outline' },
-  { key: 'studentUsers', label: 'Students', icon: 'school-outline' },
-  { key: 'facultyUsers', label: 'Faculty', icon: 'person-outline' },
-  { key: 'pendingApprovals', label: 'Approvals', icon: 'hourglass-outline' },
-  { key: 'totalBooks', label: 'Books', icon: 'library-outline' },
-  { key: 'activeBorrowings', label: 'Loans', icon: 'book-outline' },
-  { key: 'overdueBorrowings', label: 'Overdue', icon: 'alert-circle-outline' },
+  { key: 'totalUsers', label: 'Users', icon: 'people' },
+  { key: 'staffUsers', label: 'Staff', icon: 'shield-checkmark' },
+  { key: 'studentUsers', label: 'Students', icon: 'school' },
+  { key: 'facultyUsers', label: 'Faculty', icon: 'person' },
+  { key: 'pendingApprovals', label: 'Approvals', icon: 'hourglass' },
+  { key: 'totalBooks', label: 'Books', icon: 'library' },
+  { key: 'activeBorrowings', label: 'Loans', icon: 'book' },
+  { key: 'overdueBorrowings', label: 'Overdue', icon: 'alert-circle' },
 ];
 
 export default function SuperadminDashboardScreen({ navigation }) {
@@ -68,7 +68,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
   const renderMetric = ({ item }) => (
     <Card key={item.key} style={styles.metricCard}>
       <View style={styles.metricIcon}>
-        <Ionicons name={item.icon} size={18} color={palette.white} />
+        <Icon name={item.icon} size={18} color={palette.white} />
       </View>
       <Text style={[styles.metricValue, { color: palette.gray800 }]}>{overview?.[item.key] ?? 0}</Text>
       <Text style={[styles.metricLabel, { color: palette.gray500 }]}>{item.label}</Text>
@@ -111,7 +111,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
               </View>
             </View>
             <Pressable style={[styles.pulseChip, { backgroundColor: palette.greenLight }]} onPress={loadOverview}>
-              <Ionicons name="refresh-outline" size={16} color={palette.chestnut} />
+              <Icon name="refresh" size={16} color={palette.chestnut} />
               <Text style={[styles.pulseText, { color: palette.chestnut }]}>Refresh overview</Text>
             </Pressable>
           </View>
@@ -169,7 +169,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
               <Text style={[styles.sectionKicker, { color: palette.green }]}>Profile</Text>
               <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Personal settings</Text>
             </View>
-            <Ionicons name="person-circle-outline" size={24} color={palette.chestnut} />
+            <Icon name="person-circle" size={24} color={palette.chestnut} />
           </View>
           <Text style={[styles.sectionText, { color: palette.gray500 }]}>Update your name, profile picture, password, and dark mode preference from the Profile tab.</Text>
           <View style={styles.profileActions}>
@@ -188,7 +188,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
             <Card key={user._id} style={styles.listCard}>
               <View style={styles.listRow}>
                 <View style={[styles.listIcon, { backgroundColor: palette.greenLight }]}>
-                  <Ionicons name="person-outline" size={18} color={palette.chestnut} />
+                  <Icon name="person" size={18} color={palette.chestnut} />
                 </View>
                 <View style={styles.listBody}>
                   <Text style={[styles.listTitle, { color: palette.gray800 }]} numberOfLines={1}>{user.name}</Text>
@@ -212,7 +212,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
             <Card key={log._id} style={styles.listCard}>
               <View style={styles.listRow}>
                 <View style={[styles.listIcon, { backgroundColor: palette.blueLight }]}>
-                  <Ionicons name="document-text-outline" size={18} color={palette.blue} />
+                  <Icon name="document-text" size={18} color={palette.blue} />
                 </View>
                 <View style={styles.listBody}>
                   <Text style={[styles.listTitle, { color: palette.gray800 }]} numberOfLines={1}>{log.action}</Text>
@@ -236,7 +236,7 @@ function PressableAction({ title, icon, color, onPress }) {
       <StyledButton
         title={title}
         variant="outlineGreen"
-        icon={<Ionicons name={icon} size={18} color={color} />}
+        icon={<Icon name={icon} size={18} color={color} />}
         onPress={onPress}
         style={styles.quickButton}
       />

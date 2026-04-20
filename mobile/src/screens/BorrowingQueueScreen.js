@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
 import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
@@ -23,11 +23,11 @@ const QUEUE_FILTERS = [
 ];
 
 const STATUS_CONFIG = (palette) => ({
-  Pending: { bg: palette.orangeLight, color: palette.orange, icon: 'time-outline' },
-  Active: { bg: palette.greenLight, color: palette.green, icon: 'checkmark-circle-outline' },
-  Overdue: { bg: palette.redLight, color: palette.red, icon: 'alert-circle-outline' },
-  Returned: { bg: palette.blueLight, color: palette.blue, icon: 'arrow-undo-circle-outline' },
-  Rejected: { bg: palette.gray100, color: palette.gray500, icon: 'close-circle-outline' },
+  Pending: { bg: palette.orangeLight, color: palette.orange, icon: 'time' },
+  Active: { bg: palette.greenLight, color: palette.green, icon: 'checkmark-circle' },
+  Overdue: { bg: palette.redLight, color: palette.red, icon: 'alert-circle' },
+  Returned: { bg: palette.blueLight, color: palette.blue, icon: 'arrow-undo-circle' },
+  Rejected: { bg: palette.gray100, color: palette.gray500, icon: 'close-circle' },
 });
 
 const formatDate = (value) => {
@@ -220,7 +220,7 @@ export default function BorrowingQueueScreen() {
             <Text style={[styles.subtitle, { color: palette.gray500 }]}>{borrowing.bookId?.author || 'Unknown author'}</Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: cfg.bg }]}>
-            <Ionicons name={cfg.icon} size={14} color={cfg.color} />
+            <Icon name={cfg.icon} size={14} color={cfg.color} />
             <Text style={[styles.statusText, { color: cfg.color }]}>{borrowing.status}</Text>
           </View>
         </View>
@@ -250,7 +250,7 @@ export default function BorrowingQueueScreen() {
             <Text style={[styles.subtitle, { color: palette.gray500 }]}>{borrowing.userId?.name || 'Borrower'}</Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: cfg.bg }]}>
-            <Ionicons name={cfg.icon} size={14} color={cfg.color} />
+            <Icon name={cfg.icon} size={14} color={cfg.color} />
             <Text style={[styles.statusText, { color: cfg.color }]}>{borrowing.status}</Text>
           </View>
         </View>
@@ -267,7 +267,7 @@ export default function BorrowingQueueScreen() {
 
         {isSettled ? (
           <View style={styles.settledBox}>
-            <Ionicons name="checkmark-circle-outline" size={16} color={palette.green} />
+            <Icon name="checkmark-circle-outline" size={16} color={palette.green} />
             <Text style={[styles.settledText, { color: palette.green }]}>Penalty settled</Text>
             {payments.find((payment) => String(payment.borrowingId?._id || payment.borrowingId) === String(borrowing._id)) ? (
               <StyledButton
@@ -432,7 +432,7 @@ export default function BorrowingQueueScreen() {
                 </Text>
               </View>
               <Pressable onPress={closeModal} style={styles.closeButton}>
-                <Ionicons name="close-outline" size={18} color={palette.gray500} />
+                <Icon name="close-outline" size={18} color={palette.gray500} />
               </Pressable>
             </View>
 

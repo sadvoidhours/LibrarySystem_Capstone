@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
 import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
@@ -12,10 +12,10 @@ import StyledInput from '../components/StyledInput';
 import { exportReceiptPdf } from '../utils/receipt';
 
 const getStatusConfig = (p) => ({
-  Active: { bg: p.greenLight, color: p.green, icon: 'checkmark-circle-outline' },
-  Overdue: { bg: p.redLight, color: p.red, icon: 'alert-circle-outline' },
-  Returned: { bg: p.blueLight, color: p.blue, icon: 'arrow-undo-circle-outline' },
-  Pending: { bg: p.orangeLight, color: p.orange, icon: 'time-outline' },
+  Active: { bg: p.greenLight, color: p.green, icon: 'checkmark-circle' },
+  Overdue: { bg: p.redLight, color: p.red, icon: 'alert-circle' },
+  Returned: { bg: p.blueLight, color: p.blue, icon: 'arrow-undo-circle' },
+  Pending: { bg: p.orangeLight, color: p.orange, icon: 'time' },
 });
 
 const PAYMENT_METHODS = ['Cash', 'GCash', 'Maya', 'Card'];
@@ -162,7 +162,7 @@ export default function BorrowingsScreen() {
             <Text style={styles.subtitle}>{item.bookId?.author || 'Unknown author'}</Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: cfg.bg }]}>
-            <Ionicons name={cfg.icon} size={14} color={cfg.color} />
+            <Icon name={cfg.icon} size={14} color={cfg.color} />
             <Text style={[styles.statusText, { color: cfg.color }]}>{item.status}</Text>
           </View>
         </View>
@@ -186,7 +186,7 @@ export default function BorrowingsScreen() {
 
         {isSettled ? (
           <View style={styles.settledBox}>
-            <Ionicons name="checkmark-circle-outline" size={16} color={palette.green} />
+            <Icon name="checkmark-circle-outline" size={16} color={palette.green} />
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={styles.settledText}>
                 Settled via {paymentRecord?.payment_method || 'payment'} on {formatShortDate(paymentRecord?.payment_date || paymentRecord?.createdAt)}
@@ -240,7 +240,7 @@ export default function BorrowingsScreen() {
               </Text>
             </View>
             <View style={styles.heroBadge}>
-              <Ionicons name="calendar-outline" size={16} color={palette.green} />
+              <Icon name="calendar-outline" size={16} color={palette.green} />
               <Text style={[styles.heroBadgeText, { color: palette.green }]}>{monthTitle}</Text>
             </View>
           </View>
@@ -321,7 +321,7 @@ export default function BorrowingsScreen() {
                       return (
                         <View key={item._id} style={styles.selectedDayPreviewItem}>
                           <View style={[styles.detailIcon, { backgroundColor: cfg.bg }]}>
-                            <Ionicons name={cfg.icon} size={16} color={cfg.color} />
+                            <Icon name={cfg.icon} size={16} color={cfg.color} />
                           </View>
                           <View style={styles.detailBody}>
                             <Text style={[styles.detailTitle, { color: palette.gray800 }]}>{item.bookId?.title || 'Book'}</Text>
@@ -405,7 +405,7 @@ export default function BorrowingsScreen() {
                     return (
                       <View key={item._id} style={styles.detailItem}>
                         <View style={[styles.detailIcon, { backgroundColor: cfg.bg }]}>
-                          <Ionicons name={cfg.icon} size={16} color={cfg.color} />
+                          <Icon name={cfg.icon} size={16} color={cfg.color} />
                         </View>
                         <View style={styles.detailBody}>
                           <Text style={[styles.detailTitle, { color: palette.gray800 }]}>{item.bookId?.title || 'Book'}</Text>
@@ -508,7 +508,7 @@ export default function BorrowingsScreen() {
                 <Text style={[styles.modalTitle, { color: palette.gray800 }]}>{paymentTarget?.bookId?.title || 'Borrowing'}</Text>
               </View>
               <Pressable onPress={() => setPaymentModalVisible(false)} style={styles.closeButton}>
-                <Ionicons name="close-outline" size={18} color={palette.gray700} />
+                <Icon name="close-outline" size={18} color={palette.gray700} />
               </Pressable>
             </View>
 

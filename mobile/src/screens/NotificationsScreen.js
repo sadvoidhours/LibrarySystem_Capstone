@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchNotifications, markNotificationRead } from '../store/slices/notificationsSlice';
 import { baseStyles, fonts, getThemePalette, radii, spacing } from '../theme/colors';
@@ -53,7 +53,7 @@ export default function NotificationsScreen() {
       <Card style={[styles.card, { borderColor: palette.gray100, backgroundColor: item.is_read ? palette.surface : palette.greenLight }]}>
         <View style={styles.row}>
           <View style={[styles.iconWrap, { backgroundColor: palette.surface }]}>
-            <Ionicons name="notifications-outline" size={20} color={palette.chestnut} />
+            <Icon name="notifications" size={20} color={palette.chestnut} />
           </View>
           <View style={styles.body}>
             <View style={styles.messageRow}>

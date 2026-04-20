@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearAuthFeedback, login } from '../store/slices/authSlice';
 import { baseStyles, fonts, getThemePalette, palette, radii, shadows, spacing } from '../theme/colors';
@@ -50,7 +50,7 @@ export default function LoginScreen({ navigation }) {
             style={styles.backBtn}
             onPress={() => navigation.navigate('Landing')}
           >
-            <Ionicons name="arrow-back" size={18} color={p.green} />
+            <Icon name="arrow-back" size={18} color={p.green} />
             <Text style={[styles.backText, { color: p.green }]}>Back to Home</Text>
           </TouchableOpacity>
 
@@ -84,7 +84,7 @@ export default function LoginScreen({ navigation }) {
 
             {displayError ? (
               <View style={[styles.errorBox, { backgroundColor: p.redLight }]}>
-                <Ionicons name="alert-circle-outline" size={16} color={p.red} />
+                <Icon name="alert-circle" size={16} color={p.red} />
                 <Text style={[styles.errorText, { color: p.red }]}>{displayError}</Text>
               </View>
             ) : null}

@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
 import BrandHeader from '../components/BrandHeader';
@@ -130,7 +130,7 @@ export default function ManageAdminsScreen() {
       <Card style={styles.staffCard}>
         <View style={styles.staffRow}>
           <View style={[styles.avatar, { backgroundColor: palette.chestnut }]}>
-            <Ionicons name="people-outline" size={22} color={palette.white} />
+            <Icon name="people" size={22} color={palette.white} />
           </View>
           <View style={styles.staffMeta}>
             <Text style={[styles.staffName, { color: palette.gray800 }]} numberOfLines={1}>
@@ -219,7 +219,7 @@ export default function ManageAdminsScreen() {
             <Text style={[styles.formKicker, { color: palette.green }]}>Create account</Text>
             <Text style={[styles.formTitle, { color: palette.gray800 }]}>New admin or superadmin</Text>
           </View>
-          <Ionicons name="person-add-outline" size={22} color={palette.chestnut} />
+          <Icon name="person-add" size={22} color={palette.chestnut} />
         </View>
 
         <View style={styles.formGrid}>

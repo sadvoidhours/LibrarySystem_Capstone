@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Icon from '../components/Icon';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
 import BrandHeader from '../components/BrandHeader';
@@ -99,7 +99,7 @@ export default function AuditLogsScreen() {
     <Card style={styles.logCard}>
       <View style={styles.logRow}>
         <View style={[styles.iconWrap, { backgroundColor: palette.olive + '18' }]}>
-          <Ionicons name="document-text-outline" size={18} color={palette.olive} />
+          <Icon name="document-text" size={18} color={palette.olive} />
         </View>
         <View style={styles.logBody}>
           <Text style={[styles.action, { color: palette.gray800 }]} numberOfLines={2}>
