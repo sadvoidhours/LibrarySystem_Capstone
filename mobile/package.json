@@ -8,8 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build:apk": "npm exec --yes eas-cli -- build -p android --profile preview",
-    "build:preview:android": "npm exec --yes eas-cli -- build -p android --profile preview",
+    "build:apk": "npm exec --yes eas-cli -- build -p android --profile preview --clear-cache",
+    "build:preview:android": "npm exec --yes eas-cli -- build -p android --profile preview --clear-cache",
     "build:preview:ios": "npm exec --yes eas-cli -- build -p ios --profile preview",
     "build:android": "npm exec --yes eas-cli -- build -p android --profile production",
     "build:ios": "npm exec --yes eas-cli -- build -p ios --profile production"

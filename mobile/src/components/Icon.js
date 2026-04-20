@@ -11,6 +11,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
  * entire app can switch icon sets by editing only this file.
  */
 
+const FALLBACK_ICON = 'help-circle-outline';
+
 const ICON_MAP = {
   /* ── navigation / chrome ── */
   'menu':                'menu',
@@ -77,10 +79,65 @@ const ICON_MAP = {
   /* ── keep existing MaterialCommunityIcons names as pass-through ── */
 };
 
-export default function Icon({ name, size = 20, color = '#000', style }) {
-  // Strip the -outline suffix if present – the map uses short semantic keys
-  const stripped = name?.replace(/-outline$/, '') ?? 'help-circle';
+const SUPPORTED_ICON_NAMES = new Set([
+  FALLBACK_ICON,
+  'menu',
+  'close',
+  'arrow-left',
+  'chevron-down',
+  'radiobox-marked',
+  'refresh',
+  'book-outline',
+  'library-outline',
+  'bookshelf',
+  'account-outline',
+  'account-circle-outline',
+  'account-group-outline',
+  'account-plus-outline',
+  'school-outline',
+  'card-account-details-outline',
+  'check-circle-outline',
+  'check-all',
+  'alert-circle-outline',
+  'close-circle-outline',
+  'clock-outline',
+  'timer-sand',
+  'undo-variant',
+  'barcode-scan',
+  'qrcode',
+  'magnify',
+  'swap-horizontal',
+  'cloud-upload-outline',
+  'image-outline',
+  'camera-outline',
+  'chart-bar',
+  'cash',
+  'calendar-outline',
+  'file-document-outline',
+  'briefcase-outline',
+  'shield-check-outline',
+  'bell-outline',
+  'bell-off-outline',
+  'map-marker-outline',
+  'cellphone',
+  'white-balance-sunny',
+  'moon-waning-crescent',
+  'cog-outline',
+  'home-outline',
+  'speedometer',
+  'tray-arrow-down',
+  'logout',
+]);
+
+function resolveIconName(name) {
+  const stripped = name?.replace(/-outline$/, '') ?? '';
   const resolved = ICON_MAP[stripped] || ICON_MAP[name] || name;
+
+  return SUPPORTED_ICON_NAMES.has(resolved) ? resolved : FALLBACK_ICON;
+}
+
+export default function Icon({ name, size = 20, color = '#000', style }) {
+  const resolved = resolveIconName(name);
 
   return (
     <MaterialCommunityIcons name={resolved} size={size} color={color} style={style} />
