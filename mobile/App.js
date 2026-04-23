@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Provider } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFonts } from 'expo-font';
 
 import { store } from './src/store';
 import RootNavigator from './src/navigation/RootNavigator';
@@ -23,9 +24,11 @@ function AppShell() {
 }
 
 export default function App() {
-  useEffect(() => {
-    MaterialCommunityIcons.loadFont().catch(() => {});
-  }, []);
+  const [fontsLoaded] = useFonts(MaterialCommunityIcons.font);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <SafeAreaProvider>

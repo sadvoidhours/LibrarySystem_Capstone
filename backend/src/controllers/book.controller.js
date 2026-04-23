@@ -1,4 +1,5 @@
 const { body } = require('express-validator');
+const crypto = require('crypto');
 const Book = require('../models/Book');
 const asyncHandler = require('../utils/asyncHandler');
 
@@ -7,18 +8,20 @@ const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g
 const createBookValidation = [
   body('title').trim().notEmpty(),
   body('author').trim().notEmpty(),
+  body('isbn').optional().trim(),
   body('category').optional().trim(),
   body('publication_year').optional().isInt({ min: 0 }),
   body('total_copies').optional().isInt({ min: 0 }),
   body('available_copies').optional().isInt({ min: 0 }),
   body('coverImageUrl').optional().trim(),
   body('backCoverImageUrl').optional().trim(),
-  body('barcodeString').trim().notEmpty()
+  body('barcodeString').optional().trim()
 ];
 
 const updateBookValidation = [
   body('title').optional().trim().notEmpty(),
   body('author').optional().trim().notEmpty(),
+  body('isbn').optional().trim(),
   body('publication_year').optional().isInt({ min: 0 }),
   body('total_copies').optional().isInt({ min: 0 }),
   body('available_copies').optional().isInt({ min: 0 }),
@@ -26,7 +29,7 @@ const updateBookValidation = [
   body('backCoverImageUrl').optional().trim()
 ];
 
-const BOOK_FIELDS = ['title', 'author', 'category', 'publication_year', 'total_copies', 'available_copies', 'coverImageUrl', 'backCoverImageUrl'];
+const BOOK_FIELDS = ['title', 'author', 'isbn', 'category', 'publication_year', 'total_copies', 'available_copies', 'coverImageUrl', 'backCoverImageUrl'];
 
 const pickBookFields = (source) => BOOK_FIELDS.reduce((accumulator, field) => {
   if (Object.prototype.hasOwnProperty.call(source, field)) {
@@ -43,6 +46,14 @@ const parseCopyCount = (value, fallback) => {
 
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const normalizeIsbn = (value) => String(value || '').trim().replace(/[^0-9Xx]/g, '').toUpperCase();
+
+const generateBookBarcode = (isbn) => {
+  const normalizedIsbn = normalizeIsbn(isbn);
+  const suffix = crypto.randomUUID().split('-')[0].toUpperCase();
+  return normalizedIsbn ? `ISBN-${normalizedIsbn}-${suffix}` : `BOOK-${suffix}`;
 };
 
 const normalizeCopyCounts = (totalCopies, availableCopies) => {
@@ -101,7 +112,8 @@ const createBook = asyncHandler(async (req, res) => {
     publication_year: parseCopyCount(req.body.publication_year, null),
     ...copyCounts,
     coverImageUrl: req.body.coverImageUrl || '',
-    backCoverImageUrl: req.body.backCoverImageUrl || ''
+    backCoverImageUrl: req.body.backCoverImageUrl || '',
+    barcodeString: String(req.body.barcodeString || '').trim() || generateBookBarcode(req.body.isbn)
   };
 
   const book = await Book.create(payload);

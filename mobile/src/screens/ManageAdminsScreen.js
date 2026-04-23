@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import Icon from '../components/Icon';
@@ -27,6 +28,8 @@ const ROLE_CHOICES = [
 export default function ManageAdminsScreen() {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
+  const { width } = useWindowDimensions();
+  const isCompact = width < 460;
 
   const [admins, setAdmins] = useState([]);
   const [search, setSearch] = useState('');
@@ -133,10 +136,18 @@ export default function ManageAdminsScreen() {
             <Icon name="people" size={22} color={palette.white} />
           </View>
           <View style={styles.staffMeta}>
-            <Text style={[styles.staffName, { color: palette.gray800 }]} numberOfLines={1}>
-              {item.name}
+            <Text
+              style={[styles.staffName, isCompact && styles.staffValueStack, { color: palette.gray800 }]}
+              numberOfLines={isCompact ? 0 : 1}
+              ellipsizeMode="tail"
+            >
+              {item.full_name || item.name}
             </Text>
-            <Text style={[styles.staffEmail, { color: palette.gray500 }]} numberOfLines={1}>
+            <Text
+              style={[styles.staffEmail, isCompact && styles.staffValueStack, { color: palette.gray500 }]}
+              numberOfLines={isCompact ? 0 : 1}
+              ellipsizeMode="tail"
+            >
               {item.email}
             </Text>
             <View style={styles.badgeRow}>
@@ -341,6 +352,7 @@ const styles = StyleSheet.create({
   staffMeta: { flex: 1, gap: 4 },
   staffName: { ...fonts.base, ...fonts.bold },
   staffEmail: { ...fonts.sm },
+  staffValueStack: { textAlign: 'left', marginTop: 2 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: 2 },
   badge: { paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radii.full },
   badgeText: { ...fonts.xs, ...fonts.semibold },

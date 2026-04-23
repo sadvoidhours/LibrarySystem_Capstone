@@ -11,7 +11,7 @@ const bookSchema = new mongoose.Schema(
     available_copies: { type: Number, required: true, min: 0, default: 1 },
     coverImageUrl: { type: String, default: '' },
     backCoverImageUrl: { type: String, default: '' },
-    barcodeString: { type: String, required: true, unique: true, index: true }
+    barcodeString: { type: String, required: false, unique: true, sparse: true, index: true }
   },
   { timestamps: { createdAt: true, updatedAt: true } }
 );

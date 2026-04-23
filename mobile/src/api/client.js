@@ -17,6 +17,10 @@ const resolveApiBaseUrl = () => {
     const localhostMatch = normalizedBaseUrl.match(/^https:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i);
 
     if (localhostMatch) {
+      if (!__DEV__) {
+        return PRODUCTION_API_BASE_URL;
+      }
+
       const [, host, port = '', path = '/api'] = localhostMatch;
       return `http://${host}${port}${path || '/api'}`.replace(/\/+$/, '');
     }

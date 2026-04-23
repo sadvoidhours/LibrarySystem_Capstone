@@ -20,7 +20,7 @@ export default function ScannerScreen() {
   const styles = useMemo(() => createStyles(palette), [palette]);
 
   const [userBarcode, setUserBarcode] = useState('');
-  const [bookBarcode, setBookBarcode] = useState('');
+  const [bookIsbn, setBookIsbn] = useState('');
   const [transactionMode, setTransactionMode] = useState('borrow');
   const [scanTarget, setScanTarget] = useState(null);
   const [dueDays, setDueDays] = useState('7');
@@ -31,7 +31,7 @@ export default function ScannerScreen() {
 
   const resetForm = () => {
     setUserBarcode('');
-    setBookBarcode('');
+    setBookIsbn('');
     setDueDays('7');
     setScanTarget(null);
     scanLockRef.current = false;
@@ -40,10 +40,10 @@ export default function ScannerScreen() {
 
   const submitTransaction = async () => {
     const trimmedUserBarcode = userBarcode.trim();
-    const trimmedBookBarcode = bookBarcode.trim();
+    const trimmedBookIsbn = bookIsbn.trim();
 
-    if (!trimmedUserBarcode || !trimmedBookBarcode) {
-      Alert.alert('Missing barcode', 'Scan or enter both the user and book barcodes first.');
+    if (!trimmedUserBarcode || !trimmedBookIsbn) {
+      Alert.alert('Missing ISBN', 'Scan or enter both the user barcode and book ISBN first.');
       return;
     }
 
@@ -53,7 +53,7 @@ export default function ScannerScreen() {
       if (transactionMode === 'borrow') {
         await api.post('/borrowings/scan/borrow', {
           userBarcode: trimmedUserBarcode,
-          bookBarcode: trimmedBookBarcode,
+          bookIsbn: trimmedBookIsbn,
           dueDays: Number(dueDays) || 7,
         });
         Alert.alert('Success', 'Borrow transaction completed.');
@@ -61,7 +61,7 @@ export default function ScannerScreen() {
       } else {
         await api.post('/borrowings/scan/return', {
           userBarcode: trimmedUserBarcode,
-          bookBarcode: trimmedBookBarcode,
+          bookIsbn: trimmedBookIsbn,
         });
         Alert.alert('Success', 'Return transaction completed.');
         setStatusMessage('Return transaction completed successfully.');
@@ -85,7 +85,7 @@ export default function ScannerScreen() {
       }
     }
     scanLockRef.current = false;
-    setStatusMessage(`Scanning ${target} barcode...`);
+    setStatusMessage(`Scanning ${target} ${target === 'book' ? 'ISBN' : 'barcode'}...`);
     setScanTarget(target);
   };
 
@@ -96,8 +96,8 @@ export default function ScannerScreen() {
 
     scanLockRef.current = true;
     if (scanTarget === 'user') setUserBarcode(data);
-    if (scanTarget === 'book') setBookBarcode(data);
-    setStatusMessage(`${scanTarget === 'user' ? 'User' : 'Book'} barcode captured.`);
+    if (scanTarget === 'book') setBookIsbn(data);
+    setStatusMessage(`${scanTarget === 'user' ? 'User' : 'Book ISBN'} captured.`);
     setScanTarget(null);
 
     setTimeout(() => {
@@ -134,12 +134,12 @@ export default function ScannerScreen() {
                 style={StyleSheet.absoluteFillObject}
                 facing="back"
                 barcodeScannerSettings={{
-                  barcodeTypes: ['qr', 'code128', 'ean13', 'ean8', 'upc_a', 'upc_e'],
+                  barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'qr'],
                 }}
                 onBarcodeScanned={onScan}
               />
               <View style={styles.scanOverlay}>
-                <Text style={styles.scanLabel}>Scanning {scanTarget} barcode...</Text>
+                <Text style={styles.scanLabel}>Scanning {scanTarget === 'book' ? 'book ISBN' : 'user barcode'}...</Text>
               </View>
             </View>
           )}
@@ -153,7 +153,7 @@ export default function ScannerScreen() {
               style={{ flex: 1 }}
             />
             <StyledButton
-              title="Scan Book"
+              title="Scan ISBN"
               variant="outline"
               small
               onPress={() => enableScanner('book')}
@@ -165,7 +165,7 @@ export default function ScannerScreen() {
             <Text style={[styles.sectionTitle, { color: palette.gray700 }]}>Manual Entry</Text>
             <View style={styles.formGap}>
               <StyledInput label="User Barcode" placeholder="User barcode" value={userBarcode} onChangeText={setUserBarcode} />
-              <StyledInput label="Book Barcode" placeholder="Book barcode" value={bookBarcode} onChangeText={setBookBarcode} />
+              <StyledInput label="Book ISBN" placeholder="Book ISBN" value={bookIsbn} onChangeText={setBookIsbn} />
               {transactionMode === 'borrow' ? (
                 <StyledInput
                   label="Due Days"

@@ -36,6 +36,16 @@ const formatTime = (date) => date.toLocaleTimeString([], { hour: 'numeric', minu
 const formatLongDate = (date) =>
   date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
+const getFirstName = (user) => {
+  const rawName = String(user?.full_name || user?.name || '').trim();
+  if (rawName) {
+    return rawName.split(/\s+/)[0];
+  }
+
+  const emailLocalPart = String(user?.email || '').split('@')[0]?.trim();
+  return emailLocalPart || 'Member';
+};
+
 const buildCalendarDays = (date) =>
   Array.from({ length: 7 }, (_, index) => {
     const day = new Date(date);
@@ -59,6 +69,10 @@ export default function UserDashboardScreen({ navigation }) {
   const [now, setNow] = useState(new Date());
   const { width } = useWindowDimensions();
   const isWide = width >= 900;
+  const isCompact = width < 460;
+  const stackHeroHeader = width < 760;
+  const welcomeLineClamp = width < 760 ? 2 : 1;
+  const firstName = getFirstName(user);
 
   const load = async () => {
     const [{ data: borrowingsData }, barcodeRes] = await Promise.all([
@@ -116,10 +130,12 @@ export default function UserDashboardScreen({ navigation }) {
         <View style={[styles.topGrid, isWide && styles.topGridWide]}>
           <View style={styles.leftColumn}>
             <View style={[styles.heroCard, { backgroundColor: palette.greenDark }]}>
-              <View style={styles.heroTopRow}>
-                <View style={styles.heroCopy}>
+              <View style={[styles.heroTopRow, stackHeroHeader && styles.heroTopRowStack, isCompact && styles.heroTopRowCompact]}>
+                <View style={[styles.heroCopy, stackHeroHeader && styles.heroCopyStack]}>
                   <Text style={[styles.eyebrow, { color: 'rgba(255,255,255,0.72)' }]}>Welcome back</Text>
-                  <Text style={[styles.welcome, { color: '#FFFFFF' }]}>Hi, {user?.full_name || user?.name || user?.email || 'Member'}</Text>
+                  <Text style={[styles.welcome, { color: '#FFFFFF' }]} numberOfLines={welcomeLineClamp} ellipsizeMode="tail">
+                    Hi, {firstName}
+                  </Text>
                   <Text style={styles.heroText}>
                     Your library activity, barcode ID, and due dates are all in one place.
                   </Text>
@@ -127,7 +143,13 @@ export default function UserDashboardScreen({ navigation }) {
                     Today is {currentDateLabel} • {currentTime}
                   </Text>
                 </View>
-                <View style={styles.heroProfileWrap}>
+                <View
+                  style={[
+                    styles.heroProfileWrap,
+                    stackHeroHeader && styles.heroProfileWrapStack,
+                    isCompact && styles.heroProfileWrapCompact,
+                  ]}
+                >
                   <View style={[styles.heroAvatar, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
                     {user?.profileImageUrl ? (
                       <Image source={{ uri: user.profileImageUrl }} style={styles.heroAvatarImage} />
@@ -325,11 +347,32 @@ export default function UserDashboardScreen({ navigation }) {
               <View style={styles.profileList}>
                 <View style={[styles.profileRow, { borderBottomColor: palette.gray100 }]}>
                   <Text style={[styles.profileLabel, { color: palette.gray500 }]}>Name</Text>
-                  <Text style={[styles.profileValue, { color: palette.gray800 }]} numberOfLines={1}>{user?.name || '-'}</Text>
+                  <Text
+                    style={[
+                      styles.profileValue,
+                      styles.profileValueName,
+                      isCompact && styles.profileValueStack,
+                      { color: palette.gray800 },
+                    ]}
+                    numberOfLines={isCompact ? 0 : 1}
+                    ellipsizeMode="tail"
+                  >
+                    {user?.full_name || user?.name || '-'}
+                  </Text>
                 </View>
                 <View style={[styles.profileRow, { borderBottomColor: palette.gray100 }]}>
                   <Text style={[styles.profileLabel, { color: palette.gray500 }]}>Email</Text>
-                  <Text style={[styles.profileValue, { color: palette.gray800 }]} numberOfLines={1}>{user?.email || '-'}</Text>
+                  <Text
+                    style={[
+                      styles.profileValue,
+                      isCompact && styles.profileValueStack,
+                      { color: palette.gray800 },
+                    ]}
+                    numberOfLines={isCompact ? 0 : 1}
+                    ellipsizeMode="tail"
+                  >
+                    {user?.email || '-'}
+                  </Text>
                 </View>
                 <View style={[styles.profileRow, { borderBottomColor: palette.gray100 }]}>
                   <Text style={[styles.profileLabel, { color: palette.gray500 }]}>Role</Text>
@@ -390,9 +433,29 @@ const createStyles = (p) => StyleSheet.create({
     gap: spacing.md,
     flexWrap: 'wrap',
   },
+  heroTopRowStack: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  heroTopRowCompact: {
+    gap: spacing.sm,
+  },
   heroProfileWrap: {
     alignItems: 'center',
     gap: spacing.sm,
+    flexShrink: 0,
+  },
+  heroProfileWrapStack: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: spacing.xs,
+  },
+  heroProfileWrapCompact: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: spacing.xs,
   },
   heroAvatar: {
     width: 72,
@@ -409,8 +472,13 @@ const createStyles = (p) => StyleSheet.create({
   },
   heroCopy: {
     flex: 1,
-    minWidth: 160,
+    minWidth: 0,
     flexShrink: 1,
+    paddingRight: spacing.sm,
+  },
+  heroCopyStack: {
+    width: '100%',
+    paddingRight: 0,
   },
   eyebrow: {
     ...fonts.xs,
@@ -422,6 +490,9 @@ const createStyles = (p) => StyleSheet.create({
   welcome: {
     ...fonts.lg,
     ...fonts.bold,
+    lineHeight: 30,
+    marginBottom: spacing.xs,
+    maxWidth: '100%',
   },
   heroText: {
     ...fonts.sm,
@@ -626,5 +697,12 @@ const createStyles = (p) => StyleSheet.create({
     ...fonts.xs,
     flex: 1,
     textAlign: 'right',
+  },
+  profileValueName: {
+    flexShrink: 1,
+  },
+  profileValueStack: {
+    textAlign: 'left',
+    marginTop: 2,
   },
 });

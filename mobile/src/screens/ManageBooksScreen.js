@@ -24,6 +24,7 @@ export default function ManageBooksScreen() {
   const [form, setForm] = useState({
     title: '',
     author: '',
+    isbn: '',
     category: '',
     publication_year: '',
     total_copies: '1',
@@ -38,6 +39,7 @@ export default function ManageBooksScreen() {
     setForm({
       title: '',
       author: '',
+      isbn: '',
       category: '',
       publication_year: '',
       total_copies: '1',
@@ -177,6 +179,7 @@ export default function ManageBooksScreen() {
     setForm({
       title: item.title || '',
       author: item.author || '',
+      isbn: item.isbn || '',
       category: item.category || '',
       publication_year: item.publication_year ? String(item.publication_year) : '',
       total_copies: String(item.total_copies ?? item.available_copies ?? 1),
@@ -201,6 +204,7 @@ export default function ManageBooksScreen() {
       </View>
       <Text style={[styles.bookTitle, { color: palette.gray800 }]}>{item.title}</Text>
       <Text style={[styles.meta, { color: palette.gray500 }]}>{item.author}</Text>
+      <Text style={[styles.meta, { color: palette.gray500 }]} numberOfLines={1}>ISBN: {item.isbn || 'N/A'}</Text>
       <Text style={[styles.meta, { color: palette.gray500 }]}>Year: {item.publication_year || 'N/A'}</Text>
       <Text style={[styles.meta, { color: palette.gray500 }]}>Copies: {item.available_copies}/{item.total_copies || item.available_copies}</Text>
       <View style={styles.borrowerBlock}>
@@ -228,6 +232,7 @@ export default function ManageBooksScreen() {
         <View style={styles.formGap}>
           <StyledInput label="Title" placeholder="Book title" value={form.title} onChangeText={(v) => update('title', v)} />
           <StyledInput label="Author" placeholder="Author name" value={form.author} onChangeText={(v) => update('author', v)} />
+          <StyledInput label="ISBN" placeholder="ISBN" value={form.isbn} onChangeText={(v) => update('isbn', v)} />
           <StyledInput label="Category" placeholder="Category" value={form.category} onChangeText={(v) => update('category', v)} />
           <StyledInput label="Publication Year" placeholder="2026" keyboardType="numeric" value={form.publication_year} onChangeText={(v) => update('publication_year', v)} />
           <View style={styles.row}>
@@ -249,7 +254,13 @@ export default function ManageBooksScreen() {
             </Pressable>
           </View>
           <View style={styles.row}>
-            <StyledInput label="Barcode" placeholder="Barcode" value={form.barcodeString} onChangeText={(v) => update('barcodeString', v)} containerStyle={{ flex: 1 }} />
+            <StyledInput
+              label="Barcode (optional)"
+              placeholder="Auto-generated if left blank"
+              value={form.barcodeString}
+              onChangeText={(v) => update('barcodeString', v)}
+              containerStyle={{ flex: 1 }}
+            />
           </View>
           <View style={styles.actionRow}>
             {editingBookId ? <StyledButton title="Cancel Edit" variant="outline" onPress={resetForm} style={{ flex: 1 }} /> : null}

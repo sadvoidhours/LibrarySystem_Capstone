@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import Icon from '../components/Icon';
@@ -80,6 +81,8 @@ const isInactiveOverOneYear = (user) => {
 export default function ManageUsersScreen() {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
+  const { width } = useWindowDimensions();
+  const isCompact = width < 460;
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -307,10 +310,18 @@ export default function ManageUsersScreen() {
           </View>
 
           <View style={styles.userMeta}>
-            <Text style={[styles.userName, { color: palette.gray800 }]} numberOfLines={1}>
-              {item.name}
+            <Text
+              style={[styles.userName, isCompact && styles.userValueStack, { color: palette.gray800 }]}
+              numberOfLines={isCompact ? 0 : 1}
+              ellipsizeMode="tail"
+            >
+              {item.full_name || item.name}
             </Text>
-            <Text style={[styles.userEmail, { color: palette.gray500 }]} numberOfLines={1}>
+            <Text
+              style={[styles.userEmail, isCompact && styles.userValueStack, { color: palette.gray500 }]}
+              numberOfLines={isCompact ? 0 : 1}
+              ellipsizeMode="tail"
+            >
               {item.email}
             </Text>
             <View style={styles.tagRow}>
@@ -643,7 +654,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.lg,
     borderRadius: radii.xl,
-    backgroundColor: 'transparent',
   },
   heroRow: {
     flexDirection: 'row',
@@ -785,6 +795,10 @@ const styles = StyleSheet.create({
   },
   userEmail: {
     ...fonts.sm,
+  },
+  userValueStack: {
+    textAlign: 'left',
+    marginTop: 2,
   },
   tagRow: {
     flexDirection: 'row',

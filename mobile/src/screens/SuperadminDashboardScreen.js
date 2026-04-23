@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Icon from '../components/Icon';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
@@ -34,6 +34,8 @@ export default function SuperadminDashboardScreen({ navigation }) {
   const user = useSelector((state) => state.auth.user);
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
+  const { width } = useWindowDimensions();
+  const isCompact = width < 460;
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +68,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
   ]), [overview, palette]);
 
   const renderMetric = ({ item }) => (
-    <Card key={item.key} style={styles.metricCard}>
+    <Card key={item.key} style={[styles.metricCard, { backgroundColor: palette.surfaceAlt, borderColor: palette.gray100 }]}>
       <View style={styles.metricIcon}>
         <Icon name={item.icon} size={18} color={palette.white} />
       </View>
@@ -102,10 +104,18 @@ export default function SuperadminDashboardScreen({ navigation }) {
               </View>
               <View style={styles.profileCopy}>
                 <Text style={[styles.heroKicker, { color: palette.green }]}>Logged in as superadmin</Text>
-                <Text style={[styles.heroTitle, { color: palette.gray800 }]} numberOfLines={1}>
+                <Text
+                  style={[styles.heroTitle, isCompact && styles.compactText, { color: palette.gray800 }]}
+                  numberOfLines={isCompact ? 0 : 1}
+                  ellipsizeMode="tail"
+                >
                   {profileName}
                 </Text>
-                <Text style={[styles.heroText, { color: palette.gray500 }]} numberOfLines={1}>
+                <Text
+                  style={[styles.heroText, isCompact && styles.compactText, { color: palette.gray500 }]}
+                  numberOfLines={isCompact ? 0 : 1}
+                  ellipsizeMode="tail"
+                >
                   {profileEmail}
                 </Text>
               </View>
@@ -191,8 +201,20 @@ export default function SuperadminDashboardScreen({ navigation }) {
                   <Icon name="person" size={18} color={palette.chestnut} />
                 </View>
                 <View style={styles.listBody}>
-                  <Text style={[styles.listTitle, { color: palette.gray800 }]} numberOfLines={1}>{user.name}</Text>
-                  <Text style={[styles.listText, { color: palette.gray500 }]} numberOfLines={1}>{user.email}</Text>
+                  <Text
+                    style={[styles.listTitle, isCompact && styles.compactText, { color: palette.gray800 }]}
+                    numberOfLines={isCompact ? 0 : 1}
+                    ellipsizeMode="tail"
+                  >
+                    {user.full_name || user.name}
+                  </Text>
+                  <Text
+                    style={[styles.listText, isCompact && styles.compactText, { color: palette.gray500 }]}
+                    numberOfLines={isCompact ? 0 : 1}
+                    ellipsizeMode="tail"
+                  >
+                    {user.email}
+                  </Text>
                   <Text style={[styles.listMeta, { color: palette.gray500 }]}>
                     {user.role} • {user.verificationStatus}
                   </Text>
@@ -216,7 +238,11 @@ export default function SuperadminDashboardScreen({ navigation }) {
                 </View>
                 <View style={styles.listBody}>
                   <Text style={[styles.listTitle, { color: palette.gray800 }]} numberOfLines={1}>{log.action}</Text>
-                  <Text style={[styles.listText, { color: palette.gray500 }]} numberOfLines={1}>
+                  <Text
+                    style={[styles.listText, isCompact && styles.compactText, { color: palette.gray500 }]}
+                    numberOfLines={isCompact ? 0 : 1}
+                    ellipsizeMode="tail"
+                  >
                     {log.actorId?.name || log.actorId?.email || log.actorRole || 'System'}
                   </Text>
                   <Text style={[styles.listMeta, { color: palette.gray500 }]}>{new Date(log.createdAt).toLocaleString()}</Text>
@@ -293,6 +319,7 @@ const styles = StyleSheet.create({
   heroKicker: { ...fonts.xs, ...fonts.bold, textTransform: 'uppercase', letterSpacing: 0.8 },
   heroTitle: { ...fonts.lg, ...fonts.bold },
   heroText: { ...fonts.sm, lineHeight: 20 },
+  compactText: { textAlign: 'left', marginTop: 2 },
   pulseChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -312,10 +339,12 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 80,
     borderRadius: radii.lg,
-    padding: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     gap: 4,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
+    overflow: 'hidden',
   },
   heroSummaryValue: { ...fonts.lg, ...fonts.bold },
   heroSummaryLabel: { ...fonts.xs, ...fonts.semibold, textTransform: 'uppercase', letterSpacing: 0.5 },
@@ -336,13 +365,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     minWidth: 100,
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
-    backgroundColor: 'transparent',
-    ...shadows.sm,
+    overflow: 'hidden',
   },
   metricIcon: {
     width: 42,

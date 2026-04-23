@@ -37,14 +37,35 @@ const approveRejectValidation = [
 
 const scanBorrowValidation = [
   body('userBarcode').notEmpty(),
-  body('bookBarcode').notEmpty(),
+  body('bookIsbn').optional().notEmpty(),
+  body('bookBarcode').optional().notEmpty(),
   body('dueDays').optional().isInt({ min: 1, max: 60 })
 ];
 
 const scanReturnValidation = [
   body('userBarcode').notEmpty(),
-  body('bookBarcode').notEmpty()
+  body('bookIsbn').optional().notEmpty(),
+  body('bookBarcode').optional().notEmpty()
 ];
+
+const normalizeIsbn = (value) => String(value || '').replace(/[^0-9Xx]/g, '').trim();
+
+const resolveScannedBook = async (rawValue) => {
+  const normalized = String(rawValue || '').trim();
+  const normalizedIsbn = normalizeIsbn(normalized);
+
+  if (!normalized) {
+    return null;
+  }
+
+  return Book.findOne({
+    $or: [
+      { isbn: normalizedIsbn },
+      { isbn: normalized },
+      { barcodeString: normalized }
+    ]
+  });
+};
 
 const myBorrowings = asyncHandler(async (req, res) => {
   const borrowings = await Borrowing.find({ userId: req.user._id })
@@ -185,19 +206,19 @@ const rejectBorrow = asyncHandler(async (req, res) => {
 
 const scanBorrow = asyncHandler(async (req, res) => {
   const userBarcodeValue = String(req.body.userBarcode || '').trim();
-  const bookBarcodeValue = String(req.body.bookBarcode || '').trim();
+  const bookScanValue = String(req.body.bookIsbn || req.body.bookBarcode || '').trim();
   const { dueDays } = req.body;
   const resolvedDueDays = resolveDueDays(dueDays);
 
   const user = await User.findOne({ barcodeString: userBarcodeValue });
-  const book = await Book.findOne({ barcodeString: bookBarcodeValue });
+  const book = await resolveScannedBook(bookScanValue);
 
   if (!user) {
     return res.status(404).json({ message: 'User barcode not found' });
   }
 
   if (!book) {
-    return res.status(404).json({ message: 'Book barcode not found' });
+    return res.status(404).json({ message: 'Book ISBN not found' });
   }
 
   const existingBorrowing = await Borrowing.findOne({
@@ -269,17 +290,17 @@ const scanBorrow = asyncHandler(async (req, res) => {
 
 const scanReturn = asyncHandler(async (req, res) => {
   const userBarcodeValue = String(req.body.userBarcode || '').trim();
-  const bookBarcodeValue = String(req.body.bookBarcode || '').trim();
+  const bookScanValue = String(req.body.bookIsbn || req.body.bookBarcode || '').trim();
 
   const user = await User.findOne({ barcodeString: userBarcodeValue });
-  const book = await Book.findOne({ barcodeString: bookBarcodeValue });
+  const book = await resolveScannedBook(bookScanValue);
 
   if (!user) {
     return res.status(404).json({ message: 'User barcode not found' });
   }
 
   if (!book) {
-    return res.status(404).json({ message: 'Book barcode not found' });
+    return res.status(404).json({ message: 'Book ISBN not found' });
   }
 
   let borrowing = await Borrowing.findOne({

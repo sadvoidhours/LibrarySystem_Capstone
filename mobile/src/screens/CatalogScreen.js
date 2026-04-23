@@ -36,7 +36,7 @@ export default function CatalogScreen() {
 
   const filteredItems = items.filter((book) => {
     const matchesQuery = !q.trim()
-      || `${book.title} ${book.author} ${book.category}`.toLowerCase().includes(q.trim().toLowerCase());
+      || `${book.title} ${book.author} ${book.category} ${book.isbn || ''} ${book.barcodeString || ''}`.toLowerCase().includes(q.trim().toLowerCase());
     const matchesCategory = activeCategory === 'All' || book.category === activeCategory;
     const matchesAvailability =
       availability === 'all'
@@ -73,6 +73,7 @@ export default function CatalogScreen() {
           <Text style={[styles.bookTitle, { color: palette.gray800 }]} numberOfLines={2}>{item.title}</Text>
           <Text style={[styles.metaText, { color: palette.gray500 }]}>{item.author}</Text>
           <Text style={[styles.metaText, { color: palette.gray500 }]}>{item.category}</Text>
+          <Text style={[styles.metaText, { color: palette.gray500 }]}>ISBN: {item.isbn || 'N/A'}</Text>
           <Text style={[styles.metaText, { color: palette.gray500 }]}>Year: {item.publication_year || 'N/A'}</Text>
           <View style={styles.availRow}>
             <View

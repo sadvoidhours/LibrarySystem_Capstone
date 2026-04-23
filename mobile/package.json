@@ -37,6 +37,5 @@
     "react-native-screens": "~4.11.1",
     "react-native-web": "~0.20.0",
     "react-redux": "^9.2.0"
-  },
-  "devDependencies": {}
+  }
 }

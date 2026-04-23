@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
 import { useSelector } from 'react-redux';
 import { getThemePalette, radii, shadows, spacing } from '../theme/colors';
@@ -16,6 +17,7 @@ import { getThemePalette, radii, shadows, spacing } from '../theme/colors';
 export default function ResponsiveSidebarShell({ title, subtitle, initialRouteName, items }) {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isWide = width >= 980;
   const [activeRoute, setActiveRoute] = useState(initialRouteName);
@@ -81,21 +83,37 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
             compact={false}
           />
         ) : (
-          <View style={[styles.mobileTopBar, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
-            <Pressable onPress={() => setSidebarOpen(true)} style={styles.menuButton}>
-              <Icon name="menu" size={22} color={palette.gray800} />
-            </Pressable>
+          <View
+            style={[
+              styles.mobileTopBar,
+              {
+                backgroundColor: palette.surface,
+                borderColor: palette.gray100,
+                paddingHorizontal: width < 430 ? spacing.md : spacing.lg,
+                paddingTop: Math.max(spacing.md, insets.top + spacing.xs),
+              },
+            ]}
+          >
             <View style={styles.mobileTitleWrap}>
               <Text style={[styles.mobileTitle, { color: palette.gray800 }]} numberOfLines={1}>
                 {title}
               </Text>
             </View>
-            <Pressable onPress={() => setSidebarOpen(true)} style={[styles.currentRouteChip, { backgroundColor: palette.greenLight }]}>
+            <Pressable
+              onPress={() => setSidebarOpen(true)}
+              style={[
+                styles.currentRouteChip,
+                { backgroundColor: palette.greenLight, maxWidth: width < 430 ? '44%' : '52%' },
+              ]}
+            >
               {activeItem?.icon ? <Icon name={activeItem.icon} size={14} color={palette.chestnut} /> : null}
               <Text style={[styles.currentRouteText, { color: palette.chestnut }]} numberOfLines={1}>
                 {currentLabel}
               </Text>
               <Icon name="chevron-down" size={14} color={palette.chestnut} />
+            </Pressable>
+            <Pressable onPress={() => setSidebarOpen(true)} style={styles.menuButton}>
+              <Icon name="menu" size={22} color={palette.gray800} />
             </Pressable>
           </View>
         )}
@@ -109,7 +127,18 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
         <Modal transparent visible={sidebarOpen} animationType="fade" onRequestClose={() => setSidebarOpen(false)}>
           <View style={styles.modalBackdrop}>
             <Pressable style={styles.backdropPressable} onPress={() => setSidebarOpen(false)} />
-            <View style={[styles.mobileDrawer, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+            <View
+              style={[
+                styles.mobileDrawer,
+                {
+                  backgroundColor: palette.surface,
+                  borderColor: palette.gray100,
+                  width: Math.min(340, Math.max(280, Math.round(width * 0.86))),
+                  paddingTop: Math.max(spacing.md, insets.top),
+                  paddingBottom: Math.max(spacing.lg, insets.bottom + spacing.sm),
+                },
+              ]}
+            >
               <Sidebar
                 title={title}
                 subtitle={subtitle}
@@ -178,7 +207,6 @@ function Sidebar({ title, subtitle, items, activeRoute, palette, onNavigate, onC
                         compact && styles.sidebarItemCompact,
                         {
                           backgroundColor: active ? palette.greenLight : 'transparent',
-                          borderColor: active ? palette.chestnut : palette.gray100,
                         },
                       ]}
                     >
@@ -244,9 +272,11 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   mobileTitleWrap: {
     flex: 1,
+    minWidth: 0,
     gap: 2,
   },
   mobileTitle: {
@@ -263,10 +293,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 8,
     borderRadius: radii.full,
+    minWidth: 0,
+    flexShrink: 1,
   },
   currentRouteText: {
     fontSize: 12,
     fontWeight: '700',
+    flexShrink: 1,
   },
   content: {
     flex: 1,
@@ -276,16 +309,13 @@ const styles = StyleSheet.create({
   },
   sidebar: {
     width: 300,
-    borderRightWidth: 1,
     padding: spacing.lg,
     gap: spacing.lg,
     ...shadows.sm,
   },
   sidebarCompact: {
-    width: 300,
+    width: '100%',
     height: '100%',
-    borderRightWidth: 0,
-    borderLeftWidth: 0,
     borderRadius: 0,
   },
   sidebarHeader: {
@@ -342,7 +372,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     borderRadius: radii.xl,
-    borderWidth: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     minHeight: 72,
@@ -378,7 +407,6 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   sidebarFooter: {
-    borderTopWidth: 1,
     paddingTop: spacing.md,
     gap: spacing.sm,
   },
@@ -410,7 +438,6 @@ const styles = StyleSheet.create({
     width: '78%',
     maxWidth: 320,
     height: '100%',
-    borderRightWidth: 1,
     paddingBottom: spacing.lg,
   },
 });

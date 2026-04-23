@@ -13,7 +13,7 @@ export default function Card({ children, style, variant = 'default', onPress }) 
     styles.card,
     isMobile && styles.cardMobile,
     { backgroundColor: palette.surface, borderColor: palette.gray100 },
-    variant === 'outlined' && { backgroundColor: 'transparent', borderColor: palette.gray200 },
+    variant === 'outlined' && { backgroundColor: palette.surfaceAlt, borderColor: palette.gray200 },
     shadows.sm,
     style,
   ];
@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     padding: spacing.lg,
     borderWidth: 1,
+    overflow: 'hidden',
   },
   cardMobile: {
     padding: spacing.md,
