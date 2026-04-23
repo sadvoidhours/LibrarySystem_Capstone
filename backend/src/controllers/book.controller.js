@@ -1,5 +1,6 @@
 const { body } = require('express-validator');
 const crypto = require('crypto');
+const axios = require('axios');
 const Book = require('../models/Book');
 const asyncHandler = require('../utils/asyncHandler');
 
@@ -50,6 +51,71 @@ const parseCopyCount = (value, fallback) => {
 
 const normalizeIsbn = (value) => String(value || '').trim().replace(/[^0-9Xx]/g, '').toUpperCase();
 
+const pickFirst = (...values) => values.find((value) => value !== undefined && value !== null && String(value).trim() !== '') || '';
+
+const extractGoogleBookData = (item) => {
+  const volumeInfo = item?.volumeInfo || {};
+  const identifiers = Array.isArray(volumeInfo.industryIdentifiers) ? volumeInfo.industryIdentifiers : [];
+  const isbn = pickFirst(
+    identifiers.find((entry) => entry.type === 'ISBN_13')?.identifier,
+    identifiers.find((entry) => entry.type === 'ISBN_10')?.identifier,
+    volumeInfo.subtitle,
+  );
+
+  return {
+    title: pickFirst(volumeInfo.title),
+    author: Array.isArray(volumeInfo.authors) ? volumeInfo.authors.join(', ') : pickFirst(volumeInfo.authors),
+    isbn: normalizeIsbn(isbn),
+    category: Array.isArray(volumeInfo.categories) ? volumeInfo.categories[0] : pickFirst(volumeInfo.categories),
+    publication_year: volumeInfo.publishedDate ? Number(String(volumeInfo.publishedDate).slice(0, 4)) || null : null,
+    coverImageUrl: pickFirst(volumeInfo.imageLinks?.thumbnail, volumeInfo.imageLinks?.smallThumbnail),
+    backCoverImageUrl: ''
+  };
+};
+
+const extractOpenLibraryData = (data) => ({
+  title: pickFirst(data?.title),
+  author: Array.isArray(data?.authors) ? data.authors.map((author) => author?.name).filter(Boolean).join(', ') : '',
+  isbn: normalizeIsbn(Array.isArray(data?.identifiers?.isbn_13) ? data.identifiers.isbn_13[0] : Array.isArray(data?.identifiers?.isbn_10) ? data.identifiers.isbn_10[0] : ''),
+  category: Array.isArray(data?.subjects) ? data.subjects[0]?.name : '',
+  publication_year: data?.publish_date ? Number(String(data.publish_date).match(/\d{4}/)?.[0]) || null : null,
+  coverImageUrl: pickFirst(data?.cover?.large, data?.cover?.medium, data?.cover?.small),
+  backCoverImageUrl: ''
+});
+
+const lookupByIsbnWeb = async (isbn) => {
+  const normalizedIsbn = normalizeIsbn(isbn);
+
+  if (!normalizedIsbn) {
+    return null;
+  }
+
+  const googleUrl = `https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(normalizedIsbn)}&maxResults=1`;
+  const openLibraryUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${encodeURIComponent(normalizedIsbn)}&format=json&jscmd=data`;
+
+  try {
+    const { data } = await axios.get(googleUrl, { timeout: 8000 });
+    const item = data?.items?.[0];
+    if (item) {
+      return extractGoogleBookData(item);
+    }
+  } catch (error) {
+    // fallback below
+  }
+
+  try {
+    const { data } = await axios.get(openLibraryUrl, { timeout: 8000 });
+    const openLibraryItem = data?.[`ISBN:${normalizedIsbn}`];
+    if (openLibraryItem) {
+      return extractOpenLibraryData(openLibraryItem);
+    }
+  } catch (error) {
+    // fall through
+  }
+
+  return null;
+};
+
 const generateBookBarcode = (isbn) => {
   const normalizedIsbn = normalizeIsbn(isbn);
   const suffix = crypto.randomUUID().split('-')[0].toUpperCase();
@@ -97,6 +163,34 @@ const listBooks = asyncHandler(async (req, res) => {
   ]);
 
   return res.json({ items: items.map(normalizeBook), page: Number(page), limit: Number(limit), total });
+});
+
+const lookupBookByIsbn = asyncHandler(async (req, res) => {
+  const isbn = normalizeIsbn(req.query.isbn || req.body.isbn);
+
+  if (!isbn) {
+    return res.status(400).json({ message: 'ISBN is required' });
+  }
+
+  const existingBook = await Book.findOne({ isbn }).lean();
+  if (existingBook) {
+    return res.json({
+      source: 'library',
+      book: normalizeBook(existingBook),
+      found: true
+    });
+  }
+
+  const webBook = await lookupByIsbnWeb(isbn);
+  if (!webBook) {
+    return res.status(404).json({ message: 'No book details found for that ISBN' });
+  }
+
+  return res.json({
+    source: 'web',
+    book: webBook,
+    found: true
+  });
 });
 
 const createBook = asyncHandler(async (req, res) => {
@@ -169,6 +263,7 @@ module.exports = {
   createBookValidation,
   updateBookValidation,
   listBooks,
+  lookupBookByIsbn,
   createBook,
   updateBook,
   deleteBook

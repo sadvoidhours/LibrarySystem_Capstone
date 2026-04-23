@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Image, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
@@ -21,6 +22,11 @@ export default function ManageBooksScreen() {
   const [editingBookId, setEditingBookId] = useState(null);
   const [frontCoverLoading, setFrontCoverLoading] = useState(false);
   const [backCoverLoading, setBackCoverLoading] = useState(false);
+  const [isbnScannerVisible, setIsbnScannerVisible] = useState(false);
+  const [scanStatus, setScanStatus] = useState('Ready to scan ISBN barcode.');
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const scanLockRef = useRef(false);
   const [form, setForm] = useState({
     title: '',
     author: '',
@@ -36,6 +42,8 @@ export default function ManageBooksScreen() {
 
   const resetForm = () => {
     setEditingBookId(null);
+    setIsbnScannerVisible(false);
+    scanLockRef.current = false;
     setForm({
       title: '',
       author: '',
@@ -87,6 +95,80 @@ export default function ManageBooksScreen() {
   };
 
   const update = (key, value) => setForm((p) => ({ ...p, [key]: value }));
+
+  const applyLookupData = (bookData) => {
+    if (!bookData) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      title: bookData.title || current.title,
+      author: bookData.author || current.author,
+      isbn: bookData.isbn || current.isbn,
+      category: bookData.category || current.category,
+      publication_year: bookData.publication_year ? String(bookData.publication_year) : current.publication_year,
+      coverImageUrl: bookData.coverImageUrl || current.coverImageUrl,
+      backCoverImageUrl: bookData.backCoverImageUrl || current.backCoverImageUrl,
+      barcodeString: bookData.barcodeString || current.barcodeString,
+    }));
+  };
+
+  const lookupBookDetails = async (isbnValue) => {
+    const normalizedIsbn = String(isbnValue || '').trim();
+
+    if (!normalizedIsbn) {
+      Alert.alert('Missing ISBN', 'Enter or scan an ISBN first.');
+      return;
+    }
+
+    try {
+      setLookupLoading(true);
+      const { data } = await api.get('/books/lookup', { params: { isbn: normalizedIsbn } });
+      applyLookupData(data.book);
+      setScanStatus(`Details loaded from ${data.source === 'library' ? 'library records' : 'web search'}.`);
+    } catch (error) {
+      Alert.alert('Lookup failed', error.response?.data?.message || 'Unable to find book details for that ISBN');
+      setScanStatus('No details found for that ISBN yet.');
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
+  const enableIsbnScanner = async () => {
+    if (!permission?.granted) {
+      const response = await requestPermission();
+      if (!response.granted) {
+        Alert.alert('Permission needed', 'Please allow camera access to scan the book barcode.');
+        return;
+      }
+    }
+
+    scanLockRef.current = false;
+    setScanStatus('Scanning ISBN barcode...');
+    setIsbnScannerVisible(true);
+  };
+
+  const handleIsbnScan = ({ data }) => {
+    if (scanLockRef.current) {
+      return;
+    }
+
+    scanLockRef.current = true;
+    const scannedValue = String(data || '').trim();
+
+    if (scannedValue) {
+      update('isbn', scannedValue);
+      setScanStatus(`ISBN captured: ${scannedValue}`);
+      lookupBookDetails(scannedValue).catch(() => null);
+    }
+
+    setIsbnScannerVisible(false);
+
+    setTimeout(() => {
+      scanLockRef.current = false;
+    }, 600);
+  };
 
   const booksWithBorrowers = useMemo(() => {
     return books.map((book) => {
@@ -232,7 +314,24 @@ export default function ManageBooksScreen() {
         <View style={styles.formGap}>
           <StyledInput label="Title" placeholder="Book title" value={form.title} onChangeText={(v) => update('title', v)} />
           <StyledInput label="Author" placeholder="Author name" value={form.author} onChangeText={(v) => update('author', v)} />
-          <StyledInput label="ISBN" placeholder="ISBN" value={form.isbn} onChangeText={(v) => update('isbn', v)} />
+          <View style={styles.isbnRow}>
+            <StyledInput
+              label="ISBN"
+              placeholder="Scan or type ISBN"
+              value={form.isbn}
+              onChangeText={(v) => update('isbn', v)}
+              containerStyle={{ flex: 1 }}
+            />
+            <StyledButton title="Scan" variant="outlineGreen" small onPress={enableIsbnScanner} style={styles.scanButton} />
+            <StyledButton
+              title={lookupLoading ? 'Searching...' : 'Auto-fill'}
+              variant="success"
+              small
+              onPress={() => lookupBookDetails(form.isbn)}
+              style={styles.scanButton}
+              loading={lookupLoading}
+            />
+          </View>
           <StyledInput label="Category" placeholder="Category" value={form.category} onChangeText={(v) => update('category', v)} />
           <StyledInput label="Publication Year" placeholder="2026" keyboardType="numeric" value={form.publication_year} onChangeText={(v) => update('publication_year', v)} />
           <View style={styles.row}>
@@ -266,6 +365,7 @@ export default function ManageBooksScreen() {
             {editingBookId ? <StyledButton title="Cancel Edit" variant="outline" onPress={resetForm} style={{ flex: 1 }} /> : null}
             <StyledButton title={editingBookId ? 'Save Changes' : 'Add Book'} onPress={addBook} style={{ flex: 1 }} />
           </View>
+          <Text style={[styles.scanHint, { color: palette.gray500 }]}>{scanStatus}</Text>
         </View>
       </Card>
     </>
@@ -285,6 +385,34 @@ export default function ManageBooksScreen() {
             ListHeaderComponent={renderHeader}
             ListEmptyComponent={<EmptyState icon="book-outline" message="No books in catalog." />}
           />
+
+          <Modal visible={isbnScannerVisible} transparent animationType="fade" onRequestClose={() => setIsbnScannerVisible(false)}>
+            <Pressable style={styles.scannerBackdrop} onPress={() => setIsbnScannerVisible(false)}>
+              <Pressable onPress={() => null} style={[styles.scannerCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+                <Text style={[styles.scannerTitle, { color: palette.gray800 }]}>Scan ISBN Barcode</Text>
+                <Text style={[styles.scannerSubtitle, { color: palette.gray500 }]}>Point the camera at the ISBN barcode on the book cover.</Text>
+
+                <View style={styles.scannerPreview}>
+                  <CameraView
+                    style={StyleSheet.absoluteFillObject}
+                    facing="back"
+                    barcodeScannerSettings={{
+                      barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'qr'],
+                    }}
+                    onBarcodeScanned={handleIsbnScan}
+                  />
+                  <View style={styles.scannerOverlay}>
+                    <ActivityIndicator color={palette.white} />
+                    <Text style={styles.scannerOverlayText}>Scanning ISBN...</Text>
+                  </View>
+                </View>
+
+                <View style={styles.scannerActions}>
+                  <StyledButton title="Close" variant="outline" onPress={() => setIsbnScannerVisible(false)} style={{ flex: 1 }} />
+                </View>
+              </Pressable>
+            </Pressable>
+          </Modal>
       </View>
     </KeyboardAvoidingView>
   );
@@ -296,7 +424,10 @@ const createStyles = (p) => StyleSheet.create({
   sectionTitle: { ...fonts.base, ...fonts.bold, marginBottom: spacing.sm },
   formGap: { gap: spacing.md },
   row: { flexDirection: 'row', gap: spacing.sm },
+  isbnRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-end' },
+  scanButton: { minWidth: 92 },
   actionRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
+  scanHint: { ...fonts.xs, lineHeight: 16 },
   list: { gap: spacing.sm, paddingBottom: spacing.lg, paddingHorizontal: spacing.lg },
   listView: { flex: 1 },
   bookCard: { padding: spacing.md, gap: spacing.xs },
@@ -328,5 +459,52 @@ const createStyles = (p) => StyleSheet.create({
   },
   borrowerText: {
     ...fonts.sm,
+  },
+  scannerBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    padding: spacing.lg,
+    justifyContent: 'center',
+  },
+  scannerCard: {
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
+  scannerTitle: {
+    ...fonts.lg,
+    ...fonts.bold,
+  },
+  scannerSubtitle: {
+    ...fonts.sm,
+    lineHeight: 20,
+  },
+  scannerPreview: {
+    height: 280,
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    backgroundColor: '#000000',
+  },
+  scannerOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    alignItems: 'center',
+    gap: 6,
+  },
+  scannerOverlayText: {
+    ...fonts.sm,
+    ...fonts.semibold,
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  scannerActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
 });
