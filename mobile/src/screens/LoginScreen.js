@@ -68,7 +68,7 @@ export default function LoginScreen({ navigation }) {
           <Card style={styles.form}>
             <StyledInput
               label="Email"
-              placeholder="jabellino@paterostechnologicalcollege.edu.ph"
+              placeholder="name@ptc.edu.ph"
               autoCapitalize="none"
               keyboardType="email-address"
               value={email}

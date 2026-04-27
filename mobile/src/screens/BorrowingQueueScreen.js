@@ -439,13 +439,13 @@ export default function BorrowingQueueScreen() {
             <Text style={[styles.modalText, { color: palette.gray500 }]}>Borrower: {selectedBorrowing?.userId?.name || 'N/A'}</Text>
             {actionMode === 'approve' ? (
               <>
-                <StyledInput label="Due days" value={dueDays} onChangeText={setDueDays} keyboardType="numeric" placeholder="7" />
-                <StyledInput label="Remarks" value={remarks} onChangeText={setRemarks} placeholder="Optional notes" multiline />
+                  <StyledInput label="Due days" value={dueDays} onChangeText={setDueDays} keyboardType="numeric" placeholder="7" />
+                  <StyledInput label="Remarks" value={remarks} onChangeText={setRemarks} placeholder="Notes (optional)" multiline />
               </>
             ) : null}
 
             {actionMode === 'reject' ? (
-              <StyledInput label="Remarks" value={remarks} onChangeText={setRemarks} placeholder="Optional rejection notes" multiline />
+              <StyledInput label="Remarks" value={remarks} onChangeText={setRemarks} placeholder="Rejection notes (optional)" multiline />
             ) : null}
 
             {actionMode === 'payment' ? (

@@ -8,6 +8,7 @@ export default function StyledInput({ label, error, style, containerStyle, ...pr
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
   const borderAnim = useRef(new Animated.Value(0)).current;
+  const inputTextColor = themeMode === 'dark' ? palette.white : palette.gray800;
 
   const animateFocus = (toValue) => {
     Animated.timing(borderAnim, {
@@ -36,10 +37,13 @@ export default function StyledInput({ label, error, style, containerStyle, ...pr
         <TextInput
           style={[
             styles.input,
-            { color: palette.gray800 },
+            { color: inputTextColor },
             style,
           ]}
-          placeholderTextColor={palette.gray400}
+          placeholderTextColor={themeMode === 'dark' ? palette.gray400 : palette.gray500}
+          selectionColor={palette.green}
+          cursorColor={palette.green}
+          textAlignVertical="center"
           onFocus={(e) => {
             setFocused(true);
             animateFocus(1);
@@ -73,10 +77,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   input: {
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     ...fonts.base,
-    minHeight: 48,
+    height: 52,
+    fontSize: 16,
+    lineHeight: 22,
+    ...fonts.medium,
   },
   errorText: {
     ...fonts.xs,

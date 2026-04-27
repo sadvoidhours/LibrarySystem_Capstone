@@ -236,7 +236,7 @@ export default function ManageAdminsScreen() {
         <View style={styles.formGrid}>
           <StyledInput
             label="Full Name"
-            placeholder="Admin name"
+            placeholder="Name"
             value={form.name}
             onChangeText={(value) => updateForm('name', value)}
           />
@@ -250,7 +250,7 @@ export default function ManageAdminsScreen() {
           />
           <StyledInput
             label="Password"
-            placeholder="Secure password"
+            placeholder="Password"
             secureTextEntry
             value={form.password}
             onChangeText={(value) => updateForm('password', value)}

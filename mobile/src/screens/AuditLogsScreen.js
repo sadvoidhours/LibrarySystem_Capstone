@@ -144,7 +144,7 @@ export default function AuditLogsScreen() {
 
       <StyledInput
         label="Search logs"
-        placeholder="Action, role, or keyword"
+        placeholder="Filter logs"
         value={search}
         onChangeText={setSearch}
       />

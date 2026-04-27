@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Image,
   Modal,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,10 +11,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../store/slices/authSlice';
 import { getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
 export default function ResponsiveSidebarShell({ title, subtitle, initialRouteName, items }) {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
   const insets = useSafeAreaInsets();
@@ -65,11 +68,15 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
     [navigate]
   );
 
+  const handleLogout = useCallback(() => {
+    dispatch(logout());
+  }, [dispatch]);
+
   const ActiveScreen = activeItem?.component;
   const currentLabel = activeItem?.label || activeItem?.name || title;
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
+    <View style={[styles.safe, { backgroundColor: palette.background }]}>
       <View style={[styles.shell, isWide && styles.shellWide]}>
         {isWide ? (
           <Sidebar
@@ -78,7 +85,9 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
             items={items}
             activeRoute={activeItem?.name}
             palette={palette}
+            user={user}
             onNavigate={navigate}
+            onLogout={handleLogout}
             onClose={() => null}
             compact={false}
           />
@@ -134,8 +143,8 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
                   backgroundColor: palette.surface,
                   borderColor: palette.gray100,
                   width: Math.min(340, Math.max(280, Math.round(width * 0.86))),
-                  paddingTop: Math.max(spacing.md, insets.top),
-                  paddingBottom: Math.max(spacing.lg, insets.bottom + spacing.sm),
+                  paddingTop: Math.max(spacing.md, insets.top + spacing.xs),
+                  paddingBottom: Math.max(spacing.lg, insets.bottom + spacing.md),
                 },
               ]}
             >
@@ -145,7 +154,9 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
                 items={items}
                 activeRoute={activeItem?.name}
                 palette={palette}
+                user={user}
                 onNavigate={navigate}
+                onLogout={handleLogout}
                 onClose={() => setSidebarOpen(false)}
                 compact
               />
@@ -153,11 +164,11 @@ export default function ResponsiveSidebarShell({ title, subtitle, initialRouteNa
           </View>
         </Modal>
       ) : null}
-    </SafeAreaView>
+    </View>
   );
 }
 
-function Sidebar({ title, subtitle, items, activeRoute, palette, onNavigate, onClose, compact }) {
+function Sidebar({ title, subtitle, user, items, activeRoute, palette, onNavigate, onLogout, onClose, compact }) {
   const sections = items.reduce((accumulator, item) => {
     const sectionName = item.section || 'Menu';
     if (!accumulator[sectionName]) {
@@ -170,18 +181,19 @@ function Sidebar({ title, subtitle, items, activeRoute, palette, onNavigate, onC
   return (
     <View style={[styles.sidebar, compact && styles.sidebarCompact, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
       <View style={styles.sidebarHeader}>
-        <View style={[styles.brandMark, { backgroundColor: palette.chestnut }]}>
-          <Icon name="library" size={20} color={palette.white} />
+        <View style={[styles.brandMark, { backgroundColor: palette.chestnut + '14', borderColor: palette.gray100 }]}>
+          {user?.profileImageUrl ? (
+            <Image source={{ uri: user.profileImageUrl }} style={styles.brandImage} />
+          ) : (
+            <Text style={[styles.brandInitial, { color: palette.chestnut }]} numberOfLines={1}>
+              {(user?.full_name || user?.name || 'A')[0]?.toUpperCase()}
+            </Text>
+          )}
         </View>
         <View style={styles.brandCopy}>
           <Text style={[styles.sidebarTitle, { color: palette.gray800 }]} numberOfLines={1}>
-            {title}
+            {user?.full_name || user?.name || 'Account'}
           </Text>
-          {subtitle ? (
-            <Text style={[styles.sidebarSubtitle, { color: palette.gray500 }]} numberOfLines={2}>
-              {subtitle}
-            </Text>
-          ) : null}
         </View>
         {!compact ? null : (
           <Pressable onPress={onClose} style={styles.closeButton}>
@@ -238,12 +250,21 @@ function Sidebar({ title, subtitle, items, activeRoute, palette, onNavigate, onC
       {compact ? (
         <View style={[styles.sidebarFooter, { borderTopColor: palette.gray100 }]}>
           <Text style={[styles.sidebarFooterText, { color: palette.gray500 }]}>Tap a section to switch screens</Text>
-          <Pressable onPress={onClose} style={[styles.closeDrawerButton, { backgroundColor: palette.chestnut }]}>
-            <Icon name="close" size={16} color={palette.white} />
-            <Text style={[styles.closeDrawerText, { color: palette.white }]}>Close</Text>
+          <View style={styles.sidebarFooterActions}>
+            <Pressable onPress={onLogout} style={[styles.logoutButton, { backgroundColor: palette.redLight }]}>
+              <Icon name="log-out" size={16} color={palette.red} />
+              <Text style={[styles.logoutButtonText, { color: palette.red }]}>Logout</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <View style={[styles.sidebarFooter, { borderTopColor: palette.gray100 }]}>
+          <Pressable onPress={onLogout} style={[styles.logoutButtonWide, { backgroundColor: palette.redLight }]}>
+            <Icon name="log-out" size={16} color={palette.red} />
+            <Text style={[styles.logoutButtonText, { color: palette.red }]}>Logout</Text>
           </Pressable>
         </View>
-      ) : null}
+      )}
     </View>
   );
 }
@@ -329,6 +350,16 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  brandImage: {
+    width: '100%',
+    height: '100%',
+  },
+  brandInitial: {
+    fontSize: 16,
+    fontWeight: '700',
   },
   brandCopy: {
     flex: 1,
@@ -338,10 +369,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-  sidebarSubtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-  },
   closeButton: {
     width: 36,
     height: 36,
@@ -350,10 +377,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sidebarListWrap: {
-    paddingBottom: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
   },
   sidebarList: {
     gap: spacing.md,
+  },
+  sidebarFooter: {
+    gap: spacing.sm,
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+  },
+  sidebarFooterActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+  },
+  logoutButton: {
+    flex: 1,
+    minWidth: 120,
+    height: 40,
+    borderRadius: radii.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  logoutButtonWide: {
+    height: 42,
+    borderRadius: radii.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  logoutButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   sectionGroup: {
     gap: spacing.sm,

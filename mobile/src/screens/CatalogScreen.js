@@ -132,7 +132,7 @@ export default function CatalogScreen() {
       <View style={[styles.searchCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
         <View style={styles.searchRow}>
           <StyledInput
-            placeholder="Search title, author, or category..."
+            placeholder="Search books"
             value={q}
             onChangeText={setQ}
             containerStyle={{ flex: 1 }}

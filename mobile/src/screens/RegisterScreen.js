@@ -79,7 +79,7 @@ export default function RegisterScreen({ navigation }) {
 
           <Card style={styles.form}>
             <StyledInput label="Full Name" placeholder="Juan dela Cruz" value={form.name} onChangeText={(v) => update('name', v)} />
-            <StyledInput label="Email" placeholder="jabellino@paterostechnologicalcollege.edu.ph" autoCapitalize="none" keyboardType="email-address" value={form.email} onChangeText={(v) => update('email', v)} />
+            <StyledInput label="Email" placeholder="name@ptc.edu.ph" autoCapitalize="none" keyboardType="email-address" value={form.email} onChangeText={(v) => update('email', v)} />
             <StyledInput label="Mobile Number" placeholder="09XXXXXXXXX" keyboardType="phone-pad" value={form.phone} onChangeText={(v) => update('phone', v)} />
             <StyledInput label="Student ID Number" placeholder="20XX-XXXXX" value={form.studentIdNumber} onChangeText={(v) => update('studentIdNumber', v)} />
             <StyledInput label="Password" placeholder="Min. 6 characters" secureTextEntry value={form.password} onChangeText={(v) => update('password', v)} />

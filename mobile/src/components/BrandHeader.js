@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSelector } from 'react-redux';
-import { fonts, getThemePalette, radii, spacing } from '../theme/colors';
+import { fonts, getThemePalette, radii, spacing, shadows } from '../theme/colors';
 
 export default function BrandHeader({ title, subtitle, avatarUri }) {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
@@ -36,8 +36,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     marginBottom: spacing.lg,
     padding: spacing.md,
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     borderWidth: 1,
+    ...shadows.md,
   },
   wrapperMobile: {
     padding: spacing.sm,

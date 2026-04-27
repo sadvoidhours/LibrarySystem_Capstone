@@ -439,7 +439,7 @@ export default function ManageUsersScreen() {
 
       <StyledInput
         label="Search accounts"
-        placeholder="Name, email, or student ID"
+        placeholder="Name, email, or ID"
         value={search}
         onChangeText={setSearch}
       />

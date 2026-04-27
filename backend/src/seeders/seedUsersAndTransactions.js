@@ -282,13 +282,18 @@ const run = async () => {
     );
     console.log(`Borrowings seeded: ${stats.borrowings}, Payments seeded: ${stats.payments}.`);
     console.log(`Default demo password for all seeded users: ${process.env.SEED_DEFAULT_PASSWORD || 'admin12345'}`);
-
-    process.exit(0);
+    process.exitCode = 0;
   } catch (error) {
     console.error('Failed to seed demo users and transactions:', error.message);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
-    await mongoose.connection.close();
+    try {
+      await mongoose.connection.close();
+    } catch (closeErr) {
+      console.error('Error closing mongoose connection:', closeErr);
+    }
+
+    process.exit(process.exitCode || 0);
   }
 };
 

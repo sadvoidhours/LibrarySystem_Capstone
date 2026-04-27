@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/client';
 import { logout } from '../store/slices/authSlice';
@@ -13,6 +14,7 @@ export default function AdminDashboardScreen({ navigation }) {
   const dispatch = useDispatch();
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState(null);
   const chartItems = useMemo(() => ([
     { label: 'Books', value: stats?.totalBooks || 0, color: palette.blue },
@@ -26,7 +28,17 @@ export default function AdminDashboardScreen({ navigation }) {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor: palette.background }]} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.scroll,
+        {
+          backgroundColor: palette.background,
+          paddingTop: insets.top + spacing.sm,
+          paddingBottom: insets.bottom + spacing.lg,
+        },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={[styles.container, baseStyles.webCenter]}>
         <BrandHeader title="Admin Dashboard" subtitle="Librarian operations overview" />
 

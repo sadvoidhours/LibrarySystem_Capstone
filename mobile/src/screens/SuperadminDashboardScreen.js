@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from '../components/Icon';
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
@@ -36,6 +37,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
   const palette = getThemePalette(themeMode);
   const { width } = useWindowDimensions();
   const isCompact = width < 460;
+  const insets = useSafeAreaInsets();
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +60,6 @@ export default function SuperadminDashboardScreen({ navigation }) {
   const recentUsers = overview?.recentUsers || [];
   const recentLogs = overview?.recentAuditLogs || [];
   const profileName = user?.full_name || user?.name || user?.email || 'Account';
-  const profileEmail = user?.email || user?.phone || '';
   const profileInitial = (profileName[0] || 'A').toUpperCase();
   const chartItems = useMemo(() => ([
     { label: 'Students', value: overview?.studentUsers ?? 0, color: palette.green },
@@ -88,7 +89,17 @@ export default function SuperadminDashboardScreen({ navigation }) {
   );
 
   return (
-    <ScrollView contentContainerStyle={[styles.scroll, { backgroundColor: palette.background }]} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.scroll,
+        {
+          backgroundColor: palette.background,
+          paddingTop: insets.top + spacing.sm,
+          paddingBottom: insets.bottom + spacing.lg,
+        },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={[styles.container, baseStyles.webCenter]}>
         <BrandHeader title="Superadmin Control Center" subtitle="Govern users, staff, and system activity" />
 
@@ -110,13 +121,6 @@ export default function SuperadminDashboardScreen({ navigation }) {
                   ellipsizeMode="tail"
                 >
                   {profileName}
-                </Text>
-                <Text
-                  style={[styles.heroText, isCompact && styles.compactText, { color: palette.gray500 }]}
-                  numberOfLines={isCompact ? 0 : 1}
-                  ellipsizeMode="tail"
-                >
-                  {profileEmail}
                 </Text>
               </View>
             </View>
@@ -207,13 +211,6 @@ export default function SuperadminDashboardScreen({ navigation }) {
                     ellipsizeMode="tail"
                   >
                     {user.full_name || user.name}
-                  </Text>
-                  <Text
-                    style={[styles.listText, isCompact && styles.compactText, { color: palette.gray500 }]}
-                    numberOfLines={isCompact ? 0 : 1}
-                    ellipsizeMode="tail"
-                  >
-                    {user.email}
                   </Text>
                   <Text style={[styles.listMeta, { color: palette.gray500 }]}>
                     {user.role} • {user.verificationStatus}

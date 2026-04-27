@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
@@ -49,7 +49,7 @@ export default function StyledButton({
           small && styles.small,
           { backgroundColor: v.bg },
           v.border && { borderWidth: 1.5, borderColor: v.border },
-          v.shadow === false ? null : shadows.sm,
+          v.shadow === false ? null : shadows.md,
           isDisabled && styles.disabled,
         ]}
         onPress={onPress}
@@ -61,7 +61,7 @@ export default function StyledButton({
           <ActivityIndicator color={v.text} size="small" />
         ) : (
           <>
-            {icon || null}
+            {icon ? <View style={{ marginRight: spacing.sm }}>{icon}</View> : null}
             <Text style={[styles.text, small && styles.smallText, { color: v.text }]}>{title}</Text>
           </>
         )}

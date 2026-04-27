@@ -12,7 +12,7 @@ export default function StatCard({ icon, iconColor, label, value, accentBg, styl
   const resolvedIconColor = iconColor || palette.chestnut;
 
   return (
-    <View style={[styles.card, isMobile && styles.cardMobile, { backgroundColor: palette.surface, borderColor: palette.gray100 }, shadows.sm, accentBg && { backgroundColor: accentBg }, style]}>
+    <View style={[styles.card, isMobile && styles.cardMobile, { backgroundColor: palette.surface, borderColor: palette.gray100 }, shadows.md, accentBg && { backgroundColor: accentBg }, style]}>
       <View style={[styles.iconWrap, isMobile && styles.iconWrapMobile, { backgroundColor: resolvedIconColor }]}>
         <Icon name={icon || 'stats-chart'} size={isMobile ? 18 : 22} color={palette.white} />
       </View>

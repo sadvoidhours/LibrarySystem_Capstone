@@ -9,6 +9,7 @@ import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import StatCard from '../components/StatCard';
 import StyledButton from '../components/StyledButton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const QUICK_ACTIONS = [
   { key: 'catalog', title: 'Browse Catalog', icon: 'book', screen: 'Catalog' },
@@ -49,9 +50,12 @@ const getFirstName = (user) => {
 const buildCalendarDays = (date) =>
   Array.from({ length: 7 }, (_, index) => {
     const day = new Date(date);
-    day.setDate(date.getDate() + index - 3);
+    const mondayOffset = (date.getDay() + 6) % 7;
+    day.setDate(date.getDate() - mondayOffset + index);
     return day;
   });
+
+const CALENDAR_WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 export default function UserDashboardScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -60,6 +64,7 @@ export default function UserDashboardScreen({ navigation }) {
   const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
   const styles = useMemo(() => createStyles(palette), [palette]);
   const STATUS_META = useMemo(() => getStatusMeta(palette), [palette]);
+  const insets = useSafeAreaInsets();
 
   const [stats, setStats] = useState({ totalBorrowed: 0, active: 0, overdue: 0 });
   const [barcode, setBarcode] = useState({ code: '', qrDataUrl: '' });
@@ -121,7 +126,14 @@ export default function UserDashboardScreen({ navigation }) {
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.scroll, { backgroundColor: palette.background }]}
+      contentContainerStyle={[
+        styles.scroll,
+        {
+          backgroundColor: palette.background,
+          paddingTop: insets.top + spacing.sm,
+          paddingBottom: insets.bottom + spacing.lg,
+        },
+      ]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={palette.green} />}
     >
       <View style={[styles.container, baseStyles.webCenter]}>
@@ -312,9 +324,16 @@ export default function UserDashboardScreen({ navigation }) {
                   <Text style={[styles.calendarMonth, { color: palette.gray800 }]}>{calendarMonth}</Text>
                   <Text style={[styles.calendarHint, { color: palette.gray500 }]}>{currentDateLabel}</Text>
                 </View>
+                <View style={styles.calendarWeekRow}>
+                  {CALENDAR_WEEKDAYS.map((label) => (
+                    <Text key={label} style={[styles.calendarWeekLabel, { color: palette.gray500 }]}>
+                      {label}
+                    </Text>
+                  ))}
+                </View>
                 <View style={styles.calendarGrid}>
                   {calendarDays.map((day, index) => {
-                    const isToday = index === 3;
+                    const isToday = day.toDateString() === now.toDateString();
                     return (
                       <View
                         key={day.toISOString()}
@@ -325,7 +344,7 @@ export default function UserDashboardScreen({ navigation }) {
                         ]}
                       >
                         <Text style={[styles.calendarDayLabel, { color: isToday ? '#FFFFFF' : palette.gray500 }]}>
-                          {day.toLocaleDateString(undefined, { weekday: 'short' })}
+                          {CALENDAR_WEEKDAYS[index]}
                         </Text>
                         <Text style={[styles.calendarDayNumber, { color: isToday ? '#FFFFFF' : palette.gray800 }]}>
                           {day.getDate()}
@@ -358,20 +377,6 @@ export default function UserDashboardScreen({ navigation }) {
                     ellipsizeMode="tail"
                   >
                     {user?.full_name || user?.name || '-'}
-                  </Text>
-                </View>
-                <View style={[styles.profileRow, { borderBottomColor: palette.gray100 }]}>
-                  <Text style={[styles.profileLabel, { color: palette.gray500 }]}>Email</Text>
-                  <Text
-                    style={[
-                      styles.profileValue,
-                      isCompact && styles.profileValueStack,
-                      { color: palette.gray800 },
-                    ]}
-                    numberOfLines={isCompact ? 0 : 1}
-                    ellipsizeMode="tail"
-                  >
-                    {user?.email || '-'}
                   </Text>
                 </View>
                 <View style={[styles.profileRow, { borderBottomColor: palette.gray100 }]}>
@@ -656,24 +661,40 @@ const createStyles = (p) => StyleSheet.create({
   },
   calendarGrid: {
     flexDirection: 'row',
-    gap: spacing.xs,
-    flexWrap: 'wrap',
+    gap: 2,
+    flexWrap: 'nowrap',
   },
   calendarDay: {
     flex: 1,
-    minWidth: 32,
+    minWidth: 0,
     borderRadius: radii.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 4,
     alignItems: 'center',
     borderWidth: 1,
   },
+  calendarWeekRow: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  calendarWeekLabel: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 10,
+    lineHeight: 14,
+    ...fonts.semibold,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
   calendarDayLabel: {
-    ...fonts.xs,
+    fontSize: 10,
+    lineHeight: 14,
     ...fonts.semibold,
     textTransform: 'uppercase',
   },
   calendarDayNumber: {
-    ...fonts.base,
+    fontSize: 13,
+    lineHeight: 18,
     ...fonts.bold,
     marginTop: 2,
   },

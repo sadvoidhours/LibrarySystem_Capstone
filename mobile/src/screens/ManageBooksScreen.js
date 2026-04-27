@@ -312,8 +312,8 @@ export default function ManageBooksScreen() {
       <Card>
         <Text style={[styles.sectionTitle, { color: palette.gray700 }]}>{editingBookId ? 'Edit Book' : 'Add New Book'}</Text>
         <View style={styles.formGap}>
-          <StyledInput label="Title" placeholder="Book title" value={form.title} onChangeText={(v) => update('title', v)} />
-          <StyledInput label="Author" placeholder="Author name" value={form.author} onChangeText={(v) => update('author', v)} />
+          <StyledInput label="Title" placeholder="Title" value={form.title} onChangeText={(v) => update('title', v)} />
+          <StyledInput label="Author" placeholder="Author" value={form.author} onChangeText={(v) => update('author', v)} />
           <View style={styles.isbnRow}>
             <StyledInput
               label="ISBN"
@@ -355,7 +355,7 @@ export default function ManageBooksScreen() {
           <View style={styles.row}>
             <StyledInput
               label="Barcode (optional)"
-              placeholder="Auto-generated if left blank"
+              placeholder="Auto-generated"
               value={form.barcodeString}
               onChangeText={(v) => update('barcodeString', v)}
               containerStyle={{ flex: 1 }}
