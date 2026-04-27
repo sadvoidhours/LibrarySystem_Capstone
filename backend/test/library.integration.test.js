@@ -297,4 +297,91 @@ describe('Library system integrations', () => {
     const secondNotificationCount = await Notification.countDocuments({ userId: user._id });
     expect(secondNotificationCount).toBe(notificationCount);
   });
+
+  test('returns validation error for invalid route ObjectId params', async () => {
+    const admin = await createUser({
+      email: 'adminvalidation@paterostechnologicalcollege.edu.ph',
+      password: 'Password123!',
+      role: 'admin',
+      barcodeString: 'PTC-USER-9101'
+    });
+
+    const adminLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ email: admin.email, password: 'Password123!' });
+
+    expect(adminLogin.status).toBe(200);
+
+    const invalidApprove = await request(app)
+      .patch('/api/borrowings/not-a-valid-id/approve')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`)
+      .send({ dueDays: 7 });
+
+    expect(invalidApprove.status).toBe(400);
+    expect(invalidApprove.body.message).toMatch(/validation failed/i);
+  });
+
+  test('supports paginated responses for reports and payments', async () => {
+    const admin = await createUser({
+      email: 'adminpaging@paterostechnologicalcollege.edu.ph',
+      password: 'Password123!',
+      role: 'admin',
+      barcodeString: 'PTC-USER-9102'
+    });
+
+    const student = await createUser({
+      email: 'studentpaging@paterostechnologicalcollege.edu.ph',
+      password: 'Password123!',
+      role: 'student',
+      barcodeString: 'PTC-USER-9103'
+    });
+
+    const book = await Book.create({
+      title: 'Paging Book',
+      author: 'Library QA',
+      category: 'Testing',
+      total_copies: 1,
+      available_copies: 0,
+      barcodeString: 'PTC-FIL-9102'
+    });
+
+    const borrowing = await Borrowing.create({
+      userId: student._id,
+      bookId: book._id,
+      status: 'Returned',
+      penaltyAmount: 20,
+      borrow_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      due_date: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      return_date: new Date()
+    });
+
+    await Payment.create({
+      borrowingId: borrowing._id,
+      amount: 20,
+      payment_method: 'Cash',
+      recordedBy: admin._id
+    });
+
+    const adminLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ email: admin.email, password: 'Password123!' });
+
+    expect(adminLogin.status).toBe(200);
+
+    const paymentsResponse = await request(app)
+      .get('/api/payments?page=1&limit=1')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`);
+
+    expect(paymentsResponse.status).toBe(200);
+    expect(Array.isArray(paymentsResponse.body.items)).toBe(true);
+    expect(paymentsResponse.body.total).toBeGreaterThanOrEqual(1);
+
+    const borrowingsReport = await request(app)
+      .get('/api/reports/borrowings?page=1&limit=1')
+      .set('Authorization', `Bearer ${adminLogin.body.token}`);
+
+    expect(borrowingsReport.status).toBe(200);
+    expect(Array.isArray(borrowingsReport.body.items)).toBe(true);
+    expect(borrowingsReport.body.total).toBeGreaterThanOrEqual(1);
+  });
 });

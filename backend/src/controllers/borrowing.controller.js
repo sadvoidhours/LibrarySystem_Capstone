@@ -16,6 +16,17 @@ const createHttpError = (status, message) => {
   return error;
 };
 
+const runNonCriticalSideEffect = async (operationName, operation, meta = {}) => {
+  try {
+    await operation();
+  } catch (error) {
+    console.error(`[Borrowing] Non-critical side effect failed: ${operationName}`, {
+      message: error?.message,
+      ...meta
+    });
+  }
+};
+
 const resolveDueDays = (value) => {
   const parsed = Number.parseInt(value, 10);
 
@@ -99,12 +110,17 @@ const requestBorrow = asyncHandler(async (req, res) => {
     status: 'Pending'
   });
 
-  await logAudit({
-    actorId: req.user._id,
-    actorRole: req.user.role,
-    action: 'BORROW_REQUEST_CREATED',
-    metadata: { borrowingId: borrowing._id, bookId }
-  });
+  await runNonCriticalSideEffect(
+    'BORROW_REQUEST_CREATED_AUDIT',
+    () =>
+      logAudit({
+        actorId: req.user._id,
+        actorRole: req.user.role,
+        action: 'BORROW_REQUEST_CREATED',
+        metadata: { borrowingId: borrowing._id, bookId }
+      }),
+    { borrowingId: String(borrowing._id) }
+  );
 
   return res.status(201).json(borrowing);
 });
@@ -164,14 +180,23 @@ const approveBorrow = asyncHandler(async (req, res) => {
     session.endSession();
   }
 
-  await notifyUser(borrowing.userId, 'Your borrow request was approved.');
+  await runNonCriticalSideEffect(
+    'BORROW_REQUEST_APPROVED_NOTIFICATION',
+    () => notifyUser(borrowing.userId, 'Your borrow request was approved.'),
+    { borrowingId: String(borrowing._id) }
+  );
 
-  await logAudit({
-    actorId: req.user._id,
-    actorRole: req.user.role,
-    action: 'BORROW_REQUEST_APPROVED',
-    metadata: { borrowingId: borrowing._id }
-  });
+  await runNonCriticalSideEffect(
+    'BORROW_REQUEST_APPROVED_AUDIT',
+    () =>
+      logAudit({
+        actorId: req.user._id,
+        actorRole: req.user.role,
+        action: 'BORROW_REQUEST_APPROVED',
+        metadata: { borrowingId: borrowing._id }
+      }),
+    { borrowingId: String(borrowing._id) }
+  );
 
   return res.json(borrowing);
 });
@@ -192,14 +217,23 @@ const rejectBorrow = asyncHandler(async (req, res) => {
   borrowing.remarks = remarks;
   await borrowing.save();
 
-  await notifyUser(borrowing.userId, 'Your borrow request was rejected.');
+  await runNonCriticalSideEffect(
+    'BORROW_REQUEST_REJECTED_NOTIFICATION',
+    () => notifyUser(borrowing.userId, 'Your borrow request was rejected.'),
+    { borrowingId: String(borrowing._id) }
+  );
 
-  await logAudit({
-    actorId: req.user._id,
-    actorRole: req.user.role,
-    action: 'BORROW_REQUEST_REJECTED',
-    metadata: { borrowingId: borrowing._id }
-  });
+  await runNonCriticalSideEffect(
+    'BORROW_REQUEST_REJECTED_AUDIT',
+    () =>
+      logAudit({
+        actorId: req.user._id,
+        actorRole: req.user.role,
+        action: 'BORROW_REQUEST_REJECTED',
+        metadata: { borrowingId: borrowing._id }
+      }),
+    { borrowingId: String(borrowing._id) }
+  );
 
   return res.json(borrowing);
 });
@@ -276,14 +310,23 @@ const scanBorrow = asyncHandler(async (req, res) => {
     session.endSession();
   }
 
-  await notifyUser(user._id, `Book borrowed: ${book.title}. Due date assigned.`);
+  await runNonCriticalSideEffect(
+    'SCAN_BORROW_NOTIFICATION',
+    () => notifyUser(user._id, `Book borrowed: ${book.title}. Due date assigned.`),
+    { userId: String(user._id), bookId: String(book._id) }
+  );
 
-  await logAudit({
-    actorId: req.user._id,
-    actorRole: req.user.role,
-    action: 'SCAN_BORROW_EXECUTED',
-    metadata: { userId: user._id, bookId: book._id }
-  });
+  await runNonCriticalSideEffect(
+    'SCAN_BORROW_AUDIT',
+    () =>
+      logAudit({
+        actorId: req.user._id,
+        actorRole: req.user.role,
+        action: 'SCAN_BORROW_EXECUTED',
+        metadata: { userId: user._id, bookId: book._id }
+      }),
+    { userId: String(user._id), bookId: String(book._id) }
+  );
 
   return res.status(201).json(borrowing[0]);
 });
@@ -377,14 +420,23 @@ const scanReturn = asyncHandler(async (req, res) => {
       ? `Returned book: ${book.title}. Penalty incurred: ₱${penaltyAmount}.`
       : `Returned book: ${book.title}. No penalty.`;
 
-  await notifyUser(user._id, message);
+  await runNonCriticalSideEffect(
+    'SCAN_RETURN_NOTIFICATION',
+    () => notifyUser(user._id, message),
+    { userId: String(user._id), borrowingId: String(borrowing._id) }
+  );
 
-  await logAudit({
-    actorId: req.user._id,
-    actorRole: req.user.role,
-    action: 'SCAN_RETURN_EXECUTED',
-    metadata: { borrowingId: borrowing._id, penaltyAmount }
-  });
+  await runNonCriticalSideEffect(
+    'SCAN_RETURN_AUDIT',
+    () =>
+      logAudit({
+        actorId: req.user._id,
+        actorRole: req.user.role,
+        action: 'SCAN_RETURN_EXECUTED',
+        metadata: { borrowingId: borrowing._id, penaltyAmount }
+      }),
+    { borrowingId: String(borrowing._id) }
+  );
 
   return res.json({ borrowing, penaltyAmount });
 });

@@ -4,6 +4,7 @@ const User = require('../models/User');
 const { signToken } = require('../utils/jwt');
 const asyncHandler = require('../utils/asyncHandler');
 const { archiveUserRecord, isInactiveForOneYear } = require('../services/inactive-account.service');
+const { serializeUser } = require('../utils/serializers');
 
 const PTC_EMAIL_REGEX = /^[a-z]+@paterostechnologicalcollege\.edu\.ph$/;
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
@@ -56,19 +57,7 @@ const register = asyncHandler(async (req, res) => {
 
   return res.status(201).json({
     message: 'Registration submitted. Please wait for admin verification.',
-    user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      studentIdNumber: user.studentIdNumber,
-      role: user.role,
-      isVerified: user.isVerified,
-      verificationStatus: user.verificationStatus,
-      profileImageUrl: user.profileImageUrl,
-      themePreference: user.themePreference,
-      barcodeString: user.barcodeString
-    }
+    user: serializeUser(user)
   });
 });
 
@@ -112,20 +101,7 @@ const login = asyncHandler(async (req, res) => {
 
   return res.json({
     token,
-    user: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      studentIdNumber: user.studentIdNumber,
-      role: user.role,
-      isVerified: user.isVerified,
-      verificationStatus: user.verificationStatus,
-      profileImageUrl: user.profileImageUrl,
-      themePreference: user.themePreference,
-      lastActiveAt: user.lastActiveAt,
-      barcodeString: user.barcodeString
-    }
+    user: serializeUser(user)
   });
 });
 

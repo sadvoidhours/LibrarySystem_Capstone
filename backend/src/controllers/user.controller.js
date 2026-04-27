@@ -5,6 +5,7 @@ const Borrowing = require('../models/Borrowing');
 const QRCode = require('qrcode');
 const asyncHandler = require('../utils/asyncHandler');
 const { sendVerificationEmail, sendRejectionEmail } = require('../services/brevo.service');
+const { assertFound } = require('../utils/http');
 
 const touchUserActivity = async (userId) => {
   await User.updateOne({ _id: userId }, { $set: { lastActiveAt: new Date() } });
@@ -74,10 +75,7 @@ const changePasswordValidation = [
 const changePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
-  const user = await User.findById(req.user._id);
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+  const user = assertFound(await User.findById(req.user._id), 'User not found');
 
   const matches = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!matches) {
@@ -125,11 +123,7 @@ const listPendingUsers = asyncHandler(async (req, res) => {
 });
 
 const verifyUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id).select('-passwordHash');
-
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+  const user = assertFound(await User.findById(req.params.id).select('-passwordHash'), 'User not found');
 
   if (!['student', 'faculty'].includes(user.role)) {
     return res.status(400).json({ message: 'Only student/faculty accounts require verification' });
@@ -155,11 +149,7 @@ const verifyUser = asyncHandler(async (req, res) => {
 });
 
 const rejectUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id).select('-passwordHash');
-
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+  const user = assertFound(await User.findById(req.params.id).select('-passwordHash'), 'User not found');
 
   if (!['student', 'faculty'].includes(user.role)) {
     return res.status(400).json({ message: 'Only student/faculty accounts can be rejected' });

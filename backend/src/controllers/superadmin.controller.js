@@ -9,6 +9,8 @@ const AuditLog = require('../models/AuditLog');
 const { logAudit } = require('../services/audit.service');
 const asyncHandler = require('../utils/asyncHandler');
 const { sendArchiveEmail, sendRestoreEmail, sendTestEmail } = require('../services/brevo.service');
+const { resolvePagination, toBoundedInteger } = require('../utils/pagination');
+const { assertFound } = require('../utils/http');
 
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -88,16 +90,21 @@ const createAdmin = asyncHandler(async (req, res) => {
 });
 
 const getOverview = asyncHandler(async (req, res) => {
+  const activeUserFilter = { isArchived: { $ne: true } };
+  const [roleCountsAggregation, verificationCountsAggregation] = await Promise.all([
+    User.aggregate([{ $match: activeUserFilter }, { $group: { _id: '$role', count: { $sum: 1 } } }]),
+    User.aggregate([{ $match: activeUserFilter }, { $group: { _id: '$verificationStatus', count: { $sum: 1 } } }]),
+  ]);
+  const roleCounts = roleCountsAggregation.reduce((acc, item) => {
+    acc[item._id] = item.count;
+    return acc;
+  }, {});
+  const verificationCounts = verificationCountsAggregation.reduce((acc, item) => {
+    acc[item._id] = item.count;
+    return acc;
+  }, {});
+
   const [
-    totalUsers,
-    staffUsers,
-    studentUsers,
-    facultyUsers,
-    adminUsers,
-    superadminUsers,
-    verifiedUsers,
-    pendingUsers,
-    rejectedUsers,
     pendingApprovals,
     totalBooks,
     activeBorrowings,
@@ -107,15 +114,6 @@ const getOverview = asyncHandler(async (req, res) => {
     recentAuditLogs,
     recentUsers
   ] = await Promise.all([
-    User.countDocuments({ isArchived: { $ne: true } }),
-    User.countDocuments({ role: { $in: ['admin', 'superadmin'] }, isArchived: { $ne: true } }),
-    User.countDocuments({ role: { $in: ['student', 'faculty'] }, isArchived: { $ne: true } }),
-    User.countDocuments({ role: 'faculty', isArchived: { $ne: true } }),
-    User.countDocuments({ role: 'admin', isArchived: { $ne: true } }),
-    User.countDocuments({ role: 'superadmin', isArchived: { $ne: true } }),
-    User.countDocuments({ verificationStatus: 'verified', isArchived: { $ne: true } }),
-    User.countDocuments({ verificationStatus: 'pending', isArchived: { $ne: true } }),
-    User.countDocuments({ verificationStatus: 'rejected', isArchived: { $ne: true } }),
     User.countDocuments({ role: { $in: ['student', 'faculty'] }, verificationStatus: 'pending', isArchived: { $ne: true } }),
     Book.countDocuments(),
     Borrowing.countDocuments({ status: { $in: ['Active', 'Overdue'] } }),
@@ -127,15 +125,15 @@ const getOverview = asyncHandler(async (req, res) => {
   ]);
 
   return res.json({
-    totalUsers,
-    staffUsers,
-    studentUsers,
-    facultyUsers,
-    adminUsers,
-    superadminUsers,
-    verifiedUsers,
-    pendingUsers,
-    rejectedUsers,
+    totalUsers: (roleCounts.student || 0) + (roleCounts.faculty || 0) + (roleCounts.admin || 0) + (roleCounts.superadmin || 0),
+    staffUsers: (roleCounts.admin || 0) + (roleCounts.superadmin || 0),
+    studentUsers: (roleCounts.student || 0) + (roleCounts.faculty || 0),
+    facultyUsers: roleCounts.faculty || 0,
+    adminUsers: roleCounts.admin || 0,
+    superadminUsers: roleCounts.superadmin || 0,
+    verifiedUsers: verificationCounts.verified || 0,
+    pendingUsers: verificationCounts.pending || 0,
+    rejectedUsers: verificationCounts.rejected || 0,
     pendingApprovals,
     totalBooks,
     activeBorrowings,
@@ -148,9 +146,9 @@ const getOverview = asyncHandler(async (req, res) => {
 });
 
 const listUsers = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20, role = 'all', verificationStatus, search, sort = 'newest', archived } = req.query;
+  const { role = 'all', verificationStatus, search, sort = 'newest', archived } = req.query;
+  const { page, limit, skip } = resolvePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
   const filter = buildUserSearchFilter({ role, verificationStatus, search, archived });
-  const skip = (Number(page) - 1) * Number(limit);
 
   let sortQuery = { createdAt: -1 };
   if (sort === 'oldest') {
@@ -166,20 +164,19 @@ const listUsers = asyncHandler(async (req, res) => {
       .select('-passwordHash')
       .sort(sortQuery)
       .skip(skip)
-      .limit(Number(limit)),
+      .limit(limit),
     User.countDocuments(filter)
   ]);
 
-  return res.json({ items, page: Number(page), limit: Number(limit), total });
+  return res.json({ items, page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) });
 });
 
 const updateUserRole = asyncHandler(async (req, res) => {
   const { role } = req.body;
-  const updated = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-passwordHash');
-
-  if (!updated) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+  const updated = assertFound(
+    await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-passwordHash'),
+    'User not found'
+  );
 
   await logAudit({
     actorId: req.user._id,
@@ -192,11 +189,7 @@ const updateUserRole = asyncHandler(async (req, res) => {
 });
 
 const deleteBookRecord = asyncHandler(async (req, res) => {
-  const deleted = await Book.findByIdAndDelete(req.params.id);
-
-  if (!deleted) {
-    return res.status(404).json({ message: 'Book not found' });
-  }
+  const deleted = assertFound(await Book.findByIdAndDelete(req.params.id), 'Book not found');
 
   await logAudit({
     actorId: req.user._id,
@@ -219,9 +212,7 @@ const deleteUserRecord = asyncHandler(async (req, res) => {
     { new: true }
   ).select('-passwordHash');
 
-  if (!archived) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+  assertFound(archived, 'User not found');
 
   await logAudit({
     actorId: req.user._id,
@@ -246,9 +237,7 @@ const restoreUserRecord = asyncHandler(async (req, res) => {
     { new: true }
   ).select('-passwordHash');
 
-  if (!restored) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+  assertFound(restored, 'User not found');
 
   try {
     await sendRestoreEmail(restored);
@@ -267,8 +256,8 @@ const restoreUserRecord = asyncHandler(async (req, res) => {
 });
 
 const getAuditLogs = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20, actorRole, action, search, range = 'all' } = req.query;
-  const skip = (Number(page) - 1) * Number(limit);
+  const { actorRole, action, search, range = 'all' } = req.query;
+  const { page, limit, skip } = resolvePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
   const filter = {};
 
@@ -305,17 +294,19 @@ const getAuditLogs = asyncHandler(async (req, res) => {
   }
 
   const [items, total] = await Promise.all([
-    AuditLog.find(filter).populate('actorId', 'name email role').sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+    AuditLog.find(filter).populate('actorId', 'name email role').sort({ createdAt: -1 }).skip(skip).limit(limit),
     AuditLog.countDocuments(filter)
   ]);
 
-  return res.json({ items, page: Number(page), limit: Number(limit), total });
+  return res.json({ items, page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) });
 });
 
 const generateBookBarcodes = asyncHandler(async (req, res) => {
   const { bookIds = [] } = req.body;
-
-  const books = await Book.find({ _id: { $in: bookIds } });
+  const safeBookIds = Array.isArray(bookIds)
+    ? bookIds.slice(0, toBoundedInteger(bookIds.length, 0, { min: 0, max: 200 }))
+    : [];
+  const books = await Book.find({ _id: { $in: safeBookIds } });
 
   const results = await Promise.all(
     books.map(async (book) => {
