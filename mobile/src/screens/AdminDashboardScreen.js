@@ -87,14 +87,14 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: spacing.lg,
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   heroCard: {
     borderRadius: radii.xl,
     borderWidth: 1,
-    padding: spacing.lg,
-    gap: spacing.lg,
-    ...shadows.sm,
+    padding: spacing.xl,
+    gap: spacing.xl,
+    ...shadows.md,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   heroCopy: {
     flex: 1,
     minWidth: 220,
-    gap: 4,
+    gap: spacing.xs,
   },
   heroKicker: {
     ...fonts.xs,
@@ -118,6 +118,7 @@ const styles = StyleSheet.create({
     ...fonts.lg,
     ...fonts.bold,
     lineHeight: 30,
+    letterSpacing: 0.2,
   },
   heroText: {
     ...fonts.sm,
@@ -130,6 +131,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     alignItems: 'center',
     gap: 2,
+    ...shadows.sm,
   },
   heroPulseValue: {
     ...fonts.xl,
@@ -148,11 +150,11 @@ const styles = StyleSheet.create({
   },
   heroAction: {
     flexGrow: 1,
-    minWidth: 120,
+    minWidth: 150,
   },
   metricGrid: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
     flexWrap: 'wrap',
   },
 });

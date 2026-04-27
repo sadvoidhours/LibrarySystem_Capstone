@@ -44,5 +44,7 @@ const styles = StyleSheet.create({
   text: {
     ...fonts.base,
     textAlign: 'center',
+    lineHeight: 22,
+    maxWidth: 360,
   },
 });

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
     maxWidth: 440,
   },
   backBtn: {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   badge: {
     paddingHorizontal: spacing.sm,
@@ -186,8 +186,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   form: {
-    gap: spacing.md,
-    padding: spacing.lg,
+    gap: spacing.lg,
+    padding: spacing.xl,
   },
   roleRow: {
     gap: spacing.sm,
@@ -206,6 +206,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: radii.full,
     borderWidth: 1,
+    minWidth: 108,
+    alignItems: 'center',
   },
   roleChipText: {
     ...fonts.sm,
@@ -216,7 +218,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     padding: spacing.md,
-    borderRadius: radii.sm,
+    borderRadius: radii.md,
   },
   errorText: {
     ...fonts.sm,
@@ -227,7 +229,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     padding: spacing.md,
-    borderRadius: radii.sm,
+    borderRadius: radii.md,
   },
   successText: {
     ...fonts.sm,

@@ -10,7 +10,13 @@ export default function BrandHeader({ title, subtitle, avatarUri }) {
   const isMobile = width < 600;
 
   return (
-    <View style={[styles.wrapper, isMobile && styles.wrapperMobile, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
+    <View
+      style={[
+        styles.wrapper,
+        isMobile && styles.wrapperMobile,
+        { backgroundColor: palette.surface, borderColor: palette.gray100 },
+      ]}
+    >
       <View style={[styles.logoWrap, isMobile && styles.logoWrapMobile, { backgroundColor: palette.yellowSoft, borderColor: palette.greenLight }]}>
         {avatarUri ? (
           <Image source={{ uri: avatarUri }} style={[styles.logo, isMobile && styles.logoMobile]} />
@@ -35,7 +41,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     marginBottom: spacing.lg,
-    padding: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: radii.xl,
     borderWidth: 1,
     ...shadows.md,
@@ -68,6 +75,7 @@ const styles = StyleSheet.create({
   },
   textWrap: {
     flex: 1,
+    gap: 2,
   },
   kicker: {
     ...fonts.xs,
@@ -79,6 +87,7 @@ const styles = StyleSheet.create({
   title: {
     ...fonts.lg,
     ...fonts.bold,
+    letterSpacing: 0.2,
   },
   titleMobile: {
     ...fonts.base,

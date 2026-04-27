@@ -15,7 +15,7 @@ import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import EmptyState from '../components/EmptyState';
 import StyledInput from '../components/StyledInput';
-import { baseStyles, fonts, getThemePalette, radii, spacing } from '../theme/colors';
+import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
 const ACTOR_FILTERS = [
   { key: 'all', label: 'All roles' },
@@ -223,10 +223,10 @@ export default function AuditLogsScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   container: { flex: 1, padding: spacing.lg },
-  listContent: { gap: spacing.md, paddingBottom: spacing.xl },
-  headerBlock: { gap: spacing.md, marginBottom: spacing.sm },
-  summaryCard: { padding: spacing.md },
-  summaryRow: { flexDirection: 'row', gap: spacing.sm },
+  listContent: { gap: spacing.lg, paddingBottom: spacing.xl },
+  headerBlock: { gap: spacing.lg, marginBottom: spacing.md },
+  summaryCard: { padding: spacing.lg, ...shadows.sm },
+  summaryRow: { flexDirection: 'row', gap: spacing.md },
   summaryItem: { flex: 1, alignItems: 'center', gap: 2 },
   summaryValue: { ...fonts.lg, ...fonts.bold },
   summaryLabel: { ...fonts.xs, ...fonts.semibold, textTransform: 'uppercase', letterSpacing: 0.6 },
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   filterChip: { paddingHorizontal: spacing.md, paddingVertical: 8, borderRadius: radii.full, borderWidth: 1 },
   filterText: { ...fonts.sm, ...fonts.semibold },
   resultText: { ...fonts.xs },
-  logCard: { padding: spacing.md },
+  logCard: { padding: spacing.lg },
   logRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   iconWrap: {
     width: 36,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logBody: { flex: 1, gap: 4 },
+  logBody: { flex: 1, gap: 6 },
   action: { ...fonts.base, ...fonts.bold },
   meta: { ...fonts.sm },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },

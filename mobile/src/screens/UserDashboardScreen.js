@@ -199,7 +199,7 @@ export default function UserDashboardScreen({ navigation }) {
             </View>
 
             <Card style={styles.quickActionsCard}>
-              <View style={styles.sectionHeader}>
+              <View style={[styles.sectionHeader, styles.sectionHeaderCompact]}>
                 <View>
                   <Text style={[styles.sectionKicker, { color: palette.green }]}>Quick Access</Text>
                   <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Go where you need fast</Text>
@@ -411,7 +411,7 @@ const createStyles = (p) => StyleSheet.create({
     gap: spacing.xl,
   },
   topGrid: {
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   topGridWide: {
     flexDirection: 'row',
@@ -419,17 +419,17 @@ const createStyles = (p) => StyleSheet.create({
   },
   leftColumn: {
     flex: 1.35,
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   rightColumn: {
     flex: 0.85,
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   heroCard: {
     borderRadius: radii.xl,
-    padding: spacing.lg,
-    gap: spacing.sm,
-    ...shadows.md,
+    padding: spacing.xl,
+    gap: spacing.md,
+    ...shadows.lg,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -495,7 +495,8 @@ const createStyles = (p) => StyleSheet.create({
   welcome: {
     ...fonts.lg,
     ...fonts.bold,
-    lineHeight: 30,
+    lineHeight: 32,
+    letterSpacing: 0.2,
     marginBottom: spacing.xs,
     maxWidth: '100%',
   },
@@ -508,7 +509,7 @@ const createStyles = (p) => StyleSheet.create({
     ...fonts.xs,
     ...fonts.semibold,
     color: 'rgba(255,255,255,0.88)',
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
   },
   roleChip: {
     flexDirection: 'row',
@@ -535,6 +536,7 @@ const createStyles = (p) => StyleSheet.create({
     borderRadius: radii.lg,
     padding: spacing.md,
     borderWidth: 1,
+    ...shadows.sm,
   },
   heroMiniValue: {
     ...fonts.lg,
@@ -550,7 +552,7 @@ const createStyles = (p) => StyleSheet.create({
     gap: spacing.sm,
   },
   quickActionsCard: {
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   quickActionsGrid: {
     gap: spacing.sm,
@@ -559,7 +561,7 @@ const createStyles = (p) => StyleSheet.create({
   },
   quickActionButton: {
     flex: 1,
-    minWidth: 120,
+    minWidth: 140,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -568,6 +570,9 @@ const createStyles = (p) => StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.md,
     flexWrap: 'wrap',
+  },
+  sectionHeaderCompact: {
+    marginBottom: spacing.sm,
   },
   sectionKicker: {
     ...fonts.xs,
@@ -579,6 +584,7 @@ const createStyles = (p) => StyleSheet.create({
   sectionTitle: {
     ...fonts.base,
     ...fonts.bold,
+    letterSpacing: 0.2,
   },
   sectionBadge: {
     paddingHorizontal: spacing.sm,
@@ -590,13 +596,14 @@ const createStyles = (p) => StyleSheet.create({
     ...fonts.semibold,
   },
   itemList: {
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
     borderBottomWidth: 1,
   },
   listIcon: {
@@ -608,7 +615,7 @@ const createStyles = (p) => StyleSheet.create({
   },
   listBody: {
     flex: 1,
-    gap: 2,
+    gap: 3,
   },
   listTitle: {
     ...fonts.sm,
@@ -623,15 +630,17 @@ const createStyles = (p) => StyleSheet.create({
   },
   emptyNote: {
     ...fonts.sm,
+    lineHeight: 20,
   },
   barcodeInner: {
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   qrFrame: {
     padding: spacing.sm,
     borderRadius: radii.lg,
     borderWidth: 1,
+    ...shadows.sm,
   },
   qr: {
     width: 120,
@@ -648,6 +657,7 @@ const createStyles = (p) => StyleSheet.create({
     padding: spacing.md,
     gap: spacing.md,
     borderWidth: 1,
+    ...shadows.sm,
   },
   calendarHeader: {
     gap: 2,
@@ -699,13 +709,13 @@ const createStyles = (p) => StyleSheet.create({
     marginTop: 2,
   },
   profileList: {
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   profileRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
     borderBottomWidth: 1,
   },
   profileLabel: {

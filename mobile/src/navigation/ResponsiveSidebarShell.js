@@ -466,10 +466,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
   },
-  sidebarFooter: {
-    paddingTop: spacing.md,
-    gap: spacing.sm,
-  },
   sidebarFooterText: {
     fontSize: 12,
     lineHeight: 16,

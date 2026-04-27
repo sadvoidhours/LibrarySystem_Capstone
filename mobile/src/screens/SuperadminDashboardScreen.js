@@ -275,15 +275,15 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: spacing.lg,
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   heroCard: {
-    gap: spacing.lg,
-    padding: spacing.lg,
+    gap: spacing.xl,
+    padding: spacing.xl,
     borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
-    ...shadows.md,
+    ...shadows.lg,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   pulseText: { ...fonts.xs, ...fonts.semibold },
   heroSummaryRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
     flexWrap: 'wrap',
   },
   heroSummaryCard: {
@@ -342,11 +342,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
     overflow: 'hidden',
+    ...shadows.sm,
   },
   heroSummaryValue: { ...fonts.lg, ...fonts.bold },
   heroSummaryLabel: { ...fonts.xs, ...fonts.semibold, textTransform: 'uppercase', letterSpacing: 0.5 },
-  heroButtons: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
-  heroButton: { flexGrow: 1, minWidth: 120 },
+  heroButtons: { flexDirection: 'row', gap: spacing.md, flexWrap: 'wrap' },
+  heroButton: { flexGrow: 1, minWidth: 145 },
   sectionHeader: { gap: 4 },
   sectionKicker: { ...fonts.xs, ...fonts.bold, textTransform: 'uppercase', letterSpacing: 0.8 },
   sectionTitle: { ...fonts.lg, ...fonts.bold },
@@ -355,7 +356,7 @@ const styles = StyleSheet.create({
   metricGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.md,
+    gap: spacing.lg,
   },
   metricCard: {
     flex: 1,
@@ -368,6 +369,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
     overflow: 'hidden',
+    ...shadows.sm,
   },
   metricIcon: {
     width: 42,
@@ -379,11 +381,11 @@ const styles = StyleSheet.create({
   },
   metricValue: { ...fonts.xl, ...fonts.bold },
   metricLabel: { ...fonts.xs, ...fonts.semibold, textTransform: 'uppercase', letterSpacing: 0.6 },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  quickCard: { flexGrow: 1, minWidth: 160, padding: spacing.md, borderRadius: radii.xl },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg },
+  quickCard: { flexGrow: 1, minWidth: 170, padding: spacing.md, borderRadius: radii.xl },
   quickButton: { width: '100%' },
   profileCard: {
-    gap: spacing.md,
+    gap: spacing.lg,
     borderRadius: radii.xl,
   },
   profileCardHeader: {
@@ -401,8 +403,8 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     minWidth: 150,
   },
-  listStack: { gap: spacing.sm },
-  listCard: { padding: spacing.md, borderRadius: radii.xl },
+  listStack: { gap: spacing.md },
+  listCard: { padding: spacing.lg, borderRadius: radii.xl },
   listRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
   listIcon: {
     width: 38,

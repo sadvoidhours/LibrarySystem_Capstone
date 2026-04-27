@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSelector } from 'react-redux';
-import { durations, fonts, getThemePalette, radii, spacing } from '../theme/colors';
+import { durations, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
 export default function StyledInput({ label, error, style, containerStyle, ...props }) {
   const [focused, setFocused] = useState(false);
@@ -30,6 +30,7 @@ export default function StyledInput({ label, error, style, containerStyle, ...pr
         style={[
           styles.inputWrap,
           { borderColor, backgroundColor: palette.surface },
+          focused && shadows.sm,
           focused && { borderColor: error ? palette.red : palette.green },
           error && !focused && { borderColor: palette.red },
         ]}
@@ -75,9 +76,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderRadius: radii.lg,
     overflow: 'hidden',
+    minHeight: 52,
   },
   input: {
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     ...fonts.base,
     height: 52,

@@ -44,12 +44,14 @@ export default function StyledButton({
   return (
     <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
       <Pressable
-        style={[
+        android_ripple={{ color: palette.gray100 }}
+        style={({ pressed }) => [
           styles.button,
           small && styles.small,
           { backgroundColor: v.bg },
           v.border && { borderWidth: 1.5, borderColor: v.border },
           v.shadow === false ? null : shadows.md,
+          pressed && !isDisabled && styles.pressed,
           isDisabled && styles.disabled,
         ]}
         onPress={onPress}
@@ -79,23 +81,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     borderRadius: radii.lg,
     gap: spacing.sm,
-    minHeight: 48,
+    minHeight: 50,
     borderWidth: 0,
     borderColor: 'transparent',
   },
   small: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
-    minHeight: 36,
+    minHeight: 38,
   },
   text: {
     ...fonts.base,
     ...fonts.bold,
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
+  },
+  pressed: {
+    opacity: 0.95,
   },
   smallText: {
     ...fonts.sm,
     ...fonts.semibold,
+    letterSpacing: 0.2,
   },
   disabled: {
     opacity: 0.55,

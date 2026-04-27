@@ -12,7 +12,16 @@ export default function StatCard({ icon, iconColor, label, value, accentBg, styl
   const resolvedIconColor = iconColor || palette.chestnut;
 
   return (
-    <View style={[styles.card, isMobile && styles.cardMobile, { backgroundColor: palette.surface, borderColor: palette.gray100 }, shadows.md, accentBg && { backgroundColor: accentBg }, style]}>
+    <View
+      style={[
+        styles.card,
+        isMobile && styles.cardMobile,
+        { backgroundColor: palette.surface, borderColor: palette.gray100 },
+        shadows.sm,
+        accentBg && { backgroundColor: accentBg },
+        style,
+      ]}
+    >
       <View style={[styles.iconWrap, isMobile && styles.iconWrapMobile, { backgroundColor: resolvedIconColor }]}>
         <Icon name={icon || 'stats-chart'} size={isMobile ? 18 : 22} color={palette.white} />
       </View>
@@ -27,14 +36,17 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: radii.lg,
     padding: spacing.md,
-    alignItems: 'center',
-    gap: spacing.xs,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
     borderWidth: 1,
     minWidth: 100,
+    minHeight: 120,
   },
   cardMobile: {
     minWidth: 80,
     padding: spacing.sm,
+    minHeight: 100,
   },
   iconWrap: {
     width: 44,
@@ -51,6 +63,7 @@ const styles = StyleSheet.create({
   value: {
     ...fonts.xl,
     ...fonts.bold,
+    letterSpacing: 0.2,
   },
   valueMobile: {
     ...fonts.lg,
@@ -59,6 +72,6 @@ const styles = StyleSheet.create({
   label: {
     ...fonts.xs,
     ...fonts.medium,
-    textAlign: 'center',
+    textAlign: 'left',
   },
 });

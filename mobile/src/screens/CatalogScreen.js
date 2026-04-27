@@ -327,7 +327,7 @@ const createStyles = (palette) => StyleSheet.create({
     borderWidth: 1,
     borderColor: palette.gray100,
     ...shadows.sm,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   heroRow: {
     flexDirection: 'row',
@@ -348,6 +348,7 @@ const createStyles = (palette) => StyleSheet.create({
     ...fonts.lg,
     ...fonts.bold,
     color: palette.gray800,
+    letterSpacing: 0.2,
   },
   heroText: {
     ...fonts.sm,
@@ -369,10 +370,10 @@ const createStyles = (palette) => StyleSheet.create({
     color: palette.green,
   },
   searchCard: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
     backgroundColor: palette.surface,
     borderRadius: radii.xl,
-    padding: spacing.md,
+    padding: spacing.lg,
     borderWidth: 1,
     borderColor: palette.gray100,
     ...shadows.sm,
@@ -389,11 +390,14 @@ const createStyles = (palette) => StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     alignItems: 'flex-end',
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  filtersWrap: {
+    gap: spacing.sm,
   },
   filterBlock: {
     gap: spacing.sm,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   filterLabel: {
     ...fonts.xs,
@@ -408,7 +412,7 @@ const createStyles = (palette) => StyleSheet.create({
     gap: spacing.sm,
   },
   chipButton: {
-    minHeight: 34,
+    minHeight: 36,
   },
   filterFooter: {
     flexDirection: 'row',
@@ -423,11 +427,11 @@ const createStyles = (palette) => StyleSheet.create({
     color: palette.gray600,
   },
   list: {
-    gap: spacing.md,
+    gap: spacing.lg,
     paddingBottom: spacing.xxl,
   },
   bookCard: {
-    padding: spacing.md,
+    padding: spacing.lg,
   },
   bookCardWide: {
     flex: 1,
@@ -466,7 +470,7 @@ const createStyles = (palette) => StyleSheet.create({
   },
   meta: {
     flex: 1,
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   bookTitle: {
     ...fonts.md,

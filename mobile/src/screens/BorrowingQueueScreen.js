@@ -492,8 +492,8 @@ export default function BorrowingQueueScreen() {
 const createStyles = (p) => StyleSheet.create({
   screen: { flex: 1 },
   container: { flex: 1, padding: spacing.lg },
-  scrollContent: { gap: spacing.lg, paddingBottom: spacing.xl },
-  sectionCard: { gap: spacing.md, padding: spacing.md },
+  scrollContent: { gap: spacing.xl, paddingBottom: spacing.xl },
+  sectionCard: { gap: spacing.lg, padding: spacing.lg },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -511,6 +511,7 @@ const createStyles = (p) => StyleSheet.create({
   sectionTitle: {
     ...fonts.lg,
     ...fonts.bold,
+    letterSpacing: 0.2,
   },
   sectionCount: {
     ...fonts.sm,
@@ -544,15 +545,15 @@ const createStyles = (p) => StyleSheet.create({
     ...fonts.xs,
     ...fonts.semibold,
   },
-  listStack: { gap: spacing.sm },
-  card: { gap: spacing.sm },
+  listStack: { gap: spacing.md },
+  card: { gap: spacing.md },
   rowTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.sm,
     alignItems: 'flex-start',
   },
-  bookCopy: { flex: 1, gap: 2 },
+  bookCopy: { flex: 1, gap: 4 },
   title: { ...fonts.base, ...fonts.bold },
   subtitle: { ...fonts.sm },
   meta: { ...fonts.sm, lineHeight: 18 },
@@ -586,8 +587,8 @@ const createStyles = (p) => StyleSheet.create({
   paymentRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: spacing.sm,
-    paddingVertical: spacing.sm,
+    gap: spacing.md,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
   },
   paymentAmount: { ...fonts.base, ...fonts.bold },
@@ -602,8 +603,8 @@ const createStyles = (p) => StyleSheet.create({
   modalCard: {
     borderRadius: radii.xl,
     borderWidth: 1,
-    padding: spacing.lg,
-    gap: spacing.md,
+    padding: spacing.xl,
+    gap: spacing.lg,
     ...shadows.lg,
   },
   modalHeader: {

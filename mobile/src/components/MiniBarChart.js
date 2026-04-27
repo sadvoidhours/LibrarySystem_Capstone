@@ -54,10 +54,12 @@ const styles = StyleSheet.create({
   title: {
     ...fonts.base,
     ...fonts.bold,
+    letterSpacing: 0.2,
   },
   subtitle: {
     ...fonts.xs,
     marginTop: 2,
+    lineHeight: 16,
   },
   chartRow: {
     flexDirection: 'row',
