@@ -25,6 +25,22 @@ const ROLE_CHOICES = [
   { key: 'superadmin', label: 'Superadmin' },
 ];
 
+const ONE_YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+
+const isInactiveOverOneYear = (user) => {
+  const anchor = user?.lastActiveAt || user?.createdAt;
+  if (!anchor) return false;
+  return Date.now() - new Date(anchor).getTime() >= ONE_YEAR_MS;
+};
+
+const getAccountStatus = (user) => {
+  if (!user) return null;
+  if (user.isArchived) return 'Archived';
+  if (user.verificationStatus === 'pending' || user.verificationStatus === 'rejected') return null;
+  if (isInactiveOverOneYear(user)) return 'Inactive';
+  return 'Active';
+};
+
 export default function ManageAdminsScreen() {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
@@ -161,6 +177,17 @@ export default function ManageAdminsScreen() {
                   {item.isVerified ? 'Verified' : item.verificationStatus}
                 </Text>
               </View>
+              {(() => {
+                const acct = getAccountStatus(item);
+                if (!acct) return null;
+                const acctBg = acct === 'Active' ? palette.greenLight : acct === 'Archived' ? palette.orangeLight : palette.gray100;
+                const acctColor = acct === 'Active' ? palette.green : acct === 'Archived' ? palette.orange : palette.gray600;
+                return (
+                  <View style={[styles.badge, { backgroundColor: acctBg }]}>
+                    <Text style={[styles.badgeText, { color: acctColor }]}>{acct === 'Inactive' ? 'Inactive' : acct}</Text>
+                  </View>
+                );
+              })()}
             </View>
           </View>
         </View>
@@ -333,9 +360,9 @@ const styles = StyleSheet.create({
   formGrid: { gap: spacing.md },
   roleChooser: { gap: spacing.sm },
   roleChooserLabel: { ...fonts.sm, ...fonts.semibold },
-  roleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  roleChip: { paddingHorizontal: spacing.md, paddingVertical: 8, borderRadius: radii.full, borderWidth: 1 },
-  roleChipText: { ...fonts.sm, ...fonts.semibold },
+  roleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'flex-start', alignItems: 'center', marginTop: spacing.xs },
+  roleChip: { paddingHorizontal: spacing.md, paddingVertical: 10, borderRadius: radii.full, borderWidth: 1, minWidth: 110, alignItems: 'center', justifyContent: 'center' },
+  roleChipText: { ...fonts.sm, ...fonts.semibold, textTransform: 'capitalize' },
   resultRow: { marginTop: -2 },
   resultText: { ...fonts.xs },
   staffCard: { gap: spacing.md },

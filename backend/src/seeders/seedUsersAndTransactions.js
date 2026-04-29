@@ -12,7 +12,7 @@ const { calculatePenalty } = require('../services/penalty.service');
 const DEMO_PREFIX = 'SEEDED-DEMO';
 
 const demoUsers = [
-  { name: 'Mo Avengoza', full_name: 'Mo Avengoza', username: 'mo.avengoza', email: 'moavengoza@paterostechnologicalcollege.edu.ph', phone: '', role: 'superadmin', barcodeString: 'PTC-USER-0001', isVerified: true, verificationStatus: 'verified' },
+  { name: 'Mark Avengoza', full_name: 'Mark Avengoza', username: 'mavengoza', email: 'mavengoza@paterostechnologicalcollege.edu.ph', phone: '', role: 'superadmin', barcodeString: 'PTC-USER-0001', isVerified: true, verificationStatus: 'verified' },
   { name: 'Joshua Adrian Bellino', full_name: 'Joshua Adrian Bellino', username: 'joshua.bellino', email: 'jabellino@paterostechnologicalcollege.edu.ph', phone: '', role: 'admin', barcodeString: 'PTC-USER-0002', isVerified: true, verificationStatus: 'verified' },
   { name: 'Christian Mark Almonte', full_name: 'Christian Mark Almonte', username: 'christian.almonte', email: 'cmalmonte@paterostechnologicalcollege.edu.ph', phone: '', role: 'admin', barcodeString: 'PTC-USER-0003', isVerified: true, verificationStatus: 'verified' },
   { name: 'Kevinson Cadena', full_name: 'Kevinson Cadena', username: 'kevinson.cadena', email: 'kcadena@paterostechnologicalcollege.edu.ph', phone: '', role: 'faculty', barcodeString: 'PTC-USER-0004', isVerified: true, verificationStatus: 'verified', studentIdNumber: 'FAC-1003' },

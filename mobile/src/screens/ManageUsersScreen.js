@@ -78,6 +78,16 @@ const isInactiveOverOneYear = (user) => {
   return Date.now() - new Date(anchor).getTime() >= ONE_YEAR_MS;
 };
 
+const getAccountStatus = (user) => {
+  if (!user) return 'Unknown';
+  if (user.isArchived) return 'Archived';
+  if (user.verificationStatus === 'rejected') return 'Rejected';
+  if (user.verificationStatus === 'pending') return 'Pending';
+  if (isInactiveOverOneYear(user)) return 'Inactive';
+  if (user.isVerified || user.verificationStatus === 'verified') return 'Active';
+  return 'Unknown';
+};
+
 export default function ManageUsersScreen() {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
@@ -301,6 +311,7 @@ export default function ManageUsersScreen() {
 
   const renderUser = ({ item }) => {
     const isPending = item.verificationStatus === 'pending' && ['student', 'faculty'].includes(item.role);
+    const isRejected = item.verificationStatus === 'rejected';
 
     return (
       <Card style={styles.userCard}>
@@ -338,6 +349,19 @@ export default function ManageUsersScreen() {
                   <Text style={[styles.tagText, { color: palette.gray600 }]}>Inactive 1y+</Text>
                 </View>
               ) : null}
+              {!item.isArchived ? (
+                (() => {
+                  const acct = getAccountStatus(item);
+                  const acctBg = acct === 'Active' ? palette.greenLight : acct === 'Inactive' ? palette.gray100 : palette.gray100;
+                  const acctColor = acct === 'Active' ? palette.green : palette.gray600;
+                  return acct === 'Active' || acct === 'Inactive' ? (
+                    <View style={[styles.tag, { backgroundColor: acctBg }]}>
+                      <Text style={[styles.tagText, { color: acctColor }]}>{acct === 'Inactive' ? 'Inactive' : 'Active'}</Text>
+                    </View>
+                  ) : null;
+                })()
+              ) : null}
+
               <View style={[styles.tag, { backgroundColor: palette.gray100 }]}>
                 <Text style={[styles.tagText, { color: palette.gray600 }]}>
                   {statusLabel[item.verificationStatus] || item.verificationStatus}
@@ -351,31 +375,43 @@ export default function ManageUsersScreen() {
         </View>
 
         <View style={styles.cardActions}>
-          <StyledButton
-            title={item.isArchived ? 'View' : 'Actions'}
-            variant="outlineGreen"
-            small
-            onPress={() => openActions(item)}
-            style={styles.flexAction}
-          />
-          {isPending ? (
+          {isRejected ? (
+            <StyledButton
+              title="Accept"
+              variant="success"
+              small
+              onPress={() => verifyUser(item)}
+              style={styles.flexAction}
+            />
+          ) : (
             <>
               <StyledButton
-                title="Verify"
-                variant="success"
+                title={item.isArchived ? 'View' : 'Actions'}
+                variant="outlineGreen"
                 small
-                onPress={() => verifyUser(item)}
+                onPress={() => openActions(item)}
                 style={styles.flexAction}
               />
-              <StyledButton
-                title="Reject"
-                variant="danger"
-                small
-                onPress={() => rejectUser(item)}
-                style={styles.flexAction}
-              />
+              {isPending ? (
+                <>
+                  <StyledButton
+                    title="Verify"
+                    variant="success"
+                    small
+                    onPress={() => verifyUser(item)}
+                    style={styles.flexAction}
+                  />
+                  <StyledButton
+                    title="Reject"
+                    variant="danger"
+                    small
+                    onPress={() => rejectUser(item)}
+                    style={styles.flexAction}
+                  />
+                </>
+              ) : null}
             </>
-          ) : null}
+          )}
         </View>
       </Card>
     );
@@ -539,6 +575,10 @@ export default function ManageUsersScreen() {
               {selectedUser?.email}
             </Text>
 
+            {selectedUser && !selectedUser?.isArchived ? (
+              <Text style={[styles.modalNote, { color: palette.gray500 }]}>Account status: {getAccountStatus(selectedUser)}</Text>
+            ) : null}
+
             {selectedUser?.isArchived ? (
               <View style={styles.modalNoteBlock}>
                 <Text style={[styles.modalNote, { color: palette.gray500 }]}>This account is archived and hidden from the active account list.</Text>
@@ -547,6 +587,11 @@ export default function ManageUsersScreen() {
                 {isInactiveOverOneYear(selectedUser) ? (
                   <Text style={[styles.modalNote, { color: palette.orange }]}>Inactive for 1 year or more.</Text>
                 ) : null}
+              </View>
+            ) : selectedUser?.verificationStatus === 'rejected' ? (
+              <View style={styles.modalNoteBlock}>
+                <Text style={[styles.modalNote, { color: palette.orange }]}>This account was rejected.</Text>
+                <Text style={[styles.modalNote, { color: palette.gray500 }]}>You can accept this account to verify it again.</Text>
               </View>
             ) : (
               <View style={styles.roleGrid}>
@@ -564,7 +609,7 @@ export default function ManageUsersScreen() {
                         },
                       ]}
                     >
-                      <Text style={[styles.roleChipText, { color: active ? palette.white : palette.gray700 }]}>
+                      <Text style={[styles.roleChipText, { color: active ? palette.white : palette.gray700 }]}> 
                         {roleLabel[role]}
                       </Text>
                     </Pressable>
@@ -574,7 +619,15 @@ export default function ManageUsersScreen() {
             )}
 
             <View style={styles.modalActions}>
-              {selectedUser?.isArchived ? null : (
+              {selectedUser?.isArchived ? null : selectedUser?.verificationStatus === 'rejected' ? (
+                <StyledButton
+                  title="Accept"
+                  variant="success"
+                  onPress={() => verifyUser(selectedUser)}
+                  loading={saving}
+                  style={styles.modalButton}
+                />
+              ) : (
                 <>
                   <StyledButton
                     title="Save Role"
@@ -846,6 +899,9 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
     ...shadows.lg,
+    maxWidth: 720,
+    width: '100%',
+    alignSelf: 'center',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -886,16 +942,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginTop: spacing.xs,
   },
   roleChip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: radii.full,
     borderWidth: 1,
+    minWidth: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   roleChipText: {
     ...fonts.sm,
     ...fonts.semibold,
+    textTransform: 'capitalize',
   },
   modalActions: {
     gap: spacing.sm,
