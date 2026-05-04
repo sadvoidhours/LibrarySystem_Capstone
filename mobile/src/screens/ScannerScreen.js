@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useSelector } from 'react-redux';
@@ -28,6 +28,8 @@ export default function ScannerScreen() {
   const [statusMessage, setStatusMessage] = useState('Ready to scan a user or book barcode.');
   const [permission, requestPermission] = useCameraPermissions();
   const scanLockRef = useRef(false);
+  const webScannerRef = useRef(null);
+  const webScannerId = 'web-barcode-scanner';
 
   const resetForm = () => {
     setUserBarcode('');
@@ -76,7 +78,111 @@ export default function ScannerScreen() {
     }
   };
 
+  const applyScanValue = (target, value) => {
+    if (!target) {
+      return;
+    }
+    const trimmed = String(value || '').trim();
+    if (!trimmed) {
+      setStatusMessage('No barcode detected.');
+      return;
+    }
+    if (target === 'user') setUserBarcode(trimmed);
+    if (target === 'book') setBookIsbn(trimmed);
+    setStatusMessage(`${target === 'user' ? 'User' : 'Book ISBN'} captured.`);
+  };
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      return undefined;
+    }
+
+    let cancelled = false;
+    let localScanner = null;
+
+    const stopScanner = async () => {
+      try {
+        if (localScanner) {
+          await localScanner.stop();
+          await localScanner.clear();
+        }
+      } catch (err) {
+        // ignore cleanup errors
+      } finally {
+        localScanner = null;
+        webScannerRef.current = null;
+      }
+    };
+
+    const startScanner = async () => {
+      if (!scanTarget) {
+        await stopScanner();
+        return;
+      }
+
+      if (typeof document === 'undefined') {
+        setStatusMessage('Web scanner unavailable in this environment.');
+        return;
+      }
+
+      const container = document.getElementById(webScannerId);
+      if (!container) {
+        setStatusMessage('Scanner view not ready yet.');
+        return;
+      }
+
+      try {
+        setStatusMessage('Starting web scanner...');
+        const module = await import('html5-qrcode');
+        if (cancelled) return;
+
+        const { Html5Qrcode, Html5QrcodeSupportedFormats } = module;
+        localScanner = new Html5Qrcode(webScannerId);
+        webScannerRef.current = localScanner;
+
+        const formats = [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.QR_CODE,
+        ];
+
+        await localScanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 240, height: 240 }, formatsToSupport: formats },
+          (decodedText) => {
+            applyScanValue(scanTarget, decodedText);
+            setScanTarget(null);
+          },
+          () => {}
+        );
+
+        if (!cancelled) {
+          setStatusMessage(`Scanning ${scanTarget === 'book' ? 'book ISBN' : 'user barcode'}...`);
+        }
+      } catch (err) {
+        console.error('web scanner error', err);
+        setStatusMessage('Unable to start the web scanner.');
+      }
+    };
+
+    startScanner();
+
+    return () => {
+      cancelled = true;
+      stopScanner().catch(() => null);
+    };
+  }, [scanTarget]);
+
   const enableScanner = async (target) => {
+    if (Platform.OS === 'web') {
+      setScanTarget(target);
+      setStatusMessage(`Preparing ${target === 'book' ? 'book ISBN' : 'user barcode'} scanner...`);
+      return;
+    }
+
     if (!permission?.granted) {
       const response = await requestPermission();
       if (!response.granted) {
@@ -95,9 +201,7 @@ export default function ScannerScreen() {
     }
 
     scanLockRef.current = true;
-    if (scanTarget === 'user') setUserBarcode(data);
-    if (scanTarget === 'book') setBookIsbn(data);
-    setStatusMessage(`${scanTarget === 'user' ? 'User' : 'Book ISBN'} captured.`);
+    applyScanValue(scanTarget, data);
     setScanTarget(null);
 
     setTimeout(() => {
@@ -128,7 +232,7 @@ export default function ScannerScreen() {
             <Text style={[styles.statusMessage, { color: palette.gray500 }]}>{statusMessage}</Text>
           </Card>
 
-          {scanTarget && (
+          {scanTarget && Platform.OS !== 'web' && (
             <View style={styles.scannerWrap}>
               <CameraView
                 style={StyleSheet.absoluteFillObject}
@@ -138,6 +242,14 @@ export default function ScannerScreen() {
                 }}
                 onBarcodeScanned={onScan}
               />
+              <View style={styles.scanOverlay}>
+                <Text style={styles.scanLabel}>Scanning {scanTarget === 'book' ? 'book ISBN' : 'user barcode'}...</Text>
+              </View>
+            </View>
+          )}
+          {scanTarget && Platform.OS === 'web' && (
+            <View style={styles.webScannerWrap}>
+              <View nativeID={webScannerId} style={styles.webScannerViewport} />
               <View style={styles.scanOverlay}>
                 <Text style={styles.scanLabel}>Scanning {scanTarget === 'book' ? 'book ISBN' : 'user barcode'}...</Text>
               </View>
@@ -220,6 +332,18 @@ const createStyles = (p) => StyleSheet.create({
     borderWidth: 2,
     borderColor: p.chestnut,
     ...shadows.md,
+  },
+  webScannerWrap: {
+    height: 260,
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: p.chestnut,
+    backgroundColor: '#000000',
+    ...shadows.md,
+  },
+  webScannerViewport: {
+    flex: 1,
   },
   scanOverlay: {
     position: 'absolute',
