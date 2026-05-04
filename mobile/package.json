@@ -9,6 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "generate:svg-assets": "node ./scripts/generate-svg-assets.js",
+    "generate:png-assets": "node ./scripts/convert-svg-to-png.js",
     "build:apk": "npm exec --yes eas-cli -- build -p android --profile preview --clear-cache",
     "build:preview:android": "npm exec --yes eas-cli -- build -p android --profile preview --clear-cache",
     "build:preview:ios": "npm exec --yes eas-cli -- build -p ios --profile preview",
@@ -37,13 +38,14 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.6",
-    "react-native-svg": "^13.14.1",
+    "react-native-svg": "^15.9.0",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-web": "~0.20.0",
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
-    "react-native-svg-transformer": "^1.5.3"
+    "react-native-svg-transformer": "^1.5.3",
+    "sharp": "^0.33.4"
   }
 }

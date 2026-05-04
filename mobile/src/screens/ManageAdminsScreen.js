@@ -154,7 +154,7 @@ export default function ManageAdminsScreen() {
           <View style={styles.staffMeta}>
             <Text
               style={[styles.staffName, isCompact && styles.staffValueStack, { color: palette.gray800 }]}
-              numberOfLines={isCompact ? 0 : 1}
+              numberOfLines={isCompact ? 0 : 2}
               ellipsizeMode="tail"
             >
               {item.full_name || item.name}
@@ -376,9 +376,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
   },
-  staffMeta: { flex: 1, gap: 4 },
-  staffName: { ...fonts.base, ...fonts.bold },
-  staffEmail: { ...fonts.sm },
+  staffMeta: { flex: 1, gap: 4, minWidth: 0 },
+  staffName: { ...fonts.base, ...fonts.bold, flexShrink: 1 },
+  staffEmail: { ...fonts.sm, flexShrink: 1 },
   staffValueStack: { textAlign: 'left', marginTop: 2 },
   badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: 2 },
   badge: { paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: radii.full },

@@ -82,17 +82,23 @@ export default function ReportsScreen() {
                   title="PDF"
                   small
                   variant="outline"
-                  onPress={() => exportReceiptPdf({
-                    paymentId: item._id,
-                    paymentDate: item.payment_date || item.createdAt,
-                    amount: item.amount,
-                    paymentMethod: item.payment_method,
-                    bookTitle: item.borrowingId?.bookId?.title,
-                    bookAuthor: item.borrowingId?.bookId?.author,
-                    borrowerName: item.borrowingId?.userId?.name,
-                    dueDate: item.borrowingId?.due_date,
-                    borrowDate: item.borrowingId?.borrow_date,
-                  }, { palette })}
+                  onPress={async () => {
+                    try {
+                      await exportReceiptPdf({
+                        paymentId: item._id,
+                        paymentDate: item.payment_date || item.createdAt,
+                        amount: item.amount,
+                        paymentMethod: item.payment_method,
+                        bookTitle: item.borrowingId?.bookId?.title,
+                        bookAuthor: item.borrowingId?.bookId?.author,
+                        borrowerName: item.borrowingId?.userId?.name,
+                        dueDate: item.borrowingId?.due_date,
+                        borrowDate: item.borrowingId?.borrow_date,
+                      }, { palette });
+                    } catch (error) {
+                      Alert.alert('Error', 'Unable to export receipt PDF');
+                    }
+                  }}
                 />
               </View>
             ))

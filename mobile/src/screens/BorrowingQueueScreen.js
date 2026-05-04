@@ -274,19 +274,23 @@ export default function BorrowingQueueScreen() {
                 title="Receipt PDF"
                 variant="outline"
                 small
-                onPress={() => {
-                  const payment = payments.find((item) => String(item.borrowingId?._id || item.borrowingId) === String(borrowing._id));
-                  exportReceiptPdf({
-                    paymentId: payment?._id,
-                    paymentDate: payment?.payment_date || payment?.createdAt,
-                    amount: payment?.amount,
-                    paymentMethod: payment?.payment_method,
-                    bookTitle: borrowing.bookId?.title,
-                    bookAuthor: borrowing.bookId?.author,
-                    borrowerName: borrowing.userId?.name,
-                    dueDate: borrowing.due_date,
-                    borrowDate: borrowing.borrow_date,
-                  }, { palette });
+                onPress={async () => {
+                  try {
+                    const payment = payments.find((item) => String(item.borrowingId?._id || item.borrowingId) === String(borrowing._id));
+                    await exportReceiptPdf({
+                      paymentId: payment?._id,
+                      paymentDate: payment?.payment_date || payment?.createdAt,
+                      amount: payment?.amount,
+                      paymentMethod: payment?.payment_method,
+                      bookTitle: borrowing.bookId?.title,
+                      bookAuthor: borrowing.bookId?.author,
+                      borrowerName: borrowing.userId?.name,
+                      dueDate: borrowing.due_date,
+                      borrowDate: borrowing.borrow_date,
+                    }, { palette });
+                  } catch (error) {
+                    Alert.alert('Error', 'Unable to export receipt PDF');
+                  }
                 }}
               />
             ) : null}
@@ -395,17 +399,23 @@ export default function BorrowingQueueScreen() {
                         title="Receipt"
                         variant="outline"
                         small
-                        onPress={() => exportReceiptPdf({
-                          paymentId: payment._id,
-                          paymentDate: payment.payment_date || payment.createdAt,
-                          amount: payment.amount,
-                          paymentMethod: payment.payment_method,
-                          bookTitle: payment.borrowingId?.bookId?.title,
-                          bookAuthor: payment.borrowingId?.bookId?.author,
-                          borrowerName: payment.borrowingId?.userId?.name,
-                          dueDate: payment.borrowingId?.due_date,
-                          borrowDate: payment.borrowingId?.borrow_date,
-                        }, { palette })}
+                        onPress={async () => {
+                          try {
+                            await exportReceiptPdf({
+                              paymentId: payment._id,
+                              paymentDate: payment.payment_date || payment.createdAt,
+                              amount: payment.amount,
+                              paymentMethod: payment.payment_method,
+                              bookTitle: payment.borrowingId?.bookId?.title,
+                              bookAuthor: payment.borrowingId?.bookId?.author,
+                              borrowerName: payment.borrowingId?.userId?.name,
+                              dueDate: payment.borrowingId?.due_date,
+                              borrowDate: payment.borrowingId?.borrow_date,
+                            }, { palette });
+                          } catch (error) {
+                            Alert.alert('Error', 'Unable to export receipt PDF');
+                          }
+                        }}
                       />
                     </View>
                   </View>

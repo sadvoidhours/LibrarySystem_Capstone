@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Icon from '../components/Icon';
 import { useSelector } from 'react-redux';
 import api from '../api/client';
@@ -195,17 +195,23 @@ export default function BorrowingsScreen() {
                 title="Export Receipt PDF"
                 variant="outline"
                 small
-                onPress={() => exportReceiptPdf({
-                  paymentId: paymentRecord?._id,
-                  paymentDate: paymentRecord?.payment_date || paymentRecord?.createdAt,
-                  amount: paymentRecord?.amount,
-                  paymentMethod: paymentRecord?.payment_method,
-                  bookTitle: item.bookId?.title,
-                  bookAuthor: item.bookId?.author,
-                  borrowerName: user?.name,
-                  dueDate: item.due_date,
-                  borrowDate: item.borrow_date,
-                }, { palette })}
+                onPress={async () => {
+                  try {
+                    await exportReceiptPdf({
+                      paymentId: paymentRecord?._id,
+                      paymentDate: paymentRecord?.payment_date || paymentRecord?.createdAt,
+                      amount: paymentRecord?.amount,
+                      paymentMethod: paymentRecord?.payment_method,
+                      bookTitle: item.bookId?.title,
+                      bookAuthor: item.bookId?.author,
+                      borrowerName: user?.name,
+                      dueDate: item.due_date,
+                      borrowDate: item.borrow_date,
+                    }, { palette });
+                  } catch (error) {
+                    Alert.alert('Error', 'Unable to export receipt PDF');
+                  }
+                }}
               />
             </View>
           </View>
@@ -378,7 +384,11 @@ export default function BorrowingsScreen() {
                         {dueItemsForDay.length > 0 ? (
                           <View style={[styles.dayDot, { backgroundColor: dueColor }]} />
                         ) : null}
-                        {isToday ? <View style={styles.todayPill}><Text style={styles.todayPillText}>Today</Text></View> : null}
+                        {isToday ? (
+                          <View style={styles.todayPill}>
+                            <Icon name="calendar" size={12} color={palette.white} />
+                          </View>
+                        ) : null}
                       </View>
                     </Pressable>
                   );
@@ -759,12 +769,11 @@ const createStyles = (palette) => StyleSheet.create({
   },
   weekdayRow: {
     flexDirection: 'row',
-    gap: spacing.xs,
+    justifyContent: 'flex-start',
     marginBottom: spacing.xs,
   },
   weekdayLabel: {
-    flex: 1,
-    minWidth: 36,
+    width: '14.2857%',
     textAlign: 'center',
     ...fonts.xs,
     ...fonts.semibold,
@@ -774,10 +783,10 @@ const createStyles = (palette) => StyleSheet.create({
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
+    justifyContent: 'flex-start',
   },
   dayCell: {
-    width: '13.28%',
+    width: '14.2857%',
     minHeight: 78,
     borderRadius: radii.md,
     borderWidth: 1,
@@ -785,6 +794,7 @@ const createStyles = (palette) => StyleSheet.create({
     backgroundColor: palette.surface,
     padding: 6,
     justifyContent: 'space-between',
+    marginBottom: spacing.xs,
   },
   dayCellMuted: {
     opacity: 0.45,
@@ -819,13 +829,10 @@ const createStyles = (palette) => StyleSheet.create({
   todayPill: {
     backgroundColor: palette.chestnut,
     borderRadius: radii.full,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  todayPillText: {
-    ...fonts.xs,
-    ...fonts.semibold,
-    color: palette.white,
+    width: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   detailList: {
     gap: spacing.sm,

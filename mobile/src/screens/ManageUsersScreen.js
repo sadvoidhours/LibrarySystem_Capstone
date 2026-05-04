@@ -323,7 +323,7 @@ export default function ManageUsersScreen() {
           <View style={styles.userMeta}>
             <Text
               style={[styles.userName, isCompact && styles.userValueStack, { color: palette.gray800 }]}
-              numberOfLines={isCompact ? 0 : 1}
+              numberOfLines={isCompact ? 0 : 2}
               ellipsizeMode="tail"
             >
               {item.full_name || item.name}
@@ -841,13 +841,16 @@ const styles = StyleSheet.create({
   userMeta: {
     flex: 1,
     gap: 4,
+    minWidth: 0,
   },
   userName: {
     ...fonts.base,
     ...fonts.bold,
+    flexShrink: 1,
   },
   userEmail: {
     ...fonts.sm,
+    flexShrink: 1,
   },
   userValueStack: {
     textAlign: 'left',

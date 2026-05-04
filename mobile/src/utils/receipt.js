@@ -81,11 +81,21 @@ export const exportReceiptPdf = async (receiptData, options = {}) => {
     return uri;
   }
 
-  if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: 'Share receipt PDF' });
-    return uri;
+  const shareOptions = { mimeType: 'application/pdf', dialogTitle: 'Share receipt PDF' };
+  if (Platform.OS === 'ios') {
+    shareOptions.UTI = 'com.adobe.pdf';
   }
 
-  await Linking.openURL(uri);
+  if (await Sharing.isAvailableAsync()) {
+    try {
+      await Sharing.shareAsync(uri, shareOptions);
+      return uri;
+    } catch (error) {
+      await Print.printAsync({ html });
+      return uri;
+    }
+  }
+
+  await Print.printAsync({ html });
   return uri;
 };
