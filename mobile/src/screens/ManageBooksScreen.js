@@ -136,6 +136,12 @@ export default function ManageBooksScreen() {
   };
 
   const enableIsbnScanner = async () => {
+    // On web, use a file-capture + BarcodeDetector fallback because
+    // expo-camera barcode scanning is not reliably supported in browsers.
+    if (Platform.OS === 'web') {
+      return webScanBarcode();
+    }
+
     if (!permission?.granted) {
       const response = await requestPermission();
       if (!response.granted) {
@@ -147,6 +153,55 @@ export default function ManageBooksScreen() {
     scanLockRef.current = false;
     setScanStatus('Scanning ISBN barcode...');
     setIsbnScannerVisible(true);
+  };
+
+  const webScanBarcode = async () => {
+    try {
+      setScanStatus('Preparing camera...');
+
+      // Create a hidden file input to trigger camera capture on mobile browsers
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+
+      input.onchange = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) {
+          setScanStatus('No image selected');
+          return;
+        }
+
+        setScanStatus('Detecting barcode from image...');
+
+        try {
+          // Use the native Barcode Detector API when available
+          if (window.BarcodeDetector) {
+            const bitmap = await createImageBitmap(file);
+            const formats = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code'];
+            const detector = new window.BarcodeDetector({ formats });
+            const detections = await detector.detect(bitmap);
+
+            if (detections && detections.length > 0) {
+              handleIsbnScan({ data: detections[0].rawValue });
+              setScanStatus(`ISBN captured: ${detections[0].rawValue}`);
+              return;
+            }
+          }
+
+          setScanStatus('No barcode detected in the photo.');
+        } catch (err) {
+          // Browser may not support createImageBitmap or BarcodeDetector
+          console.error('webScanBarcode error', err);
+          setScanStatus('Unable to detect barcode on this browser.');
+        }
+      };
+
+      input.click();
+    } catch (err) {
+      console.error('webScanBarcode init error', err);
+      setScanStatus('Failed to start web scanner');
+    }
   };
 
   const handleIsbnScan = ({ data }) => {
