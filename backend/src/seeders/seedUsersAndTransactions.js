@@ -13,21 +13,13 @@ const DEMO_PREFIX = 'SEEDED-DEMO';
 
 const demoUsers = [
   { name: 'Mark Avengoza', full_name: 'Mark Avengoza', username: 'mavengoza', email: 'mavengoza@paterostechnologicalcollege.edu.ph', phone: '', role: 'superadmin', barcodeString: 'PTC-USER-0001', isVerified: true, verificationStatus: 'verified' },
-  { name: 'Joshua Adrian Bellino', full_name: 'Joshua Adrian Bellino', username: 'joshua.bellino', email: 'jabellino@paterostechnologicalcollege.edu.ph', phone: '', role: 'admin', barcodeString: 'PTC-USER-0002', isVerified: true, verificationStatus: 'verified' },
-  { name: 'Christian Mark Almonte', full_name: 'Christian Mark Almonte', username: 'christian.almonte', email: 'cmalmonte@paterostechnologicalcollege.edu.ph', phone: '', role: 'admin', barcodeString: 'PTC-USER-0003', isVerified: true, verificationStatus: 'verified' },
-  { name: 'Kevinson Cadena', full_name: 'Kevinson Cadena', username: 'kevinson.cadena', email: 'kcadena@paterostechnologicalcollege.edu.ph', phone: '', role: 'faculty', barcodeString: 'PTC-USER-0004', isVerified: true, verificationStatus: 'verified', studentIdNumber: 'FAC-1003' },
-  { name: 'Nadzmaa Amerol Annanggo', full_name: 'Nadzmaa Amerol Annanggo', username: 'nadzmaa.annganggo', email: 'naannanggo@paterostechnologicalcollege.edu.ph', phone: '', role: 'student', barcodeString: 'PTC-USER-1000', isVerified: true, verificationStatus: 'verified', studentIdNumber: '2024-0000' }
+  { name: 'User 1', full_name: 'User 1', username: 'user1', email: 'user1@example.com', phone: '', role: 'admin', barcodeString: 'PTC-USER-0002', isVerified: true, verificationStatus: 'verified' },
+  { name: 'User 2', full_name: 'User 2', username: 'user2', email: 'user2@example.com', phone: '', role: 'admin', barcodeString: 'PTC-USER-0003', isVerified: true, verificationStatus: 'verified' },
+  { name: 'User 3', full_name: 'User 3', username: 'user3', email: 'user3@example.com', phone: '', role: 'faculty', barcodeString: 'PTC-USER-0004', isVerified: true, verificationStatus: 'verified', studentIdNumber: 'FAC-1003' },
+  { name: 'User 4', full_name: 'User 4', username: 'user4', email: 'user4@example.com', phone: '', role: 'student', barcodeString: 'PTC-USER-1000', isVerified: true, verificationStatus: 'verified', studentIdNumber: '2024-0000' }
 ];
 
-const legacyDemoEmails = [
-  'superadmin@ptc.edu.ph',
-  'admin@ptc.edu.ph',
-  'ana.reyes@student.ptc.edu.ph',
-  'paolo.garcia@student.ptc.edu.ph',
-  'liza.mendoza@student.ptc.edu.ph',
-  'ramon.villanueva@faculty.ptc.edu.ph',
-  'cecilia.navarro@faculty.ptc.edu.ph'
-];
+const legacyDemoEmails = [];
 
 const dayMs = 24 * 60 * 60 * 1000;
 const daysAgo = (days) => new Date(Date.now() - days * dayMs);
@@ -35,7 +27,7 @@ const daysFromNow = (days) => new Date(Date.now() + days * dayMs);
 
 const borrowingTemplates = [
   {
-    userEmail: 'naannanggo@paterostechnologicalcollege.edu.ph',
+    userEmail: 'user4@example.com',
     bookBarcode: 'PTC-FIL-0001',
     status: 'Returned',
     borrow_date: daysAgo(20),
@@ -44,7 +36,7 @@ const borrowingTemplates = [
     remarks: `${DEMO_PREFIX}: Returned on time`
   },
   {
-    userEmail: 'naannanggo@paterostechnologicalcollege.edu.ph',
+    userEmail: 'user4@example.com',
     bookBarcode: 'PTC-FIL-0002',
     status: 'Returned',
     borrow_date: daysAgo(30),
@@ -54,7 +46,7 @@ const borrowingTemplates = [
     payment_method: 'Cash'
   },
   {
-    userEmail: 'naannanggo@paterostechnologicalcollege.edu.ph',
+    userEmail: 'user4@example.com',
     bookBarcode: 'PTC-FIL-0007',
     status: 'Active',
     borrow_date: daysAgo(3),
@@ -63,7 +55,7 @@ const borrowingTemplates = [
     remarks: `${DEMO_PREFIX}: Currently borrowed`
   },
   {
-    userEmail: 'kcadena@paterostechnologicalcollege.edu.ph',
+    userEmail: 'user3@example.com',
     bookBarcode: 'PTC-FIL-0008',
     status: 'Overdue',
     borrow_date: daysAgo(18),
@@ -72,7 +64,7 @@ const borrowingTemplates = [
     remarks: `${DEMO_PREFIX}: Overdue and unpaid`
   },
   {
-    userEmail: 'kcadena@paterostechnologicalcollege.edu.ph',
+    userEmail: 'user3@example.com',
     bookBarcode: 'PTC-FIL-0010',
     status: 'Pending',
     borrow_date: daysAgo(1),
@@ -81,7 +73,7 @@ const borrowingTemplates = [
     remarks: `${DEMO_PREFIX}: Pending request`
   },
   {
-    userEmail: 'naannanggo@paterostechnologicalcollege.edu.ph',
+    userEmail: 'user4@example.com',
     bookBarcode: 'PTC-FIL-0012',
     status: 'Rejected',
     borrow_date: daysAgo(2),
