@@ -80,6 +80,100 @@ const borrowingTemplates = [
     due_date: null,
     return_date: null,
     remarks: `${DEMO_PREFIX}: Rejected request`
+  },
+  {
+    userEmail: 'userone@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0013',
+    status: 'Returned',
+    borrow_date: daysAgo(40),
+    due_date: daysAgo(30),
+    return_date: daysAgo(28),
+    remarks: `${DEMO_PREFIX}: Returned early`
+  },
+  {
+    userEmail: 'userone@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0014',
+    status: 'Active',
+    borrow_date: daysAgo(6),
+    due_date: daysFromNow(6),
+    return_date: null,
+    remarks: `${DEMO_PREFIX}: Active borrowing`
+  },
+  {
+    userEmail: 'userone@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0015',
+    status: 'Returned',
+    borrow_date: daysAgo(25),
+    due_date: daysAgo(15),
+    return_date: daysAgo(10),
+    remarks: `${DEMO_PREFIX}: Returned late with payment`,
+    payment_method: 'Cash'
+  },
+  {
+    userEmail: 'usertwo@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0016',
+    status: 'Returned',
+    borrow_date: daysAgo(16),
+    due_date: daysAgo(9),
+    return_date: daysAgo(9),
+    remarks: `${DEMO_PREFIX}: Returned on time`
+  },
+  {
+    userEmail: 'usertwo@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0017',
+    status: 'Overdue',
+    borrow_date: daysAgo(22),
+    due_date: daysAgo(8),
+    return_date: null,
+    remarks: `${DEMO_PREFIX}: Overdue with payment recorded`,
+    payment_method: 'Cash'
+  },
+  {
+    userEmail: 'usertwo@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0018',
+    status: 'Pending',
+    borrow_date: daysAgo(2),
+    due_date: null,
+    return_date: null,
+    remarks: `${DEMO_PREFIX}: Pending request`
+  },
+  {
+    userEmail: 'usertwo@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0022',
+    status: 'Returned',
+    borrow_date: daysAgo(28),
+    due_date: daysAgo(18),
+    return_date: daysAgo(12),
+    remarks: `${DEMO_PREFIX}: Returned late with payment`,
+    payment_method: 'GCash'
+  },
+  {
+    userEmail: 'userthree@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0019',
+    status: 'Returned',
+    borrow_date: daysAgo(35),
+    due_date: daysAgo(25),
+    return_date: daysAgo(20),
+    remarks: `${DEMO_PREFIX}: Returned late with payment`,
+    payment_method: 'GCash'
+  },
+  {
+    userEmail: 'userthree@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0020',
+    status: 'Active',
+    borrow_date: daysAgo(4),
+    due_date: daysFromNow(5),
+    return_date: null,
+    remarks: `${DEMO_PREFIX}: Active borrowing`
+  },
+  {
+    userEmail: 'userfour@paterostechnologicalcollege.edu.ph',
+    bookBarcode: 'PTC-FIL-0021',
+    status: 'Returned',
+    borrow_date: daysAgo(12),
+    due_date: daysAgo(5),
+    return_date: daysAgo(4),
+    remarks: `${DEMO_PREFIX}: Returned on time`
   }
 ];
 

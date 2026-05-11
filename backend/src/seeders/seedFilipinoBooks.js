@@ -39,7 +39,15 @@ const filipinoBooks = [
   { title: 'Ang Tundo Man May Langit Din', author: 'Andres Cristobal Cruz', category: 'Filipino Literature', isbn: '9789712720108' },
   { title: 'Canal de la Reina', author: 'Liwayway A. Arceo', category: 'Filipino Literature', isbn: '9789712720115' },
   { title: 'Amapola sa 65 na Kabanata', author: 'Ricky Lee', category: 'Contemporary Filipino Fiction', isbn: '9789715087017' },
-  { title: 'Para Kay B', author: 'Ricky Lee', category: 'Contemporary Filipino Fiction', isbn: '9789715087024' }
+  { title: 'Para Kay B', author: 'Ricky Lee', category: 'Contemporary Filipino Fiction', isbn: '9789715087024' },
+  { title: 'Sa Mga Kuko ng Liwanag', author: 'Edgardo M. Reyes', category: 'Filipino Literature', isbn: '9789712725554' },
+  { title: 'May Day Eve', author: 'Nick Joaquin', category: 'Filipino Literature', isbn: '9789712725561' },
+  { title: 'A Question of Heroes', author: 'Nick Joaquin', category: 'Filipino Literature', isbn: '9789712725578' },
+  { title: 'The Pretenders', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712725585' },
+  { title: 'Dogeaters', author: 'Jessica Hagedorn', category: 'Contemporary Filipino Fiction', isbn: '9789712725592' },
+  { title: 'The Glass Slipper and Other Stories', author: 'Yvette Tan', category: 'Contemporary Filipino Fiction', isbn: '9789712725608' },
+  { title: 'The Best Philippine Short Stories', author: 'Various', category: 'Filipino Literature', isbn: '9789712725615' },
+  { title: 'Revolutionary Routes', author: 'Various', category: 'Philippine History', isbn: '9789712725622' }
 ];
 
 const buildCoverUrl = (title, side) => {
