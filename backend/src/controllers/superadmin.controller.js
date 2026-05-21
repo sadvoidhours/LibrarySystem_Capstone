@@ -224,6 +224,16 @@ const getUserGrowthReport = asyncHandler(async (req, res) => {
           },
           { $sort: { _id: 1 } }
         ],
+        hourly: [
+          { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%dT%H:00', date: '$createdAt' } },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ],
         weekly: [
           { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd } } },
           {
@@ -318,6 +328,7 @@ const getUserGrowthReport = asyncHandler(async (req, res) => {
     },
     series: {
       daily: (aggregation?.daily || []).map((item) => ({ label: item._id, count: item.count })),
+      hourly: (aggregation?.hourly || []).map((item) => ({ label: item._id, count: item.count })),
       weekly: (aggregation?.weekly || []).map((item) => ({ label: item._id, count: item.count })),
       monthly: (aggregation?.monthly || []).map((item) => ({ label: item._id, count: item.count })),
     }

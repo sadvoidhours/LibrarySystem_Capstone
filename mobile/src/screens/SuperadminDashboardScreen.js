@@ -7,7 +7,9 @@ import { useSelector } from 'react-redux';
 import api from '../api/client';
 import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
+import CalendarHeatmap from '../components/CalendarHeatmap';
 import EmptyState from '../components/EmptyState';
+import LineChart from '../components/LineChart';
 import MiniBarChart from '../components/MiniBarChart';
 import StatCard from '../components/StatCard';
 import StyledButton from '../components/StyledButton';
@@ -58,6 +60,28 @@ const buildDailySeries = (rangeStart, rangeEnd, items, palette) => {
   for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
     const key = formatIsoDate(cursor);
     const label = key.slice(5).replace('-', '/');
+    result.push({ label, value: countByKey.get(key) || 0, color: palette.green });
+  }
+
+  return result;
+};
+
+const buildHourlySeries = (rangeStart, rangeEnd, items, palette) => {
+  if (!rangeStart || !rangeEnd) {
+    return [];
+  }
+
+  const start = new Date(rangeStart);
+  const end = new Date(rangeEnd);
+  start.setMinutes(0, 0, 0);
+  end.setMinutes(0, 0, 0);
+
+  const countByKey = new Map(items.map((item) => [item.label, item.count]));
+  const result = [];
+
+  for (let cursor = new Date(start); cursor <= end; cursor.setHours(cursor.getHours() + 1)) {
+    const key = `${cursor.toISOString().slice(0, 13)}:00`;
+    const label = String(cursor.getHours()).padStart(2, '0');
     result.push({ label, value: countByKey.get(key) || 0, color: palette.green });
   }
 
@@ -186,6 +210,14 @@ export default function SuperadminDashboardScreen({ navigation }) {
     return buildDailySeries(growth.range.start, growth.range.end, growth.series?.daily || [], palette);
   }, [growth, palette]);
 
+  const growthHourlyItems = useMemo(() => {
+    if (!growth?.range?.start || !growth?.range?.end) {
+      return [];
+    }
+
+    return buildHourlySeries(growth.range.start, growth.range.end, growth.series?.hourly || [], palette);
+  }, [growth, palette]);
+
   const growthWeeklyItems = useMemo(() => {
     return (growth?.series?.weekly || []).map((item) => ({
       label: formatWeekLabel(item.label),
@@ -194,13 +226,36 @@ export default function SuperadminDashboardScreen({ navigation }) {
     }));
   }, [growth, palette]);
 
-  const growthMonthlyItems = useMemo(() => {
-    return (growth?.series?.monthly || []).map((item) => ({
-      label: item.label,
-      value: item.count,
-      color: palette.orange,
-    }));
-  }, [growth, palette]);
+  const rangeDays = useMemo(() => {
+    if (!growth?.range?.start || !growth?.range?.end) {
+      return 0;
+    }
+
+    const start = new Date(growth.range.start);
+    const end = new Date(growth.range.end);
+    const diffMs = end.getTime() - start.getTime();
+    return Math.max(1, Math.floor(diffMs / (24 * 60 * 60 * 1000)) + 1);
+  }, [growth]);
+
+  const chartVariant = useMemo(() => {
+    if (!rangeDays) {
+      return 'daily';
+    }
+
+    if (rangeDays <= 1) {
+      return 'hourly';
+    }
+
+    if (rangeDays <= 7) {
+      return 'daily';
+    }
+
+    if (rangeDays <= 31) {
+      return 'calendar';
+    }
+
+    return 'weekly';
+  }, [rangeDays]);
 
   const renderMetric = ({ item }) => (
     <Card key={item.key} style={[styles.metricCard, { backgroundColor: palette.surfaceAlt, borderColor: palette.gray100 }]}>
@@ -386,26 +441,41 @@ export default function SuperadminDashboardScreen({ navigation }) {
           <Card style={styles.growthCard}>
             <Text style={[styles.sectionText, { color: palette.gray500 }]}>Loading growth report...</Text>
           </Card>
-        ) : growthDailyItems.length ? (
-          <View style={styles.growthCharts}>
-            <MiniBarChart
-              title="Daily registrations"
-              subtitle="New users per day"
-              items={growthDailyItems}
-            />
-            <MiniBarChart
-              title="Weekly registrations"
-              subtitle="Weekly signup totals"
-              items={growthWeeklyItems}
-            />
-            <MiniBarChart
-              title="Monthly registrations"
-              subtitle="Month over month growth"
-              items={growthMonthlyItems}
-            />
-          </View>
-        ) : (
+        ) : !growth?.range ? (
           <EmptyState icon="stats-chart" message="No user growth data available for this range." />
+        ) : (
+          <View style={styles.growthCharts}>
+            {chartVariant === 'hourly' ? (
+              <LineChart
+                title="Hourly registrations"
+                subtitle="New users by hour"
+                items={growthHourlyItems}
+              />
+            ) : null}
+            {chartVariant === 'daily' ? (
+              <MiniBarChart
+                title="Daily registrations"
+                subtitle="New users per day"
+                items={growthDailyItems}
+              />
+            ) : null}
+            {chartVariant === 'calendar' ? (
+              <CalendarHeatmap
+                title="30-day registrations"
+                subtitle="Daily totals in a calendar view"
+                rangeStart={growth.range.start}
+                rangeEnd={growth.range.end}
+                items={growthDailyItems}
+              />
+            ) : null}
+            {chartVariant === 'weekly' ? (
+              <LineChart
+                title="Weekly registrations"
+                subtitle="Weekly signup totals"
+                items={growthWeeklyItems}
+              />
+            ) : null}
+          </View>
         )}
 
         <View style={styles.sectionHeader}>
