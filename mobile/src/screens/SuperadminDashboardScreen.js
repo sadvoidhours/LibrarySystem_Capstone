@@ -247,14 +247,14 @@ export default function SuperadminDashboardScreen({ navigation }) {
     }
 
     if (rangeDays <= 7) {
-      return 'daily';
+      return 'dailyLine';
     }
 
     if (rangeDays <= 31) {
       return 'calendar';
     }
 
-    return 'weekly';
+    return 'weeklyLine';
   }, [rangeDays]);
 
   const renderMetric = ({ item }) => (
@@ -450,13 +450,15 @@ export default function SuperadminDashboardScreen({ navigation }) {
                 title="Hourly registrations"
                 subtitle="New users by hour"
                 items={growthHourlyItems}
+                labelEvery={2}
               />
             ) : null}
-            {chartVariant === 'daily' ? (
-              <MiniBarChart
+            {chartVariant === 'dailyLine' ? (
+              <LineChart
                 title="Daily registrations"
-                subtitle="New users per day"
+                subtitle="Last 7 days trend"
                 items={growthDailyItems}
+                labelEvery={1}
               />
             ) : null}
             {chartVariant === 'calendar' ? (
@@ -468,11 +470,12 @@ export default function SuperadminDashboardScreen({ navigation }) {
                 items={growthDailyItems}
               />
             ) : null}
-            {chartVariant === 'weekly' ? (
+            {chartVariant === 'weeklyLine' ? (
               <LineChart
                 title="Weekly registrations"
-                subtitle="Weekly signup totals"
+                subtitle="90-day trend by week"
                 items={growthWeeklyItems}
+                labelEvery={1}
               />
             ) : null}
           </View>

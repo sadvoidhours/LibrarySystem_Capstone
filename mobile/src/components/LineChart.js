@@ -7,7 +7,7 @@ import Card from './Card';
 
 const buildPath = (points) => points.map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x} ${point.y}`).join(' ');
 
-export default function LineChart({ title, subtitle, items = [], height = 140 }) {
+export default function LineChart({ title, subtitle, items = [], height = 140, labelEvery = 1 }) {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = getThemePalette(themeMode);
   const { width } = useWindowDimensions();
@@ -67,7 +67,7 @@ export default function LineChart({ title, subtitle, items = [], height = 140 })
                   style={[styles.label, { color: palette.gray500, width: pointSpacing }]}
                   numberOfLines={1}
                 >
-                  {item.label}
+                  {index % labelEvery === 0 ? item.label : ''}
                 </Text>
               ))}
             </View>
