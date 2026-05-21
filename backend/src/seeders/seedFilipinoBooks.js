@@ -10,50 +10,247 @@ const logResetAttempt = (status, detail) => {
   console.warn(`[DB_RESET][${new Date().toISOString()}] ${status} - ${detail}`);
 };
 
-const filipinoBooks = [
-  { title: 'Noli Me Tangere', author: 'Jose Rizal', category: 'Philippine Classics', isbn: '9789711005459' },
-  { title: 'El Filibusterismo', author: 'Jose Rizal', category: 'Philippine Classics', isbn: '9789711005466' },
-  { title: 'Florante at Laura', author: 'Francisco Balagtas', category: 'Philippine Classics', isbn: '9789715501964' },
-  { title: 'Ibong Adarna', author: 'Anonymous', category: 'Philippine Epics', isbn: '9789712721235' },
-  { title: 'Mga Ibong Mandaragit', author: 'Amado V. Hernandez', category: 'Filipino Literature', isbn: '9789712715180' },
-  { title: 'Luha ng Buwaya', author: 'Amado V. Hernandez', category: 'Filipino Literature', isbn: '9789712715227' },
-  { title: 'Dekada 70', author: 'Lualhati Bautista', category: 'Filipino Literature', isbn: '9789712729378' },
-  { title: 'Bata, Bata... Pa\'no Ka Ginawa?', author: 'Lualhati Bautista', category: 'Filipino Literature', isbn: '9789712729385' },
-  { title: 'Gapo', author: 'Lualhati Bautista', category: 'Filipino Literature', isbn: '9789712729392' },
-  { title: 'Banaag at Sikat', author: 'Lope K. Santos', category: 'Filipino Literature', isbn: '9789712715555' },
-  { title: 'Po-on', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712715562' },
-  { title: 'Tree', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712715579' },
-  { title: 'My Brother, My Executioner', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712715586' },
-  { title: 'Mass', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712715593' },
-  { title: 'Viajero', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712715609' },
-  { title: 'Smaller and Smaller Circles', author: 'F.H. Batacan', category: 'Contemporary Filipino Fiction', isbn: '9789715083439' },
-  { title: 'America Is in the Heart', author: 'Carlos Bulosan', category: 'Filipino Literature', isbn: '9780295952894' },
-  { title: 'The Woman Who Had Two Navels', author: 'Nick Joaquin', category: 'Filipino Literature', isbn: '9789712721693' },
-  { title: 'Cave and Shadows', author: 'Nick Joaquin', category: 'Filipino Literature', isbn: '9789712721686' },
-  { title: 'The Rosales Saga', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712715616' },
-  { title: 'Without Seeing the Dawn', author: 'Stevan Javellana', category: 'Filipino Literature', isbn: '9789712722362' },
-  { title: 'Ermita', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712715623' },
-  { title: 'State of War', author: 'Ninotchka Rosca', category: 'Contemporary Filipino Fiction', isbn: '9789712725028' },
-  { title: 'Ilustrado', author: 'Miguel Syjuco', category: 'Contemporary Filipino Fiction', isbn: '9780374172953' },
-  { title: 'The Farm', author: 'Joanne Ramos', category: 'Contemporary Filipino Fiction', isbn: '9780525558629' },
-  { title: 'Insurrecto', author: 'Gina Apostol', category: 'Contemporary Filipino Fiction', isbn: '9781566895209' },
-  { title: 'ABNKKBSNPLAko?!', author: 'Bob Ong', category: 'Contemporary Filipino Nonfiction', isbn: '9789719137428' },
-  { title: 'Macarthur', author: 'Bob Ong', category: 'Contemporary Filipino Fiction', isbn: '9789719137442' },
-  { title: 'Ang Mga Kaibigan ni Mama Susan', author: 'Bob Ong', category: 'Contemporary Filipino Fiction', isbn: '9789719137466' },
-  { title: 'Kapitan Sino', author: 'Bob Ong', category: 'Contemporary Filipino Fiction', isbn: '9789719137473' },
-  { title: 'Mga Kuwento ni Lola Basyang', author: 'Severino Reyes', category: 'Filipino Literature', isbn: '9789712720016' },
-  { title: 'Ang Tundo Man May Langit Din', author: 'Andres Cristobal Cruz', category: 'Filipino Literature', isbn: '9789712720108' },
-  { title: 'Canal de la Reina', author: 'Liwayway A. Arceo', category: 'Filipino Literature', isbn: '9789712720115' },
-  { title: 'Amapola sa 65 na Kabanata', author: 'Ricky Lee', category: 'Contemporary Filipino Fiction', isbn: '9789715087017' },
-  { title: 'Para Kay B', author: 'Ricky Lee', category: 'Contemporary Filipino Fiction', isbn: '9789715087024' },
-  { title: 'Sa Mga Kuko ng Liwanag', author: 'Edgardo M. Reyes', category: 'Filipino Literature', isbn: '9789712725554' },
-  { title: 'May Day Eve', author: 'Nick Joaquin', category: 'Filipino Literature', isbn: '9789712725561' },
-  { title: 'A Question of Heroes', author: 'Nick Joaquin', category: 'Filipino Literature', isbn: '9789712725578' },
-  { title: 'The Pretenders', author: 'F. Sionil Jose', category: 'Filipino Literature', isbn: '9789712725585' },
-  { title: 'Dogeaters', author: 'Jessica Hagedorn', category: 'Contemporary Filipino Fiction', isbn: '9789712725592' },
-  { title: 'The Glass Slipper and Other Stories', author: 'Yvette Tan', category: 'Contemporary Filipino Fiction', isbn: '9789712725608' },
-  { title: 'The Best Philippine Short Stories', author: 'Various', category: 'Filipino Literature', isbn: '9789712725615' },
-  { title: 'Revolutionary Routes', author: 'Various', category: 'Philippine History', isbn: '9789712725622' }
+const libraryBooks = [
+  {
+    title: 'INFORMATION MANAGEMENT',
+    author: 'RAMESH SINGH',
+    edition: 'FIRST EDITION',
+    publisher: 'HORIZON PRESS',
+    publication_year: '2022',
+    place_of_publication: 'JAIPUR, RAJASTHAN, INDIA',
+    isbn: '978-93-879857-3-5',
+    format: 'BOOK',
+    physical_description: 'VII, 250 PAGES ; 24 CM',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'BASICS OF NANO COMPUTER',
+    author: 'ROHAN SHARMA',
+    edition: 'FIRST EDITION',
+    publisher: 'VENUS BOOKS',
+    publication_year: '2023',
+    place_of_publication: 'DARYA GANJ, NEW DELHI, INDIA',
+    isbn: '978-93-86559-27-2',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'OBJECT ORIENTED SOFTWARE ENGINEERING',
+    author: 'GAH COOPER',
+    edition: 'FIRST EDITION',
+    publisher: 'VINTAGE PRESS LTD',
+    publication_year: '2024',
+    place_of_publication: 'GREATER LONDON, UNITED KINGDOM',
+    isbn: '978-19-167843-5-2',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'SOFTWARE ENGINEERING',
+    author: 'PRAKASH SHRIVASTAVA',
+    edition: 'FIRST EDITION',
+    publisher: 'HARI BOOKS',
+    publication_year: '2023',
+    place_of_publication: 'I.P. EXTENSION, DELHI, INDIA',
+    isbn: '978-93-95680-12-7',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'EMBEDDED SYSTEMS WORLD CLASS DESIGNS',
+    author: 'MANOJ VERMA',
+    edition: 'FIRST EDITION',
+    publisher: 'RANDOM PUBLICATIONS LLP',
+    publication_year: '2024',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-575110-9-4',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'AWARENESS OF E-LEARNING',
+    author: 'DR. S.K. PANNEER SELVAM',
+    edition: 'FIRST EDITION',
+    publisher: 'RANDOM PUBLICATIONS LLP',
+    publication_year: '2022',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-86391-65-0',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'ROBOTICS VISION AND CONTROL FUNDAMENTAL ALGORITHMS IN MATLAB',
+    author: 'GELAR CLARKE',
+    edition: 'FIRST EDITION',
+    publisher: 'VENUS BOOKS',
+    publication_year: '2024',
+    place_of_publication: 'DARYA GANJ, NEW DELHI, INDIA',
+    isbn: '978-93-954318-8-0',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'COMPUTER BASICS WITH OFFICE AUTOMATION',
+    author: 'SANJAY SINGH',
+    edition: 'FIRST EDITION',
+    publisher: 'RANDOM PUBLICATIONS LLP',
+    publication_year: '2024',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-575110-8-7',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'DATA ANALYSIS AND DECISION TOOLS',
+    author: 'HARVINDER SINGH, NEERU GUPTA',
+    edition: 'FIRST EDITION',
+    publisher: 'PRATAP BOOK SERVICES',
+    publication_year: '2023',
+    place_of_publication: 'IP EXT. DELHI, INDIA',
+    isbn: '978-93-95668-06-4',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'COMPILERS PRINCIPLES, TECHNIQUES AND TOOLS',
+    author: 'ADAM MENDONHA',
+    edition: 'FIRST EDITION',
+    publisher: 'RANDOM PUBLICATIONS LLP',
+    publication_year: '2024',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-575160-3-7',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'INFORMATION TECHNOLOGY FOR FUTURE',
+    author: 'ADAM MENDONHA',
+    edition: 'FIRST EDITION',
+    publisher: 'VENUS BOOKS',
+    publication_year: '2024',
+    place_of_publication: 'DARYA GANJ, NEW DELHI, INDIA',
+    isbn: '978-81-19920-48-8',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'INFORMATION TECHNOLOGY AND ECONOMIC DEVELOPMENT',
+    author: 'MANOJ VERMA',
+    edition: 'FIRST EDITION',
+    publisher: 'RANDOM PUBLICATIONS LLP',
+    publication_year: '2024',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-575145-2-1',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'THE ESSENCE OF ARTIFICIAL INTELLIGENCE',
+    author: 'LUKA GRAY',
+    edition: 'FIRST EDITION',
+    publisher: 'RANDOM PUBLICATIONS LLP',
+    publication_year: '2024',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-575110-3-2',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'MACHINE LEARNING THE NEW AI',
+    author: 'DARWIN BAILEY',
+    edition: 'FIRST EDITION',
+    publisher: 'VENUS BOOKS',
+    publication_year: '2024',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-95431-78-1',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'INFORMATION SOURCES AND SERVICES',
+    author: 'DR. DHARAMVEER SINGH',
+    edition: 'FIRST EDITION',
+    publisher: 'ABD PUBLISHERS',
+    publication_year: '2024',
+    place_of_publication: 'JAIPUR, RAJASTHAN, INDIA',
+    isbn: '978-81-83769-24-2',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'BASIC COMPUTER CODING: HTML',
+    author: '3G E-LEARNING',
+    edition: '2ND EDITION',
+    publisher: '3G ELearning LLC',
+    publication_year: 'NOT SPECIFIED',
+    place_of_publication: 'NOT SPECIFIED',
+    isbn: '978-1-98465-894-4',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'SIMPLE OBJECT-ORIENTED DESIGN',
+    author: 'MAURÍCIO ANICHE',
+    edition: 'FIRST EDITION',
+    publisher: 'MANNING PUBLICATIONS CO.',
+    publication_year: 'NOT SPECIFIED',
+    place_of_publication: 'SHELTER ISLAND, NEW YORK',
+    isbn: '978-1-63343-799-9',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'AUTOCAD 3D MODELING FUNDAMENTALS (WITH HANDS-ON TYPE EXERCISES',
+    author: 'PRITAM SINGH GILL',
+    edition: 'FIRST EDITION',
+    publisher: 'S. K. KATARIA & SONS',
+    publication_year: '2024',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-5014-648-4',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'EFFICIENT DYNAMIC SIMULATION OF ROBOTICS MECHANISM',
+    author: 'ROHAN SHARMA',
+    edition: 'FIRST EDITION',
+    publisher: 'VENUS BOOKS',
+    publication_year: '2023',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-95431-51-4',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  },
+  {
+    title: 'COMPUTERS AS COMPONENTS EMBEDDED SYSTEM DESIGN',
+    author: 'ZOE AMOS',
+    edition: 'FIRST EDITION',
+    publisher: 'RANDOM PUBLICATIONS LLP',
+    publication_year: '2024',
+    place_of_publication: 'DARYAGANJ, NEW DELHI, INDIA',
+    isbn: '978-93-575192-2-9',
+    format: 'BOOK',
+    physical_description: 'APPROXIMATELY 300 PAGES ; ROYAL SIZE',
+    language: 'ENGLISH'
+  }
 ];
 
 const buildCoverUrl = (title, side) => {
@@ -61,14 +258,31 @@ const buildCoverUrl = (title, side) => {
   return `https://placehold.co/600x900/${palette}?text=${encodeURIComponent(`${title}\n${side === 'front' ? 'Front Cover' : 'Back Cover'}`)}`;
 };
 
+const parseYear = (value) => {
+  const parsed = Number(String(value || '').match(/\d{4}/)?.[0] || NaN);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 const buildBookPayload = (book, index) => ({
-  ...book,
-  available_copies: 5,
-  total_copies: 5,
-  publication_year: null,
+  title: book.title,
+  author: book.author,
+  edition: book.edition || '',
+  publisher: book.publisher || '',
+  place_of_publication: book.place_of_publication || '',
+  isbn: book.isbn || '',
+  format: book.format || 'BOOK',
+  physical_description: book.physical_description || '',
+  subject_headings: [],
+  language: book.language || '',
+  shelf_location: '',
+  notes: '',
+  date_added: new Date(),
+  available_copies: 1,
+  total_copies: 1,
+  publication_year: parseYear(book.publication_year),
   coverImageUrl: buildCoverUrl(book.title, 'front'),
   backCoverImageUrl: buildCoverUrl(book.title, 'back'),
-  barcodeString: `PTC-FIL-${String(index + 1).padStart(4, '0')}`
+  barcodeString: `PTC-LIB-${String(index + 1).padStart(4, '0')}`
 });
 
 const seed = async () => {
@@ -88,9 +302,9 @@ const seed = async () => {
       console.log(`Reset complete. Removed ${deleteResult.deletedCount} books.`);
     }
 
-    const operations = filipinoBooks.map((book, index) => ({
+    const operations = libraryBooks.map((book, index) => ({
       updateOne: {
-        filter: { barcodeString: `PTC-FIL-${String(index + 1).padStart(4, '0')}` },
+        filter: { barcodeString: `PTC-LIB-${String(index + 1).padStart(4, '0')}` },
         update: { $set: buildBookPayload(book, index) },
         upsert: true
       }

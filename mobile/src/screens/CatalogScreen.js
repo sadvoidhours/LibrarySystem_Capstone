@@ -28,6 +28,19 @@ export default function CatalogScreen() {
   const isModalWide = width >= 900;
   const numColumns = isWide ? 2 : 1;
 
+  const formatDateLabel = (value) => {
+    if (!value) {
+      return 'N/A';
+    }
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return 'N/A';
+    }
+
+    return parsed.toLocaleDateString();
+  };
+
   useEffect(() => {
     dispatch(fetchBooks({ limit: 1000 }));
   }, [dispatch]);
@@ -36,7 +49,7 @@ export default function CatalogScreen() {
 
   const filteredItems = items.filter((book) => {
     const matchesQuery = !q.trim()
-      || `${book.title} ${book.author} ${book.category} ${book.isbn || ''} ${book.barcodeString || ''}`.toLowerCase().includes(q.trim().toLowerCase());
+      || `${book.title} ${book.author} ${book.category} ${book.publisher || ''} ${book.edition || ''} ${book.subject_headings || ''} ${book.language || ''} ${book.shelf_location || ''} ${book.isbn || ''} ${book.barcodeString || ''}`.toLowerCase().includes(q.trim().toLowerCase());
     const matchesCategory = activeCategory === 'All' || book.category === activeCategory;
     const matchesAvailability =
       availability === 'all'
@@ -237,11 +250,39 @@ export default function CatalogScreen() {
 
             <View style={styles.modalInfo}>
               <Text style={[styles.modalMeta, { color: palette.gray500 }]}>{selectedBook.author}</Text>
+              {selectedBook.edition ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Edition: {selectedBook.edition}</Text>
+              ) : null}
+              {selectedBook.publisher ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Publisher: {selectedBook.publisher}</Text>
+              ) : null}
+              {selectedBook.place_of_publication ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Place of Publication: {selectedBook.place_of_publication}</Text>
+              ) : null}
               <Text style={[styles.modalMeta, { color: palette.gray500 }]}>{selectedBook.category || 'Uncategorized'}</Text>
-              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Publication Year: {selectedBook.publication_year || 'N/A'}</Text>
+              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Year of Publication: {selectedBook.publication_year || 'N/A'}</Text>
               <Text style={[styles.modalMeta, { color: palette.gray500 }]}>ISBN: {selectedBook.isbn || 'N/A'}</Text>
+              {selectedBook.format ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Format: {selectedBook.format}</Text>
+              ) : null}
+              {selectedBook.physical_description ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Physical Description: {selectedBook.physical_description}</Text>
+              ) : null}
+              {selectedBook.subject_headings?.length ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Subjects: {Array.isArray(selectedBook.subject_headings) ? selectedBook.subject_headings.join(', ') : selectedBook.subject_headings}</Text>
+              ) : null}
+              {selectedBook.language ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Language: {selectedBook.language}</Text>
+              ) : null}
+              {selectedBook.shelf_location ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Shelf Location: {selectedBook.shelf_location}</Text>
+              ) : null}
               <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Copies: {selectedBook.available_copies}/{selectedBook.total_copies || selectedBook.available_copies}</Text>
               <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Barcode: {selectedBook.barcodeString}</Text>
+              <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Date Added: {formatDateLabel(selectedBook.date_added)}</Text>
+              {selectedBook.notes ? (
+                <Text style={[styles.modalMeta, { color: palette.gray500 }]}>Notes: {selectedBook.notes}</Text>
+              ) : null}
               <View style={styles.modalBadgeRow}>
                 <View
                   style={[

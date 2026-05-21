@@ -9,7 +9,17 @@ const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g
 const createBookValidation = [
   body('title').trim().notEmpty(),
   body('author').trim().notEmpty(),
+  body('edition').optional().trim(),
+  body('publisher').optional().trim(),
+  body('place_of_publication').optional().trim(),
   body('isbn').optional().trim(),
+  body('format').optional().trim(),
+  body('physical_description').optional().trim(),
+  body('subject_headings').optional().isArray(),
+  body('language').optional().trim(),
+  body('shelf_location').optional().trim(),
+  body('notes').optional().trim(),
+  body('date_added').optional().isISO8601(),
   body('category').optional().trim(),
   body('publication_year').optional().isInt({ min: 0 }),
   body('total_copies').optional().isInt({ min: 0 }),
@@ -22,15 +32,48 @@ const createBookValidation = [
 const updateBookValidation = [
   body('title').optional().trim().notEmpty(),
   body('author').optional().trim().notEmpty(),
+  body('edition').optional().trim(),
+  body('publisher').optional().trim(),
+  body('place_of_publication').optional().trim(),
   body('isbn').optional().trim(),
+  body('format').optional().trim(),
+  body('physical_description').optional().trim(),
+  body('subject_headings').optional().isArray(),
+  body('language').optional().trim(),
+  body('shelf_location').optional().trim(),
+  body('notes').optional().trim(),
+  body('date_added').optional().isISO8601(),
+  body('category').optional().trim(),
   body('publication_year').optional().isInt({ min: 0 }),
   body('total_copies').optional().isInt({ min: 0 }),
   body('available_copies').optional().isInt({ min: 0 }),
   body('coverImageUrl').optional().trim(),
-  body('backCoverImageUrl').optional().trim()
+  body('backCoverImageUrl').optional().trim(),
+  body('barcodeString').optional().trim()
 ];
 
-const BOOK_FIELDS = ['title', 'author', 'isbn', 'category', 'publication_year', 'total_copies', 'available_copies', 'coverImageUrl', 'backCoverImageUrl'];
+const BOOK_FIELDS = [
+  'title',
+  'author',
+  'edition',
+  'publisher',
+  'place_of_publication',
+  'isbn',
+  'format',
+  'physical_description',
+  'subject_headings',
+  'language',
+  'shelf_location',
+  'notes',
+  'date_added',
+  'category',
+  'publication_year',
+  'total_copies',
+  'available_copies',
+  'coverImageUrl',
+  'backCoverImageUrl',
+  'barcodeString'
+];
 
 const pickBookFields = (source) => BOOK_FIELDS.reduce((accumulator, field) => {
   if (Object.prototype.hasOwnProperty.call(source, field)) {
@@ -49,6 +92,34 @@ const parseCopyCount = (value, fallback) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const normalizeSubjectHeadings = (value) => {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) => String(entry || '').trim()).filter(Boolean);
+  }
+
+  return String(value)
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+};
+
+const parseDateInput = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+};
+
 const normalizeIsbn = (value) => String(value || '').trim().replace(/[^0-9Xx]/g, '').toUpperCase();
 
 const pickFirst = (...values) => values.find((value) => value !== undefined && value !== null && String(value).trim() !== '') || '';
@@ -65,7 +136,17 @@ const extractGoogleBookData = (item) => {
   return {
     title: pickFirst(volumeInfo.title),
     author: Array.isArray(volumeInfo.authors) ? volumeInfo.authors.join(', ') : pickFirst(volumeInfo.authors),
+    edition: pickFirst(volumeInfo.edition, volumeInfo.contentVersion),
+    publisher: pickFirst(volumeInfo.publisher),
+    place_of_publication: '',
     isbn: normalizeIsbn(isbn),
+    format: pickFirst(volumeInfo.printType),
+    physical_description: volumeInfo.pageCount ? `${volumeInfo.pageCount} pages` : '',
+    subject_headings: Array.isArray(volumeInfo.categories) ? volumeInfo.categories : [],
+    language: pickFirst(volumeInfo.language),
+    shelf_location: '',
+    notes: pickFirst(volumeInfo.description),
+    date_added: null,
     category: Array.isArray(volumeInfo.categories) ? volumeInfo.categories[0] : pickFirst(volumeInfo.categories),
     publication_year: volumeInfo.publishedDate ? Number(String(volumeInfo.publishedDate).slice(0, 4)) || null : null,
     coverImageUrl: pickFirst(volumeInfo.imageLinks?.thumbnail, volumeInfo.imageLinks?.smallThumbnail),
@@ -73,15 +154,40 @@ const extractGoogleBookData = (item) => {
   };
 };
 
-const extractOpenLibraryData = (data) => ({
-  title: pickFirst(data?.title),
-  author: Array.isArray(data?.authors) ? data.authors.map((author) => author?.name).filter(Boolean).join(', ') : '',
-  isbn: normalizeIsbn(Array.isArray(data?.identifiers?.isbn_13) ? data.identifiers.isbn_13[0] : Array.isArray(data?.identifiers?.isbn_10) ? data.identifiers.isbn_10[0] : ''),
-  category: Array.isArray(data?.subjects) ? data.subjects[0]?.name : '',
-  publication_year: data?.publish_date ? Number(String(data.publish_date).match(/\d{4}/)?.[0]) || null : null,
-  coverImageUrl: pickFirst(data?.cover?.large, data?.cover?.medium, data?.cover?.small),
-  backCoverImageUrl: ''
-});
+const extractOpenLibraryData = (data) => {
+  const subjects = Array.isArray(data?.subjects)
+    ? data.subjects.map((subject) => subject?.name || subject).filter(Boolean)
+    : [];
+  const languages = Array.isArray(data?.languages)
+    ? data.languages.map((lang) => lang?.key || lang).filter(Boolean)
+    : [];
+  const language = languages.length
+    ? String(languages[0]).split('/').pop()
+    : '';
+  const notes = typeof data?.notes === 'string'
+    ? data.notes
+    : data?.notes?.value || '';
+
+  return {
+    title: pickFirst(data?.title),
+    author: Array.isArray(data?.authors) ? data.authors.map((author) => author?.name).filter(Boolean).join(', ') : '',
+    edition: pickFirst(data?.edition_name),
+    publisher: Array.isArray(data?.publishers) ? data.publishers[0]?.name || data.publishers[0] : '',
+    place_of_publication: Array.isArray(data?.publish_places) ? data.publish_places[0]?.name || data.publish_places[0] : '',
+    isbn: normalizeIsbn(Array.isArray(data?.identifiers?.isbn_13) ? data.identifiers.isbn_13[0] : Array.isArray(data?.identifiers?.isbn_10) ? data.identifiers.isbn_10[0] : ''),
+    format: pickFirst(data?.physical_format),
+    physical_description: data?.number_of_pages ? `${data.number_of_pages} pages` : '',
+    subject_headings: subjects,
+    language,
+    shelf_location: '',
+    notes,
+    date_added: null,
+    category: subjects[0] || '',
+    publication_year: data?.publish_date ? Number(String(data.publish_date).match(/\d{4}/)?.[0]) || null : null,
+    coverImageUrl: pickFirst(data?.cover?.large, data?.cover?.medium, data?.cover?.small),
+    backCoverImageUrl: ''
+  };
+};
 
 const lookupByIsbnWeb = async (isbn) => {
   const normalizedIsbn = normalizeIsbn(isbn);
@@ -150,7 +256,10 @@ const listBooks = asyncHandler(async (req, res) => {
       ? {
           $or: [
               { title: { $regex: escapeRegex(q), $options: 'i' } },
-              { author: { $regex: escapeRegex(q), $options: 'i' } }
+              { author: { $regex: escapeRegex(q), $options: 'i' } },
+              { publisher: { $regex: escapeRegex(q), $options: 'i' } },
+              { isbn: { $regex: escapeRegex(q), $options: 'i' } },
+              { subject_headings: { $regex: escapeRegex(q), $options: 'i' } }
           ]
         }
       : {}),
@@ -204,11 +313,16 @@ const createBook = asyncHandler(async (req, res) => {
   const payload = {
     ...pickBookFields(req.body),
     publication_year: parseCopyCount(req.body.publication_year, null),
+    subject_headings: normalizeSubjectHeadings(req.body.subject_headings),
     ...copyCounts,
     coverImageUrl: req.body.coverImageUrl || '',
     backCoverImageUrl: req.body.backCoverImageUrl || '',
     barcodeString: String(req.body.barcodeString || '').trim() || generateBookBarcode(req.body.isbn)
   };
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'date_added')) {
+    payload.date_added = parseDateInput(req.body.date_added);
+  }
 
   const book = await Book.create(payload);
   return res.status(201).json(book);
@@ -224,6 +338,14 @@ const updateBook = asyncHandler(async (req, res) => {
 
   if (Object.prototype.hasOwnProperty.call(req.body, 'publication_year')) {
     payload.publication_year = parseCopyCount(req.body.publication_year, null);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'subject_headings')) {
+    payload.subject_headings = normalizeSubjectHeadings(req.body.subject_headings);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'date_added')) {
+    payload.date_added = parseDateInput(req.body.date_added);
   }
 
   const nextTotal = Object.prototype.hasOwnProperty.call(req.body, 'total_copies')

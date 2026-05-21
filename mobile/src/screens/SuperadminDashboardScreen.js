@@ -406,7 +406,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
           </View>
         ) : (
           <EmptyState icon="stats-chart" message="No user growth data available for this range." />
-        )
+        )}
 
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Quick actions</Text>

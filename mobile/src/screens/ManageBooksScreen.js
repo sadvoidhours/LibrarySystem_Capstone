@@ -30,7 +30,17 @@ export default function ManageBooksScreen() {
   const [form, setForm] = useState({
     title: '',
     author: '',
+    edition: '',
+    publisher: '',
+    place_of_publication: '',
     isbn: '',
+    format: '',
+    physical_description: '',
+    subject_headings: '',
+    language: '',
+    shelf_location: '',
+    notes: '',
+    date_added: '',
     category: '',
     publication_year: '',
     total_copies: '1',
@@ -47,7 +57,17 @@ export default function ManageBooksScreen() {
     setForm({
       title: '',
       author: '',
+      edition: '',
+      publisher: '',
+      place_of_publication: '',
       isbn: '',
+      format: '',
+      physical_description: '',
+      subject_headings: '',
+      language: '',
+      shelf_location: '',
+      notes: '',
+      date_added: '',
       category: '',
       publication_year: '',
       total_copies: '1',
@@ -72,14 +92,57 @@ export default function ManageBooksScreen() {
     load().catch(() => null);
   }, []);
 
+  const normalizeSubjectHeadingsInput = (value) => {
+    if (!value) {
+      return [];
+    }
+
+    return String(value)
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  };
+
+  const toNumberOrUndefined = (value) => {
+    if (value === '' || value === null || value === undefined) {
+      return undefined;
+    }
+
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+
   const addBook = async () => {
     try {
       const payload = {
         ...form,
-        publication_year: form.publication_year ? Number(form.publication_year) : null,
-        total_copies: Number(form.total_copies),
-        available_copies: Number(form.available_copies)
+        subject_headings: normalizeSubjectHeadingsInput(form.subject_headings),
+        total_copies: toNumberOrUndefined(form.total_copies),
+        available_copies: toNumberOrUndefined(form.available_copies)
       };
+
+      const publicationYear = toNumberOrUndefined(form.publication_year);
+      if (publicationYear !== undefined) {
+        payload.publication_year = publicationYear;
+      } else {
+        delete payload.publication_year;
+      }
+
+      if (payload.total_copies === undefined) {
+        delete payload.total_copies;
+      }
+
+      if (payload.available_copies === undefined) {
+        delete payload.available_copies;
+      }
+
+      if (!payload.date_added) {
+        delete payload.date_added;
+      }
+
+      if (!payload.barcodeString) {
+        delete payload.barcodeString;
+      }
 
       if (editingBookId) {
         await api.put(`/books/${editingBookId}`, payload);
@@ -105,7 +168,18 @@ export default function ManageBooksScreen() {
       ...current,
       title: bookData.title || current.title,
       author: bookData.author || current.author,
+      edition: bookData.edition || current.edition,
+      publisher: bookData.publisher || current.publisher,
+      place_of_publication: bookData.place_of_publication || current.place_of_publication,
       isbn: bookData.isbn || current.isbn,
+      format: bookData.format || current.format,
+      physical_description: bookData.physical_description || current.physical_description,
+      subject_headings: Array.isArray(bookData.subject_headings)
+        ? bookData.subject_headings.join(', ')
+        : bookData.subject_headings || current.subject_headings,
+      language: bookData.language || current.language,
+      shelf_location: bookData.shelf_location || current.shelf_location,
+      notes: bookData.notes || current.notes,
       category: bookData.category || current.category,
       publication_year: bookData.publication_year ? String(bookData.publication_year) : current.publication_year,
       coverImageUrl: bookData.coverImageUrl || current.coverImageUrl,
@@ -316,7 +390,17 @@ export default function ManageBooksScreen() {
     setForm({
       title: item.title || '',
       author: item.author || '',
+      edition: item.edition || '',
+      publisher: item.publisher || '',
+      place_of_publication: item.place_of_publication || '',
       isbn: item.isbn || '',
+      format: item.format || '',
+      physical_description: item.physical_description || '',
+      subject_headings: Array.isArray(item.subject_headings) ? item.subject_headings.join(', ') : item.subject_headings || '',
+      language: item.language || '',
+      shelf_location: item.shelf_location || '',
+      notes: item.notes || '',
+      date_added: item.date_added ? String(item.date_added).slice(0, 10) : '',
       category: item.category || '',
       publication_year: item.publication_year ? String(item.publication_year) : '',
       total_copies: String(item.total_copies ?? item.available_copies ?? 1),
@@ -343,6 +427,7 @@ export default function ManageBooksScreen() {
       <Text style={[styles.meta, { color: palette.gray500 }]}>{item.author}</Text>
       <Text style={[styles.meta, { color: palette.gray500 }]} numberOfLines={1}>ISBN: {item.isbn || 'N/A'}</Text>
       <Text style={[styles.meta, { color: palette.gray500 }]}>Year: {item.publication_year || 'N/A'}</Text>
+      <Text style={[styles.meta, { color: palette.gray500 }]} numberOfLines={1}>Shelf: {item.shelf_location || 'Unassigned'}</Text>
       <Text style={[styles.meta, { color: palette.gray500 }]}>Copies: {item.available_copies}/{item.total_copies || item.available_copies}</Text>
       <View style={styles.borrowerBlock}>
         <Text style={[styles.borrowerLabel, { color: palette.gray500 }]}>Borrowed by</Text>
@@ -356,7 +441,7 @@ export default function ManageBooksScreen() {
           <Text style={[styles.borrowerText, { color: palette.gray500 }]}>No current borrower</Text>
         )}
       </View>
-      <StyledButton title="Edit Book" variant="outline" small onPress={() => startEdit(item)} />
+      <StyledButton title="Edit Book" variant="primary" small onPress={() => startEdit(item)} style={styles.editButton} />
     </Card>
   );
 
@@ -369,6 +454,9 @@ export default function ManageBooksScreen() {
         <View style={styles.formGap}>
           <StyledInput label="Title" placeholder="Title" value={form.title} onChangeText={(v) => update('title', v)} />
           <StyledInput label="Author" placeholder="Author" value={form.author} onChangeText={(v) => update('author', v)} />
+          <StyledInput label="Edition" placeholder="First edition" value={form.edition} onChangeText={(v) => update('edition', v)} />
+          <StyledInput label="Publisher" placeholder="Publisher" value={form.publisher} onChangeText={(v) => update('publisher', v)} />
+          <StyledInput label="Place of Publication" placeholder="City, Country" value={form.place_of_publication} onChangeText={(v) => update('place_of_publication', v)} />
           <View style={styles.isbnRow}>
             <StyledInput
               label="ISBN"
@@ -387,8 +475,38 @@ export default function ManageBooksScreen() {
               loading={lookupLoading}
             />
           </View>
+          <View style={styles.row}>
+            <StyledInput label="Language" placeholder="English" value={form.language} onChangeText={(v) => update('language', v)} containerStyle={{ flex: 1 }} />
+            <StyledInput label="Format" placeholder="Print" value={form.format} onChangeText={(v) => update('format', v)} containerStyle={{ flex: 1 }} />
+          </View>
+          <StyledInput
+            label="Physical Description"
+            placeholder="e.g., 320 pages, illustrated"
+            value={form.physical_description}
+            onChangeText={(v) => update('physical_description', v)}
+            multiline
+            style={{ height: 88, textAlignVertical: 'top' }}
+          />
+          <StyledInput
+            label="Subject Headings / Keywords"
+            placeholder="history, literature, filipino"
+            value={form.subject_headings}
+            onChangeText={(v) => update('subject_headings', v)}
+          />
+          <View style={styles.row}>
+            <StyledInput label="Shelf Location" placeholder="Aisle 2 - Shelf B" value={form.shelf_location} onChangeText={(v) => update('shelf_location', v)} containerStyle={{ flex: 1 }} />
+            <StyledInput label="Date Added" placeholder="YYYY-MM-DD" value={form.date_added} onChangeText={(v) => update('date_added', v)} containerStyle={{ flex: 1 }} />
+          </View>
+          <StyledInput
+            label="Notes"
+            placeholder="Additional notes"
+            value={form.notes}
+            onChangeText={(v) => update('notes', v)}
+            multiline
+            style={{ height: 96, textAlignVertical: 'top' }}
+          />
           <StyledInput label="Category" placeholder="Category" value={form.category} onChangeText={(v) => update('category', v)} />
-          <StyledInput label="Publication Year" placeholder="2026" keyboardType="numeric" value={form.publication_year} onChangeText={(v) => update('publication_year', v)} />
+          <StyledInput label="Year of Publication" placeholder="2026" keyboardType="numeric" value={form.publication_year} onChangeText={(v) => update('publication_year', v)} />
           <View style={styles.row}>
             <StyledInput label="Total Copies" placeholder="1" keyboardType="numeric" value={form.total_copies} onChangeText={(v) => update('total_copies', v)} containerStyle={{ flex: 1 }} />
             <StyledInput label="Available Copies" placeholder="1" keyboardType="numeric" value={form.available_copies} onChangeText={(v) => update('available_copies', v)} containerStyle={{ flex: 1 }} />
@@ -505,6 +623,7 @@ const createStyles = (p) => StyleSheet.create({
   coverPreviewText: { ...fonts.sm, ...fonts.semibold },
   bookTitle: { ...fonts.base, ...fonts.bold },
   meta: { ...fonts.sm },
+  editButton: { alignSelf: 'flex-start' },
   borrowerBlock: { gap: 2, paddingVertical: spacing.xs },
   borrowerLabel: {
     ...fonts.xs,
