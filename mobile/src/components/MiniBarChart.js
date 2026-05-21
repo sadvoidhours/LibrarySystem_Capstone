@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { fonts, getThemePalette, radii, spacing } from '../theme/colors';
 import Card from './Card';
@@ -20,7 +20,11 @@ export default function MiniBarChart({ title, subtitle, items = [] }) {
         </View>
       </View>
 
-      <View style={styles.chartRow}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chartRow}
+      >
         {items.map((item) => {
           const value = Number(item.value) || 0;
           const heightPercent = `${Math.max(8, (value / maxValue) * 100)}%`;
@@ -37,7 +41,7 @@ export default function MiniBarChart({ title, subtitle, items = [] }) {
             </View>
           );
         })}
-      </View>
+      </ScrollView>
     </Card>
   );
 }
@@ -65,15 +69,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: spacing.sm,
+    paddingBottom: spacing.xs,
   },
   barGroup: {
-    flex: 1,
     alignItems: 'center',
     gap: 6,
-    minWidth: 56,
+    width: 56,
   },
   barGroupMobile: {
-    minWidth: 40,
+    width: 44,
     gap: 4,
   },
   barTrack: {
