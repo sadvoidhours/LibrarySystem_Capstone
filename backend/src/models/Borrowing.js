@@ -7,6 +7,7 @@ const borrowingSchema = new mongoose.Schema(
     borrow_date: { type: Date, default: Date.now },
     due_date: { type: Date },
     return_date: { type: Date },
+    penalty_due_date: { type: Date },
     status: {
       type: String,
       enum: ['Pending', 'Approved', 'Rejected', 'Active', 'Returned', 'Overdue'],

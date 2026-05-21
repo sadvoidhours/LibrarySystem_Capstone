@@ -22,7 +22,7 @@ const getMe = asyncHandler(async (req, res) => {
 });
 
 const updateMe = asyncHandler(async (req, res) => {
-  const { name, phone, profileImageUrl, themePreference } = req.body;
+  const { name, phone, profileImageUrl, themePreference, expoPushToken } = req.body;
 
   const updates = {};
 
@@ -40,6 +40,10 @@ const updateMe = asyncHandler(async (req, res) => {
 
   if (themePreference === 'light' || themePreference === 'dark') {
     updates.themePreference = themePreference;
+  }
+
+  if (typeof expoPushToken === 'string') {
+    updates.expoPushToken = expoPushToken.trim();
   }
 
   const updated = await User.findByIdAndUpdate(

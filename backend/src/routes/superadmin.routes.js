@@ -6,6 +6,7 @@ const {
   createAdminValidation,
   createAdmin,
   getOverview,
+  getUserGrowthReport,
   listUsers,
   updateUserRole,
   deleteBookRecord,
@@ -24,6 +25,7 @@ router.use(protect, authorize('superadmin'));
 
 router.post('/admins', createAdminValidation, validate, createAdmin);
 router.get('/overview', getOverview);
+router.get('/user-growth', getUserGrowthReport);
 router.get('/admins', listUsers);
 router.get('/users', listUsers);
 router.patch('/users/:id/role', userIdParamValidation, body('role').isIn(['student', 'faculty', 'admin', 'superadmin']), validate, updateUserRole);

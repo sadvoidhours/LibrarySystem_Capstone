@@ -4,6 +4,12 @@ const mongoose = require('mongoose');
 const connectDB = require('../config/db');
 const Book = require('../models/Book');
 
+const isProduction = process.env.NODE_ENV === 'production';
+const allowDbReset = process.env.ALLOW_DB_RESET === 'true';
+const logResetAttempt = (status, detail) => {
+  console.warn(`[DB_RESET][${new Date().toISOString()}] ${status} - ${detail}`);
+};
+
 const filipinoBooks = [
   { title: 'Noli Me Tangere', author: 'Jose Rizal', category: 'Philippine Classics', isbn: '9789711005459' },
   { title: 'El Filibusterismo', author: 'Jose Rizal', category: 'Philippine Classics', isbn: '9789711005466' },
@@ -71,6 +77,13 @@ const seed = async () => {
     const shouldReset = process.argv.includes('--reset');
 
     if (shouldReset) {
+      if (isProduction && !allowDbReset) {
+        logResetAttempt('BLOCKED', 'seedFilipinoBooks --reset blocked in production (set ALLOW_DB_RESET=true to override).');
+        process.exitCode = 1;
+        return;
+      }
+
+      logResetAttempt('ALLOWED', `seedFilipinoBooks --reset proceeding (NODE_ENV=${process.env.NODE_ENV || 'unset'}).`);
       const deleteResult = await Book.deleteMany({});
       console.log(`Reset complete. Removed ${deleteResult.deletedCount} books.`);
     }

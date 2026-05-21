@@ -9,7 +9,9 @@ import BrandHeader from '../components/BrandHeader';
 import Card from '../components/Card';
 import EmptyState from '../components/EmptyState';
 import MiniBarChart from '../components/MiniBarChart';
+import StatCard from '../components/StatCard';
 import StyledButton from '../components/StyledButton';
+import StyledInput from '../components/StyledInput';
 import { logout } from '../store/slices/authSlice';
 import { baseStyles, fonts, getThemePalette, radii, shadows, spacing } from '../theme/colors';
 
@@ -26,9 +28,47 @@ const metricCards = [
   { key: 'facultyUsers', label: 'Faculty', icon: 'person' },
   { key: 'pendingApprovals', label: 'Approvals', icon: 'hourglass' },
   { key: 'totalBooks', label: 'Books', icon: 'library' },
-  { key: 'activeBorrowings', label: 'Loans', icon: 'book' },
+  { key: 'activeBorrowings', label: 'Book Loans', icon: 'book' },
   { key: 'overdueBorrowings', label: 'Overdue', icon: 'alert-circle' },
 ];
+
+const formatIsoDate = (value) => value.toISOString().slice(0, 10);
+
+const getPresetRange = (preset) => {
+  const end = new Date();
+  const start = new Date();
+  const days = preset === '7d' ? 7 : preset === '90d' ? 90 : 30;
+  start.setDate(start.getDate() - (days - 1));
+  return { start: formatIsoDate(start), end: formatIsoDate(end) };
+};
+
+const buildDailySeries = (rangeStart, rangeEnd, items, palette) => {
+  if (!rangeStart || !rangeEnd) {
+    return [];
+  }
+
+  const start = new Date(rangeStart);
+  const end = new Date(rangeEnd);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  const countByKey = new Map(items.map((item) => [item.label, item.count]));
+  const result = [];
+
+  for (let cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+    const key = formatIsoDate(cursor);
+    const label = key.slice(5).replace('-', '/');
+    result.push({ label, value: countByKey.get(key) || 0, color: palette.green });
+  }
+
+  return result;
+};
+
+const formatWeekLabel = (value) => {
+  const parts = String(value || '').split('-W');
+  if (parts.length !== 2) return value;
+  return `W${parts[1]}`;
+};
 
 export default function SuperadminDashboardScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -40,6 +80,12 @@ export default function SuperadminDashboardScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [growth, setGrowth] = useState(null);
+  const [growthLoading, setGrowthLoading] = useState(true);
+  const [rangePreset, setRangePreset] = useState('30d');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [rangeError, setRangeError] = useState('');
 
   const loadOverview = async () => {
     try {
@@ -53,9 +99,73 @@ export default function SuperadminDashboardScreen({ navigation }) {
     }
   };
 
+  const loadGrowth = async (params) => {
+    try {
+      setGrowthLoading(true);
+      const response = await api.get('/superadmin/user-growth', { params });
+      setGrowth(response.data);
+    } catch (error) {
+      Alert.alert('Error', error.response?.data?.message || 'Unable to load user growth report');
+    } finally {
+      setGrowthLoading(false);
+    }
+  };
+
+  const applyPresetRange = (preset) => {
+    setRangePreset(preset);
+    setRangeError('');
+
+    if (preset !== 'custom') {
+      setCustomStart('');
+      setCustomEnd('');
+    }
+  };
+
+  const refreshGrowth = () => {
+    if (rangePreset === 'custom') {
+      applyCustomRange();
+      return;
+    }
+
+    const nextRange = getPresetRange(rangePreset);
+    loadGrowth(nextRange);
+  };
+
+  const applyCustomRange = () => {
+    if (!customStart || !customEnd) {
+      setRangeError('Enter both start and end dates.');
+      return;
+    }
+
+    const startDate = new Date(customStart);
+    const endDate = new Date(customEnd);
+
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      setRangeError('Use YYYY-MM-DD format for dates.');
+      return;
+    }
+
+    if (startDate > endDate) {
+      setRangeError('Start date must be before end date.');
+      return;
+    }
+
+    setRangeError('');
+    loadGrowth({ start: customStart, end: customEnd });
+  };
+
   useEffect(() => {
     loadOverview();
   }, []);
+
+  useEffect(() => {
+    if (rangePreset === 'custom') {
+      return;
+    }
+
+    const nextRange = getPresetRange(rangePreset);
+    loadGrowth(nextRange);
+  }, [rangePreset]);
 
   const recentUsers = overview?.recentUsers || [];
   const recentLogs = overview?.recentAuditLogs || [];
@@ -67,6 +177,30 @@ export default function SuperadminDashboardScreen({ navigation }) {
     { label: 'Admins', value: overview?.adminUsers ?? 0, color: palette.orange },
     { label: 'Superadmins', value: overview?.superadminUsers ?? 0, color: palette.red },
   ]), [overview, palette]);
+
+  const growthDailyItems = useMemo(() => {
+    if (!growth?.range?.start || !growth?.range?.end) {
+      return [];
+    }
+
+    return buildDailySeries(growth.range.start, growth.range.end, growth.series?.daily || [], palette);
+  }, [growth, palette]);
+
+  const growthWeeklyItems = useMemo(() => {
+    return (growth?.series?.weekly || []).map((item) => ({
+      label: formatWeekLabel(item.label),
+      value: item.count,
+      color: palette.blue,
+    }));
+  }, [growth, palette]);
+
+  const growthMonthlyItems = useMemo(() => {
+    return (growth?.series?.monthly || []).map((item) => ({
+      label: item.label,
+      value: item.count,
+      color: palette.orange,
+    }));
+  }, [growth, palette]);
 
   const renderMetric = ({ item }) => (
     <Card key={item.key} style={[styles.metricCard, { backgroundColor: palette.surfaceAlt, borderColor: palette.gray100 }]}>
@@ -141,7 +275,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
             </View>
             <View style={[styles.heroSummaryCard, { backgroundColor: palette.surfaceAlt }]}>
               <Text style={[styles.heroSummaryValue, { color: palette.gray800 }]}>{overview?.overdueBorrowings ?? 0}</Text>
-              <Text style={[styles.heroSummaryLabel, { color: palette.gray500 }]}>Overdue loans</Text>
+              <Text style={[styles.heroSummaryLabel, { color: palette.gray500 }]}>Overdue book loans</Text>
             </View>
           </View>
 
@@ -169,6 +303,110 @@ export default function SuperadminDashboardScreen({ navigation }) {
           subtitle="Breakdown of the active account base"
           items={chartItems}
         />
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>User growth</Text>
+          <Text style={[styles.sectionText, { color: palette.gray500 }]}>Daily, weekly, and monthly registrations</Text>
+        </View>
+
+        <View style={styles.growthStatsRow}>
+          <StatCard icon="person" iconColor={palette.green} label="Today" value={growth?.totals?.today ?? 0} />
+          <StatCard icon="people" iconColor={palette.blue} label="Last 7 Days" value={growth?.totals?.last7Days ?? 0} />
+          <StatCard icon="stats-chart" iconColor={palette.orange} label="Last 30 Days" value={growth?.totals?.last30Days ?? 0} />
+          <StatCard icon="time" iconColor={palette.red} label="Selected Range" value={growth?.totals?.rangeTotal ?? 0} />
+        </View>
+
+        <Card style={styles.growthCard}>
+          <View style={styles.growthHeaderRow}>
+            <View>
+              <Text style={[styles.sectionKicker, { color: palette.green }]}>Date range</Text>
+              <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Filter user growth</Text>
+              <Text style={[styles.sectionText, { color: palette.gray500 }]}>Pick a preset or set a custom range.</Text>
+            </View>
+            <Pressable
+              style={[styles.pulseChip, { backgroundColor: palette.greenLight }]}
+              onPress={refreshGrowth}
+            >
+              <Icon name="refresh" size={16} color={palette.chestnut} />
+              <Text style={[styles.pulseText, { color: palette.chestnut }]}>Refresh</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.growthFilterRow}>
+            <RangeChip
+              label="7D"
+              active={rangePreset === '7d'}
+              onPress={() => (rangePreset === '7d' ? refreshGrowth() : applyPresetRange('7d'))}
+              palette={palette}
+            />
+            <RangeChip
+              label="30D"
+              active={rangePreset === '30d'}
+              onPress={() => (rangePreset === '30d' ? refreshGrowth() : applyPresetRange('30d'))}
+              palette={palette}
+            />
+            <RangeChip
+              label="90D"
+              active={rangePreset === '90d'}
+              onPress={() => (rangePreset === '90d' ? refreshGrowth() : applyPresetRange('90d'))}
+              palette={palette}
+            />
+            <RangeChip
+              label="Custom"
+              active={rangePreset === 'custom'}
+              onPress={() => (rangePreset === 'custom' ? refreshGrowth() : applyPresetRange('custom'))}
+              palette={palette}
+            />
+          </View>
+
+          {rangePreset === 'custom' ? (
+            <View style={styles.customRangeRow}>
+              <StyledInput
+                label="Start date (YYYY-MM-DD)"
+                value={customStart}
+                onChangeText={setCustomStart}
+                placeholder="2026-01-01"
+                containerStyle={styles.customInput}
+                error={rangeError}
+              />
+              <StyledInput
+                label="End date (YYYY-MM-DD)"
+                value={customEnd}
+                onChangeText={setCustomEnd}
+                placeholder="2026-01-31"
+                containerStyle={styles.customInput}
+                error={rangeError}
+              />
+              <StyledButton title="Apply range" variant="success" onPress={applyCustomRange} style={styles.customApplyButton} />
+            </View>
+          ) : null}
+        </Card>
+
+        {growthLoading ? (
+          <Card style={styles.growthCard}>
+            <Text style={[styles.sectionText, { color: palette.gray500 }]}>Loading growth report...</Text>
+          </Card>
+        ) : growthDailyItems.length ? (
+          <View style={styles.growthCharts}>
+            <MiniBarChart
+              title="Daily registrations"
+              subtitle="New users per day"
+              items={growthDailyItems}
+            />
+            <MiniBarChart
+              title="Weekly registrations"
+              subtitle="Weekly signup totals"
+              items={growthWeeklyItems}
+            />
+            <MiniBarChart
+              title="Monthly registrations"
+              subtitle="Month over month growth"
+              items={growthMonthlyItems}
+            />
+          </View>
+        ) : (
+          <EmptyState icon="stats-chart" message="No user growth data available for this range." />
+        )
 
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Quick actions</Text>
@@ -264,6 +502,23 @@ function PressableAction({ title, icon, color, onPress }) {
         style={styles.quickButton}
       />
     </Card>
+  );
+}
+
+function RangeChip({ label, active, onPress, palette }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.rangeChip,
+        {
+          backgroundColor: active ? palette.green : palette.surface,
+          borderColor: active ? palette.green : palette.gray200,
+        },
+      ]}
+    >
+      <Text style={[styles.rangeChipText, { color: active ? palette.white : palette.gray700 }]}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -384,6 +639,56 @@ const styles = StyleSheet.create({
   quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg },
   quickCard: { flexGrow: 1, minWidth: 170, padding: spacing.md, borderRadius: radii.xl },
   quickButton: { width: '100%' },
+  growthStatsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  growthCard: {
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radii.xl,
+  },
+  growthHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+  },
+  growthFilterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  rangeChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 8,
+    borderRadius: radii.full,
+    borderWidth: 1,
+  },
+  rangeChipText: {
+    ...fonts.xs,
+    ...fonts.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  customRangeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    alignItems: 'flex-end',
+  },
+  customInput: {
+    flexGrow: 1,
+    minWidth: 200,
+  },
+  customApplyButton: {
+    minWidth: 140,
+  },
+  growthCharts: {
+    gap: spacing.lg,
+  },
   profileCard: {
     gap: spacing.lg,
     borderRadius: radii.xl,

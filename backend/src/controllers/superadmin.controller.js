@@ -14,6 +14,31 @@ const { assertFound } = require('../utils/http');
 
 const escapeRegex = (value) => String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+const parseDateInput = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+};
+
+const startOfDay = (value) => {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+const endOfDay = (value) => {
+  const date = new Date(value);
+  date.setHours(23, 59, 59, 999);
+  return date;
+};
+
 const createAdminValidation = [
   body('name').trim().notEmpty(),
   body('email').isEmail(),
@@ -142,6 +167,160 @@ const getOverview = asyncHandler(async (req, res) => {
     totalPayments: paymentsAgg[0]?.total || 0,
     recentAuditLogs,
     recentUsers
+  });
+});
+
+const getUserGrowthReport = asyncHandler(async (req, res) => {
+  const { start, end } = req.query;
+  const hasCustomRange = Boolean(start || end);
+  const today = new Date();
+  const todayStart = startOfDay(today);
+  const todayEnd = endOfDay(today);
+  const last7Start = startOfDay(new Date(todayStart.getTime() - 6 * 24 * 60 * 60 * 1000));
+  const last30Start = startOfDay(new Date(todayStart.getTime() - 29 * 24 * 60 * 60 * 1000));
+
+  let rangeStart = last30Start;
+  let rangeEnd = todayEnd;
+
+  if (hasCustomRange) {
+    if (!start || !end) {
+      return res.status(400).json({ message: 'Both start and end dates are required for a custom range.' });
+    }
+
+    const parsedStart = parseDateInput(start);
+    const parsedEnd = parseDateInput(end);
+
+    if (!parsedStart || !parsedEnd) {
+      return res.status(400).json({ message: 'Invalid date range. Use YYYY-MM-DD format.' });
+    }
+
+    rangeStart = startOfDay(parsedStart);
+    rangeEnd = endOfDay(parsedEnd);
+
+    if (rangeStart > rangeEnd) {
+      return res.status(400).json({ message: 'Start date must be before end date.' });
+    }
+  }
+
+  const earliestStart = rangeStart < last30Start ? rangeStart : last30Start;
+  const latestEnd = rangeEnd > todayEnd ? rangeEnd : todayEnd;
+
+  const [aggregation] = await User.aggregate([
+    {
+      $match: {
+        isArchived: { $ne: true },
+        createdAt: { $gte: earliestStart, $lte: latestEnd },
+      }
+    },
+    {
+      $facet: {
+        daily: [
+          { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ],
+        weekly: [
+          { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%G-W%V', date: '$createdAt' } },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ],
+        monthly: [
+          { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ],
+        totals: [
+          {
+            $group: {
+              _id: null,
+              today: {
+                $sum: {
+                  $cond: [
+                    { $and: [
+                      { $gte: ['$createdAt', todayStart] },
+                      { $lte: ['$createdAt', todayEnd] }
+                    ] },
+                    1,
+                    0
+                  ]
+                }
+              },
+              last7Days: {
+                $sum: {
+                  $cond: [
+                    { $and: [
+                      { $gte: ['$createdAt', last7Start] },
+                      { $lte: ['$createdAt', todayEnd] }
+                    ] },
+                    1,
+                    0
+                  ]
+                }
+              },
+              last30Days: {
+                $sum: {
+                  $cond: [
+                    { $and: [
+                      { $gte: ['$createdAt', last30Start] },
+                      { $lte: ['$createdAt', todayEnd] }
+                    ] },
+                    1,
+                    0
+                  ]
+                }
+              },
+              rangeTotal: {
+                $sum: {
+                  $cond: [
+                    { $and: [
+                      { $gte: ['$createdAt', rangeStart] },
+                      { $lte: ['$createdAt', rangeEnd] }
+                    ] },
+                    1,
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]);
+
+  const totals = aggregation?.totals?.[0] || {};
+
+  return res.json({
+    range: {
+      start: rangeStart.toISOString(),
+      end: rangeEnd.toISOString(),
+    },
+    totals: {
+      today: totals.today || 0,
+      last7Days: totals.last7Days || 0,
+      last30Days: totals.last30Days || 0,
+      rangeTotal: totals.rangeTotal || 0,
+    },
+    series: {
+      daily: (aggregation?.daily || []).map((item) => ({ label: item._id, count: item.count })),
+      weekly: (aggregation?.weekly || []).map((item) => ({ label: item._id, count: item.count })),
+      monthly: (aggregation?.monthly || []).map((item) => ({ label: item._id, count: item.count })),
+    }
   });
 });
 
@@ -366,6 +545,7 @@ module.exports = {
   createAdminValidation,
   createAdmin,
   getOverview,
+  getUserGrowthReport,
   listUsers,
   updateUserRole,
   deleteBookRecord,

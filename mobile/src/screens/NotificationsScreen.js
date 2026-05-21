@@ -21,6 +21,15 @@ export default function NotificationsScreen() {
     dispatch(fetchNotifications());
   }, [dispatch]);
 
+  useEffect(() => {
+    // Poll periodically to mimic real-time updates when sockets are unavailable.
+    const interval = setInterval(() => {
+      dispatch(fetchNotifications());
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [dispatch]);
+
   const unreadCount = useMemo(() => items.filter((item) => !item.is_read).length, [items]);
   const todayCount = useMemo(
     () =>

@@ -26,7 +26,8 @@ const handleBorrowingReminderJobs = asyncHandler(async (req, res) => {
   return res.json({
     message: 'Borrowing reminder jobs completed',
     dueReminders: result.dueReminders,
-    overdueNotices: result.overdueNotices
+    overdueNotices: result.overdueNotices,
+    penaltyDueReminders: result.penaltyDueReminders
   });
 });
 

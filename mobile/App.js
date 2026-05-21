@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Provider } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
@@ -12,6 +12,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { store } from './src/store';
 import RootNavigator from './src/navigation/RootNavigator';
 import { createAppTheme } from './src/theme/colors';
+import api from './src/api/client';
+import { configureNotificationHandler, registerForPushNotificationsAsync } from './src/utils/pushNotifications';
 
 // We'll call preventAutoHideAsync during mount to control timing.
 
@@ -19,9 +21,44 @@ function AppShell() {
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const theme = createAppTheme(themeMode);
 
+  const PushTokenManager = () => {
+    const user = useSelector((state) => state.auth.user);
+    const token = useSelector((state) => state.auth.token);
+    const lastSentToken = useRef(null);
+
+    useEffect(() => {
+      configureNotificationHandler();
+    }, []);
+
+    useEffect(() => {
+      const registerToken = async () => {
+        if (!token || !user) {
+          return;
+        }
+
+        try {
+          const expoPushToken = await registerForPushNotificationsAsync();
+          if (!expoPushToken || expoPushToken === lastSentToken.current) {
+            return;
+          }
+
+          await api.patch('/users/me', { expoPushToken });
+          lastSentToken.current = expoPushToken;
+        } catch (error) {
+          console.error('Failed to register push token', error?.message || error);
+        }
+      };
+
+      registerToken();
+    }, [token, user]);
+
+    return null;
+  };
+
   return (
     <NavigationContainer theme={theme}>
       <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
+      <PushTokenManager />
       <RootNavigator />
     </NavigationContainer>
   );

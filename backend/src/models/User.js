@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema(
       index: true
     },
     profileImageUrl: { type: String, default: '' },
+    expoPushToken: { type: String, default: '' },
     themePreference: {
       type: String,
       enum: ['light', 'dark'],

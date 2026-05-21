@@ -9,6 +9,7 @@ const { logAudit } = require('../services/audit.service');
 const asyncHandler = require('../utils/asyncHandler');
 
 const DEFAULT_BORROW_DAYS = Number(process.env.DEFAULT_BORROW_DAYS || 7);
+const PENALTY_PAYMENT_DUE_DAYS = Number(process.env.PENALTY_PAYMENT_DUE_DAYS || 7);
 
 const createHttpError = (status, message) => {
   const error = new Error(message);
@@ -375,6 +376,9 @@ const scanReturn = asyncHandler(async (req, res) => {
 
   const returnDate = new Date();
   const penaltyAmount = calculatePenalty(borrowing.due_date, returnDate);
+  const penaltyDueDate = penaltyAmount > 0
+    ? new Date(returnDate.getTime() + PENALTY_PAYMENT_DUE_DAYS * 24 * 60 * 60 * 1000)
+    : null;
 
   const session = await mongoose.startSession();
 
@@ -389,7 +393,8 @@ const scanReturn = asyncHandler(async (req, res) => {
           $set: {
             return_date: returnDate,
             penaltyAmount,
-            status: 'Returned'
+            status: 'Returned',
+            ...(penaltyDueDate ? { penalty_due_date: penaltyDueDate } : {})
           }
         },
         { new: true, session }

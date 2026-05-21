@@ -9,6 +9,12 @@ const Notification = require('../models/Notification');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 
+const isProduction = process.env.NODE_ENV === 'production';
+const allowDbReset = process.env.ALLOW_DB_RESET === 'true';
+const logResetAttempt = (status, detail) => {
+  console.warn(`[DB_RESET][${new Date().toISOString()}] ${status} - ${detail}`);
+};
+
 const collections = [
   { label: 'audit logs', model: AuditLog },
   { label: 'notifications', model: Notification },
@@ -20,6 +26,12 @@ const collections = [
 
 const run = async () => {
   try {
+    if (isProduction && !allowDbReset) {
+      logResetAttempt('BLOCKED', 'resetAllSeedData.js blocked in production (set ALLOW_DB_RESET=true to override).');
+      process.exit(1);
+    }
+
+    logResetAttempt('ALLOWED', `resetAllSeedData.js proceeding (NODE_ENV=${process.env.NODE_ENV || 'unset'}).`);
     await connectDB();
 
     for (const collection of collections) {

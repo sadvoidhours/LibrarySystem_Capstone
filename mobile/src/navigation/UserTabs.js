@@ -15,7 +15,7 @@ export default function UserTabs() {
       items={[
         { section: 'Main', name: 'Dashboard', label: 'Home', icon: 'home', component: UserDashboardScreen },
         { section: 'Main', name: 'Catalog', label: 'Catalog', icon: 'book', component: CatalogScreen },
-        { section: 'Main', name: 'Borrowings', label: 'Loans', icon: 'library', component: BorrowingsScreen },
+        { section: 'Main', name: 'Borrowings', label: 'Book Loans', icon: 'library', component: BorrowingsScreen },
         { section: 'Main', name: 'Notifications', label: 'Alerts', icon: 'notifications', component: NotificationsScreen },
         { section: 'Account', name: 'Settings', label: 'Me', icon: 'settings', component: SettingsScreen },
       ]}

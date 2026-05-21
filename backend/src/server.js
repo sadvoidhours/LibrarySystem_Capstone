@@ -4,6 +4,7 @@ const app = require('./app');
 const connectDB = require('./config/db');
 const { validateEnv } = require('./config/env');
 const { startInactiveAccountArchiveJob } = require('./services/inactive-account.service');
+const { startBorrowingReminderJobs } = require('./services/borrowing-reminder.service');
 
 validateEnv();
 
@@ -17,6 +18,8 @@ const startServer = async () => {
     });
 
     startInactiveAccountArchiveJob();
+    // Keep reminder notifications flowing even without external cron.
+    startBorrowingReminderJobs();
   } catch (error) {
     console.error('Failed to start server:', error.message);
     process.exit(1);

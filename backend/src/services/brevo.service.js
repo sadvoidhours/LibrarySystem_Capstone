@@ -65,6 +65,14 @@ const buildEmailShell = ({ title, eyebrow, bodyHtml, ctaLabel, ctaUrl, footerNot
   </div>
 `;
 
+const formatDateLabel = (value) => {
+  if (!value) {
+    return 'soon';
+  }
+
+  return new Date(value).toLocaleDateString();
+};
+
 const sendVerificationEmail = async (user) => {
   const subject = 'Your PTC Library account has been verified';
   const text = [
@@ -198,6 +206,86 @@ const sendRestoreEmail = async (user) => {
   });
 };
 
+const sendBorrowingDueReminderEmail = async ({ user, bookTitle, dueDate, daysRemaining }) => {
+  if (!user?.email) {
+    return;
+  }
+
+  const dueLabel = formatDateLabel(dueDate);
+  const dayLabel = daysRemaining === 1 ? '1 day' : `${daysRemaining} days`;
+  const subject = `Book due in ${dayLabel}`;
+  const text = [
+    `Hello ${user.name},`,
+    '',
+    `Your borrowed book "${bookTitle || 'Book'}" is due in ${dayLabel} on ${dueLabel}.`,
+    'Please return or renew it before the due date to avoid penalties.',
+    '',
+    'Regards,',
+    'PTC Library Management System',
+  ].join('\n');
+
+  const html = buildEmailShell({
+    title: `Due in ${dayLabel}`,
+    eyebrow: 'Return reminder',
+    bodyHtml: `
+      <p style="margin:0 0 14px;">Hello ${user.name},</p>
+      <p style="margin:0 0 14px;">Your borrowed book <strong>${bookTitle || 'Book'}</strong> is due in ${dayLabel} on ${dueLabel}.</p>
+      <p style="margin:0;">Please return or renew it before the due date to avoid penalties.</p>
+    `,
+    ctaLabel: 'Open the library app',
+    ctaUrl: process.env.APP_LANDING_URL || '',
+    footerNote: 'If you have already returned this book, you can ignore this reminder.',
+  });
+
+  await sendBrevoEmail({
+    to: user.email,
+    subject,
+    text,
+    html,
+  });
+};
+
+const sendPenaltyDueReminderEmail = async ({ user, bookTitle, dueDate, amount }) => {
+  if (!user?.email) {
+    return;
+  }
+
+  const dueLabel = formatDateLabel(dueDate);
+  const subject = 'Penalty payment due soon';
+  const amountLabel = typeof amount === 'number' ? `PHP ${amount.toFixed(2)}` : 'a penalty';
+  const text = [
+    `Hello ${user.name},`,
+    '',
+    `Your penalty payment for "${bookTitle || 'a borrowing'}" is due on ${dueLabel}.`,
+    `Outstanding amount: ${amountLabel}.`,
+    'Please settle the payment before the due date.',
+    '',
+    'Regards,',
+    'PTC Library Management System',
+  ].join('\n');
+
+  const html = buildEmailShell({
+    title: 'Penalty payment due',
+    eyebrow: 'Payment reminder',
+    bodyHtml: `
+      <p style="margin:0 0 14px;">Hello ${user.name},</p>
+      <p style="margin:0 0 14px;">Your penalty payment for <strong>${bookTitle || 'a borrowing'}</strong> is due on ${dueLabel}.</p>
+      <p style="margin:0 0 14px;">Outstanding amount: <strong>${amountLabel}</strong>.</p>
+      <p style="margin:0;">Please settle the payment before the due date.</p>
+    `,
+    ctaLabel: 'Open the library app',
+    ctaUrl: process.env.APP_LANDING_URL || '',
+    footerNote: 'If you have already settled this payment, you can ignore this reminder.',
+  });
+
+  await sendBrevoEmail({
+    to: user.email,
+    subject,
+    text,
+    html,
+  });
+};
+
 const sendTestEmail = async ({ to, subject, message }) => {
   const emailSubject = subject || 'Brevo test from PTC Library System';
   const emailMessage = message || 'This is a Brevo test message from the PTC Library System backend.';
@@ -222,4 +310,6 @@ module.exports = {
   sendArchiveEmail,
   sendRestoreEmail,
   sendTestEmail,
+  sendBorrowingDueReminderEmail,
+  sendPenaltyDueReminderEmail,
 };

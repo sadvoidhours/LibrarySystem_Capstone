@@ -10,6 +10,11 @@ const Payment = require('../models/Payment');
 const { calculatePenalty } = require('../services/penalty.service');
 
 const DEMO_PREFIX = 'SEEDED-DEMO';
+const isProduction = process.env.NODE_ENV === 'production';
+const allowDbReset = process.env.ALLOW_DB_RESET === 'true';
+const logResetAttempt = (status, detail) => {
+  console.warn(`[DB_RESET][${new Date().toISOString()}] ${status} - ${detail}`);
+};
 
 const demoUsers = [
   { name: 'Mark Avengoza', full_name: 'Mark Avengoza', username: 'mavengoza', email: 'mavengoza@paterostechnologicalcollege.edu.ph', phone: '', role: 'superadmin', barcodeString: 'PTC-USER-0001', isVerified: true, verificationStatus: 'verified' },
@@ -341,6 +346,13 @@ const run = async () => {
     const shouldReset = process.argv.includes('--reset');
 
     if (shouldReset) {
+      if (isProduction && !allowDbReset) {
+        logResetAttempt('BLOCKED', 'seedUsersAndTransactions --reset blocked in production (set ALLOW_DB_RESET=true to override).');
+        process.exitCode = 1;
+        return;
+      }
+
+      logResetAttempt('ALLOWED', `seedUsersAndTransactions --reset proceeding (NODE_ENV=${process.env.NODE_ENV || 'unset'}).`);
       const removed = await resetAllCollections();
       console.log(
         `Reset complete. Removed ${removed.users} users, ${removed.books} books, ${removed.borrowings} borrowings, ${removed.payments} payments, ${removed.notifications} notifications, and ${removed.auditLogs} audit logs.`

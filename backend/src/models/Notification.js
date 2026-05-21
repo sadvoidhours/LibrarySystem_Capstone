@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 const notificationSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    type: { type: String, default: 'general', index: true },
     message: { type: String, required: true, trim: true },
     is_read: { type: Boolean, default: false, index: true },
-    dedupeKey: { type: String, default: '', sparse: true, index: true }
+    dedupeKey: { type: String, default: '', sparse: true, index: true },
+    metadata: { type: Object, default: {} }
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

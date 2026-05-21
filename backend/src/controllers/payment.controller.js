@@ -95,7 +95,8 @@ const recordPayment = asyncHandler(async (req, res) => {
       borrowingId,
       amount,
       payment_method,
-      recordedBy: req.user._id
+      recordedBy: req.user._id,
+      payment_due_date: borrowing.penalty_due_date || null
     });
 
     await logAudit({
