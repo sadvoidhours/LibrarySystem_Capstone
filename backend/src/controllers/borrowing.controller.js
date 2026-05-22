@@ -28,10 +28,13 @@ const runNonCriticalSideEffect = async (operationName, operation, meta = {}) => 
   }
 };
 
+const { sendDueDateReminders } = require('../services/borrowing-reminder.service');
+
 const resolveDueDays = (value) => {
   const parsed = Number.parseInt(value, 10);
 
-  if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 60) {
+  // allow 0 to indicate same-day borrowing (due today)
+  if (Number.isInteger(parsed) && parsed >= 0 && parsed <= 60) {
     return parsed;
   }
 
@@ -43,7 +46,7 @@ const requestBorrowValidation = [
 ];
 
 const approveRejectValidation = [
-  body('dueDays').optional().isInt({ min: 1, max: 60 }),
+  body('dueDays').optional().isInt({ min: 0, max: 60 }),
   body('remarks').optional().isString()
 ];
 
@@ -51,7 +54,7 @@ const scanBorrowValidation = [
   body('userBarcode').notEmpty(),
   body('bookIsbn').optional().notEmpty(),
   body('bookBarcode').optional().notEmpty(),
-  body('dueDays').optional().isInt({ min: 1, max: 60 })
+  body('dueDays').optional().isInt({ min: 0, max: 60 })
 ];
 
 const scanReturnValidation = [
@@ -183,7 +186,11 @@ const approveBorrow = asyncHandler(async (req, res) => {
 
   await runNonCriticalSideEffect(
     'BORROW_REQUEST_APPROVED_NOTIFICATION',
-    () => notifyUser(borrowing.userId, 'Your borrow request was approved.'),
+    () => {
+      const base = 'Your borrow request was approved.';
+      const extra = resolvedDueDays === 0 ? ' Due today — please return before the end of the day. Same-day late returns are charged hourly.' : '';
+      return notifyUser(borrowing.userId, `${base}${extra}`);
+    },
     { borrowingId: String(borrowing._id) }
   );
 
@@ -313,7 +320,11 @@ const scanBorrow = asyncHandler(async (req, res) => {
 
   await runNonCriticalSideEffect(
     'SCAN_BORROW_NOTIFICATION',
-    () => notifyUser(user._id, `Book borrowed: ${book.title}. Due date assigned.`),
+    () => {
+      const base = `Book borrowed: ${book.title}. Due date assigned.`;
+      const extra = resolvedDueDays === 0 ? ' Due today — please return before the end of the day. Same-day late returns are charged hourly.' : '';
+      return notifyUser(user._id, `${base}${extra}`);
+    },
     { userId: String(user._id), bookId: String(book._id) }
   );
 
@@ -467,4 +478,11 @@ module.exports = {
   scanBorrow,
   scanReturn,
   pendingBorrowings
+  ,
+  // exposed for manual triggering via admin API
+  sendDueRemindersManual: asyncHandler(async (req, res) => {
+    const now = new Date();
+    const results = await sendDueDateReminders(now);
+    return res.json({ sent: results.length, details: results });
+  })
 };

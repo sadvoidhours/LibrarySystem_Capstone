@@ -244,6 +244,7 @@ export default function BookLoansScreen() {
               <Text style={[styles.heroText, { color: palette.gray500 }]}>
                 Review your book loan calendar, check overdue items, and settle penalties from one screen.
               </Text>
+              <Text style={[styles.heroHint, { color: palette.gray500 }]}>Same-day returns are billed hourly; returns after the due day are billed per day.</Text>
             </View>
             <View style={styles.heroBadge}>
               <Icon name="calendar-outline" size={16} color={palette.green} />
@@ -609,6 +610,10 @@ const createStyles = (palette) => StyleSheet.create({
     color: palette.gray500,
     lineHeight: 20,
     marginTop: spacing.xs,
+  },
+  heroHint: {
+    ...fonts.xs,
+    marginTop: 6,
   },
   heroBadge: {
     flexDirection: 'row',

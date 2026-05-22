@@ -184,8 +184,9 @@ export default function BorrowingQueueScreen() {
       setSavingId(selectedBorrowing._id);
 
       if (actionMode === 'approve') {
+        const parsedDueDays = Number(dueDays);
         await api.patch(`/borrowings/${selectedBorrowing._id}/approve`, {
-          dueDays: Number(dueDays) || 7,
+          dueDays: Number.isInteger(parsedDueDays) ? parsedDueDays : 7,
           remarks,
         });
       } else if (actionMode === 'reject') {
@@ -447,12 +448,13 @@ export default function BorrowingQueueScreen() {
             </View>
 
             <Text style={[styles.modalText, { color: palette.gray500 }]}>Borrower: {selectedBorrowing?.userId?.name || 'N/A'}</Text>
-            {actionMode === 'approve' ? (
-              <>
-                  <StyledInput label="Due days" value={dueDays} onChangeText={setDueDays} keyboardType="numeric" placeholder="7" />
+              {actionMode === 'approve' ? (
+                <>
+                  <StyledInput label="Due days" value={dueDays} onChangeText={setDueDays} keyboardType="numeric" placeholder="0 = due today" />
+                  <Text style={[styles.modalHelper, { color: palette.gray500 }]}>0 = due today — same-day late returns are charged hourly.</Text>
                   <StyledInput label="Remarks" value={remarks} onChangeText={setRemarks} placeholder="Notes (optional)" multiline />
-              </>
-            ) : null}
+                </>
+              ) : null}
 
             {actionMode === 'reject' ? (
               <StyledInput label="Remarks" value={remarks} onChangeText={setRemarks} placeholder="Rejection notes (optional)" multiline />
@@ -643,6 +645,7 @@ const createStyles = (p) => StyleSheet.create({
   },
   modalText: { ...fonts.sm, lineHeight: 20 },
   modalHint: { ...fonts.sm, lineHeight: 20 },
+  modalHelper: { ...fonts.xs, marginTop: 6 },
   methodBlock: { gap: spacing.sm },
   methodLabel: { ...fonts.sm, ...fonts.semibold },
   methodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },

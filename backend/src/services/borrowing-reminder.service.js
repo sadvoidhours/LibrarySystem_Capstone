@@ -6,7 +6,8 @@ const { notifyUser } = require('./notification.service');
 const { sendBorrowingDueReminderEmail, sendPenaltyDueReminderEmail } = require('./brevo.service');
 const { sendExpoPushNotification } = require('./expo-push.service');
 
-const REMINDER_WINDOWS = [1];
+// include 0 to represent same-day reminders (due today)
+const REMINDER_WINDOWS = [0, 1];
 
 const runNonCriticalSideEffect = async (label, operation, meta = {}) => {
   try {
@@ -20,7 +21,13 @@ const runNonCriticalSideEffect = async (label, operation, meta = {}) => {
 };
 
 const buildDueMessage = (bookTitle, dueDate, daysRemaining) => {
-  const dueLabel = new Date(dueDate).toLocaleDateString();
+  const due = new Date(dueDate);
+  if (daysRemaining === 0) {
+    const dueTime = due.toLocaleTimeString();
+    return `Reminder: ${bookTitle} is due today at ${dueTime}. Please return it before the deadline. Note: same-day late returns are charged hourly.`;
+  }
+
+  const dueLabel = due.toLocaleDateString();
   const dayLabel = daysRemaining === 1 ? '1 day' : `${daysRemaining} days`;
   return `Reminder: ${bookTitle} is due in ${dayLabel} on ${dueLabel}. Please return or renew it soon.`;
 };

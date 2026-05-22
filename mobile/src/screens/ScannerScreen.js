@@ -56,7 +56,7 @@ export default function ScannerScreen() {
         await api.post('/borrowings/scan/borrow', {
           userBarcode: trimmedUserBarcode,
           bookIsbn: trimmedBookIsbn,
-          dueDays: Number(dueDays) || 7,
+          dueDays: Number.isInteger(Number(dueDays)) ? Number(dueDays) : 7,
         });
         Alert.alert('Success', 'Borrow transaction completed.');
         setStatusMessage('Borrow transaction completed successfully.');
@@ -281,11 +281,15 @@ export default function ScannerScreen() {
               {transactionMode === 'borrow' ? (
                 <StyledInput
                   label="Due Days"
-                  placeholder="7"
+                  placeholder="0 = due today"
                   value={dueDays}
                   onChangeText={setDueDays}
                   keyboardType="numeric"
                 />
+              ) : null}
+              {transactionMode === 'borrow' ? (
+                <Text style={[styles.helperText, { color: palette.gray500 }]}>0 = due today — same-day late returns are charged by the hour.</Text>
+              ) : null}
               ) : null}
             </View>
           </Card>
@@ -324,6 +328,10 @@ const createStyles = (p) => StyleSheet.create({
   },
   modeButton: {
     flex: 1,
+  },
+  helperText: {
+    ...fonts.xs,
+    marginTop: 6,
   },
   scannerWrap: {
     height: 220,

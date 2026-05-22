@@ -16,6 +16,7 @@ export default function AdminDashboardScreen({ navigation }) {
   const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
   const insets = useSafeAreaInsets();
   const [stats, setStats] = useState(null);
+  const [sendingReminders, setSendingReminders] = useState(false);
   const chartItems = useMemo(() => ([
     { label: 'Books', value: stats?.totalBooks || 0, color: palette.blue },
     { label: 'Users', value: stats?.registeredUsers || 0, color: palette.green },
@@ -52,6 +53,7 @@ export default function AdminDashboardScreen({ navigation }) {
               <Text style={[styles.heroText, { color: palette.gray500 }]}>
                 Review daily library activity, monitor requests, and keep the collection moving.
               </Text>
+              <Text style={[styles.heroHint, { color: palette.gray500 }]}>Same-day returns incur hourly penalties; multi-day returns are charged per day.</Text>
             </View>
             <View style={[styles.heroPulse, { backgroundColor: palette.greenLight }]}>
               <Text style={[styles.heroPulseValue, { color: palette.green }]}>{stats?.pendingRequests || 0}</Text>
@@ -61,6 +63,17 @@ export default function AdminDashboardScreen({ navigation }) {
 
           <View style={styles.heroActions}>
               <StyledButton title="Borrowing queue" variant="success" onPress={() => navigation.navigate('BorrowingQueue')} style={styles.heroAction} />
+              <StyledButton title="Send Due Reminders" variant="outlineGreen" onPress={async () => {
+                try {
+                  setSendingReminders(true);
+                  const { data } = await api.post('/borrowings/notify/due');
+                  Alert.alert('Done', `${data.sent || 0} reminder(s) queued/sent.`);
+                } catch (err) {
+                  Alert.alert('Error', err.response?.data?.message || 'Failed to send reminders');
+                } finally {
+                  setSendingReminders(false);
+                }
+              }} loading={sendingReminders} style={styles.heroAction} />
             <StyledButton title="Sign Out" variant="outline" onPress={() => dispatch(logout())} style={styles.heroAction} />
           </View>
         </View>
@@ -146,6 +159,10 @@ const styles = StyleSheet.create({
     ...fonts.semibold,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
+  },
+  heroHint: {
+    ...fonts.xs,
+    marginTop: 6,
   },
   heroActions: {
     flexDirection: 'row',

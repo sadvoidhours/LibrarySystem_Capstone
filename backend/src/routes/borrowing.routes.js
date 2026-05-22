@@ -26,5 +26,6 @@ router.patch('/:id/approve', protect, authorize('admin', 'superadmin'), borrowin
 router.patch('/:id/reject', protect, authorize('admin', 'superadmin'), borrowingIdParamValidation, approveRejectValidation, validate, rejectBorrow);
 router.post('/scan/borrow', protect, authorize('admin', 'superadmin'), scanBorrowValidation, validate, scanBorrow);
 router.post('/scan/return', protect, authorize('admin', 'superadmin'), scanReturnValidation, validate, scanReturn);
+router.post('/notify/due', protect, authorize('admin', 'superadmin'), require('../controllers/borrowing.controller').sendDueRemindersManual);
 
 module.exports = router;
