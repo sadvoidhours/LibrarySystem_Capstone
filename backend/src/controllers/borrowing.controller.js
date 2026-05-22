@@ -535,4 +535,6 @@ module.exports = {
     const results = await sendPenaltyDueReminders(now, windows);
     return res.json({ sent: results.length, details: results });
   })
+  ,
+  sendNotificationForBorrowing
 };
