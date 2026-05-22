@@ -17,7 +17,7 @@ export default function AdminTabs() {
         { section: 'Overview', name: 'Dashboard', label: 'Home', icon: 'speedometer', component: AdminDashboardScreen },
         { section: 'Work', name: 'Approvals', label: 'Approvals', icon: 'checkmark-circle', component: VerifyUsersScreen },
         { section: 'Work', name: 'Scanner', label: 'Scan', icon: 'scan', component: ScannerScreen },
-        { section: 'Work', name: 'Borrowings', label: 'Book Loans', icon: 'book', component: BorrowingQueueScreen },
+        { section: 'Work', name: 'BorrowingQueue', label: 'Book Loans', icon: 'book', component: BorrowingQueueScreen },
         { section: 'Manage', name: 'Books', label: 'Books', icon: 'library', component: ManageBooksScreen },
         { section: 'Manage', name: 'Reports', label: 'Reports', icon: 'stats-chart', component: ReportsScreen },
       ]}

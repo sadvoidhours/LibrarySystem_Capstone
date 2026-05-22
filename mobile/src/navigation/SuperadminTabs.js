@@ -19,7 +19,7 @@ export default function SuperadminTabs() {
         { section: 'Overview', name: 'Overview', label: 'Home', icon: 'shield-checkmark', component: SuperadminDashboardScreen },
         { section: 'Management', name: 'Accounts', label: 'Users', icon: 'people', component: ManageUsersScreen },
         { section: 'Management', name: 'Scanner', label: 'Scan', icon: 'scan', component: ScannerScreen },
-        { section: 'Management', name: 'Borrowings', label: 'Book Loans', icon: 'book', component: BorrowingQueueScreen },
+        { section: 'Management', name: 'BorrowingQueue', label: 'Book Loans', icon: 'book', component: BorrowingQueueScreen },
         { section: 'Management', name: 'Books', label: 'Books', icon: 'library', component: ManageBooksScreen },
         { section: 'Insights', name: 'Reports', label: 'Reports', icon: 'stats-chart', component: ReportsScreen },
         { section: 'Account', name: 'Profile', label: 'Me', icon: 'person-circle', component: SettingsScreen },

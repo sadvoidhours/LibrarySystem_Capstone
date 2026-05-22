@@ -58,7 +58,7 @@ export default function AdminDashboardScreen({ navigation }) {
           </View>
 
           <View style={styles.heroActions}>
-              <StyledButton title="Borrowing queue" variant="success" onPress={() => navigation.navigate('Borrowings')} style={styles.heroAction} />
+              <StyledButton title="Borrowing queue" variant="success" onPress={() => navigation.navigate('BorrowingQueue')} style={styles.heroAction} />
             <StyledButton title="Sign Out" variant="outline" onPress={() => dispatch(logout())} style={styles.heroAction} />
           </View>
         </View>

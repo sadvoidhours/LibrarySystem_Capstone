@@ -338,7 +338,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
             <StyledButton title="Refresh data" variant="success" onPress={loadOverview} loading={loading} style={styles.heroButton} />
             <StyledButton title="Generate report" variant="outlineGreen" onPress={() => navigation.navigate('Reports')} style={styles.heroButton} />
             <StyledButton title="Open accounts" variant="outlineGreen" onPress={() => navigation.navigate('Accounts')} style={styles.heroButton} />
-            <StyledButton title="Borrowing queue" variant="outlineGreen" onPress={() => navigation.navigate('Borrowings')} style={styles.heroButton} />
+            <StyledButton title="Borrowing queue" variant="outlineGreen" onPress={() => navigation.navigate('BorrowingQueue')} style={styles.heroButton} />
             <StyledButton title="Edit profile" variant="outline" onPress={() => navigation.navigate('Profile')} style={styles.heroButton} />
             <StyledButton title="Logout" variant="outline" onPress={() => dispatch(logout())} style={styles.heroButton} />
           </View>

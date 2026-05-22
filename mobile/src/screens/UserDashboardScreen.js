@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const QUICK_ACTIONS = [
   { key: 'catalog', title: 'Browse Catalog', icon: 'book', screen: 'Catalog' },
-  { key: 'borrowings', title: 'My Borrowings', icon: 'library', screen: 'Borrowings' },
+  { key: 'bookLoans', title: 'My Book Loans', icon: 'library', screen: 'BookLoans' },
   { key: 'notifications', title: 'Notifications', icon: 'notifications', screen: 'Notifications' },
 ];
 

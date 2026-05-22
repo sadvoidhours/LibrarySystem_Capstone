@@ -48,7 +48,7 @@ const formatShortDate = (value) => {
 
 const formatMonthLabel = (date) => date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
-export default function BorrowingsScreen() {
+export default function BookLoansScreen() {
   const user = useSelector((state) => state.auth.user);
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);
@@ -231,7 +231,7 @@ export default function BorrowingsScreen() {
     >
       <View style={[styles.container, baseStyles.webCenter]}>
         <BrandHeader
-          title="My Borrowings"
+          title="My Book Loans"
           subtitle="Track due dates, penalties, and payment settlement"
           avatarUri={user?.profileImageUrl}
         />
@@ -239,10 +239,10 @@ export default function BorrowingsScreen() {
         <View style={[styles.heroCard, { backgroundColor: palette.surface, borderColor: palette.gray100 }]}>
           <View style={styles.heroRow}>
             <View style={styles.heroCopy}>
-              <Text style={[styles.eyebrow, { color: palette.green }]}>Borrowing overview</Text>
+              <Text style={[styles.eyebrow, { color: palette.green }]}>Book loan overview</Text>
               <Text style={[styles.heroTitle, { color: palette.gray800 }]}>Everything you need to manage your returns</Text>
               <Text style={[styles.heroText, { color: palette.gray500 }]}>
-                Review your borrowing calendar, check overdue items, and settle penalties from one screen.
+                Review your book loan calendar, check overdue items, and settle penalties from one screen.
               </Text>
             </View>
             <View style={styles.heroBadge}>
@@ -338,7 +338,7 @@ export default function BorrowingsScreen() {
                     })}
                   </View>
                 ) : (
-                  <Text style={[styles.emptyText, { color: palette.gray500 }]}>No borrowings are due on this date.</Text>
+                  <Text style={[styles.emptyText, { color: palette.gray500 }]}>No book loans are due on this date.</Text>
                 )}
               </View>
 
@@ -400,7 +400,7 @@ export default function BorrowingsScreen() {
               <View style={styles.sectionHeader}>
                 <View>
                   <Text style={[styles.sectionKicker, { color: palette.green }]}>Selected Day</Text>
-                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Borrowings due on {selectedDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}</Text>
+                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>Book loans due on {selectedDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}</Text>
                 </View>
                 <View style={styles.sectionBadge}>
                   <Text style={[styles.sectionBadgeText, { color: palette.green }]}>{selectedDayBorrowings.length} items</Text>
@@ -436,8 +436,8 @@ export default function BorrowingsScreen() {
             <Card>
               <View style={styles.sectionHeader}>
                 <View>
-                  <Text style={[styles.sectionKicker, { color: palette.green }]}>Borrowings</Text>
-                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>All your requests and returns</Text>
+                  <Text style={[styles.sectionKicker, { color: palette.green }]}>Book Loans</Text>
+                  <Text style={[styles.sectionTitle, { color: palette.gray800 }]}>All your book loan requests and returns</Text>
                 </View>
               </View>
 
@@ -448,7 +448,7 @@ export default function BorrowingsScreen() {
                   {items.map(renderBorrowingCard)}
                 </View>
               ) : (
-                <EmptyState icon="library-outline" message="No borrowing history yet." />
+                <EmptyState icon="library-outline" message="No book loan history yet." />
               )}
             </Card>
           </View>
@@ -490,7 +490,7 @@ export default function BorrowingsScreen() {
                       <View style={styles.paymentLeft}>
                         <Text style={[styles.paymentAmount, { color: palette.gray800 }]}>₱{Number(payment.amount || 0).toFixed(2)}</Text>
                         <Text style={[styles.paymentMeta, { color: palette.gray500 }]}>
-                          {payment.borrowingId?.bookId?.title || 'Borrowing'}
+                          {payment.borrowingId?.bookId?.title || 'Book loan'}
                         </Text>
                       </View>
                       <View style={styles.paymentRight}>
@@ -515,7 +515,7 @@ export default function BorrowingsScreen() {
             <View style={styles.modalHeader}>
               <View>
                 <Text style={[styles.modalKicker, { color: palette.green }]}>Payment Settlement</Text>
-                <Text style={[styles.modalTitle, { color: palette.gray800 }]}>{paymentTarget?.bookId?.title || 'Borrowing'}</Text>
+                <Text style={[styles.modalTitle, { color: palette.gray800 }]}>{paymentTarget?.bookId?.title || 'Book loan'}</Text>
               </View>
               <Pressable onPress={() => setPaymentModalVisible(false)} style={styles.closeButton}>
                 <Icon name="close-outline" size={18} color={palette.gray700} />
