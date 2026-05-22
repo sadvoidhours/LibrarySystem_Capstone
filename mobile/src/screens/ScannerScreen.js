@@ -290,7 +290,7 @@ export default function ScannerScreen() {
               {transactionMode === 'borrow' ? (
                 <Text style={[styles.helperText, { color: palette.gray500 }]}>0 = due today — same-day late returns are charged by the hour.</Text>
               ) : null}
-              ) : null}
+            
             </View>
           </Card>
 
