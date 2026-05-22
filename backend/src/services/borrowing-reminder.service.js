@@ -166,11 +166,10 @@ const sendPenaltyDueReminders = async (now = new Date(), windows = null) => {
   const borrowings = await Borrowing.find({
     status: 'Returned',
     penaltyAmount: { $gt: 0 },
-    penalty_due_date: { $exists: true, $ne: null }
   })
     .populate('bookId', 'title barcodeString')
     .populate('userId', 'name email expoPushToken')
-    .sort({ penalty_due_date: 1 });
+    .sort({ penalty_due_date: 1, return_date: 1, updatedAt: 1 });
 
   if (!borrowings.length) {
     return [];
@@ -187,14 +186,19 @@ const sendPenaltyDueReminders = async (now = new Date(), windows = null) => {
       continue;
     }
 
-    const diffDays = Math.ceil((new Date(borrowing.penalty_due_date).getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+    const effectivePenaltyDueDate = borrowing.penalty_due_date || borrowing.return_date || borrowing.updatedAt;
+    if (!effectivePenaltyDueDate) {
+      continue;
+    }
+
+    const diffDays = Math.ceil((new Date(effectivePenaltyDueDate).getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
 
     const windowsToCheck = Array.isArray(windows) && windows.length ? windows : REMINDER_WINDOWS;
     if (!windowsToCheck.includes(diffDays)) {
       continue;
     }
 
-    const message = buildPenaltyDueMessage(borrowing.bookId?.title || 'borrowing', borrowing.penalty_due_date);
+    const message = buildPenaltyDueMessage(borrowing.bookId?.title || 'borrowing', effectivePenaltyDueDate);
 
     try {
       const notification = await notifyUser(

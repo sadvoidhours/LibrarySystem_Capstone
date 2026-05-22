@@ -79,11 +79,15 @@ export default function BorrowingQueueScreen() {
     );
   }, [payments]);
 
-  const filterCounts = useMemo(() => {
-    const normalizedBorrowings = borrowings.map((borrowing) => String(borrowing.status || '').toLowerCase());
+  const filterCounts = counts;
 
-    return counts;
-  }, [borrowings, pendingBorrowings.length, settledIds, counts]);
+  const reportFilter = useMemo(() => {
+    if (filter === 'settled') {
+      return '';
+    }
+
+    return filter;
+  }, [filter]);
 
   const visiblePendingBorrowings = useMemo(() => {
     return pendingBorrowings.filter((borrowing) => {
@@ -93,29 +97,19 @@ export default function BorrowingQueueScreen() {
   }, [pendingBorrowings, filter]);
 
   const visibleBorrowings = useMemo(() => {
-    if (filter === 'early') {
-    return borrowings;
-        if (!b || String(b.status || '').toLowerCase() !== 'returned') return false;
-        if (!b.return_date || !b.due_date) return false;
-        try {
-    const [{ data: pendingData }, borrowingsRes, { data: paymentData }, { data: countsData }] = await Promise.all([
-      api.get('/borrowings/pending'),
-      api.get('/reports/borrowings', { params: { filter } }),
-      api.get('/payments'),
-      api.get('/reports/borrowings/counts')
-    ]);
-
-    setPendingBorrowings(pendingData);
-    const borrowingsData = Array.isArray(borrowingsRes.data) ? borrowingsRes.data : (borrowingsRes.data.items || []);
-    setBorrowings(borrowingsData);
-    setPayments(paymentData);
-    setCounts(countsData || {});
-
-    if (filter === 'pending') {
-      return borrowings.filter((borrowing) => borrowing.status === 'Pending');
+    if (filter === 'settled') {
+      return borrowings.filter((borrowing) => settledIds.has(String(borrowing._id)));
     }
 
-    return borrowings.filter((borrowing) => borrowing.status.toLowerCase() === filter);
+    if (filter === 'pending') {
+      return borrowings.filter((borrowing) => String(borrowing.status || '').toLowerCase() === 'pending');
+    }
+
+    if (filter === 'early') {
+      return borrowings.filter((borrowing) => String(borrowing.status || '').toLowerCase() === 'returned' && borrowing.return_date && borrowing.due_date && new Date(borrowing.return_date).getTime() < new Date(borrowing.due_date).getTime());
+    }
+
+    return borrowings;
   }, [borrowings, filter, settledIds]);
 
   const visiblePayments = useMemo(() => {
@@ -130,15 +124,18 @@ export default function BorrowingQueueScreen() {
   }, [borrowings, filter, payments]);
 
   const loadData = async () => {
-    const [{ data: pendingData }, { data: borrowingsData }, { data: paymentData }] = await Promise.all([
+    const [{ data: pendingData }, borrowingsRes, { data: paymentData }, { data: countsData }] = await Promise.all([
       api.get('/borrowings/pending'),
-      api.get('/reports/borrowings'),
+      api.get('/reports/borrowings', { params: reportFilter ? { filter: reportFilter } : {} }),
       api.get('/payments'),
+      api.get('/reports/borrowings/counts')
     ]);
 
     setPendingBorrowings(pendingData);
+    const borrowingsData = Array.isArray(borrowingsRes.data) ? borrowingsRes.data : (borrowingsRes.data.items || []);
     setBorrowings(borrowingsData);
     setPayments(paymentData);
+    setCounts(countsData || {});
   };
 
   useEffect(() => {
