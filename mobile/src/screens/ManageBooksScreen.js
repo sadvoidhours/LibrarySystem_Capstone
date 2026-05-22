@@ -80,7 +80,7 @@ export default function ManageBooksScreen() {
 
   const load = async () => {
     const [{ data: booksData }, { data: borrowingData }] = await Promise.all([
-      api.get('/books'),
+      api.get('/books', { params: { limit: 1000 } }),
       api.get('/reports/borrowings'),
     ]);
 
