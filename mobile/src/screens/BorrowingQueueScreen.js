@@ -17,6 +17,7 @@ const QUEUE_FILTERS = [
   { key: 'pending', label: 'Pending' },
   { key: 'active', label: 'Active' },
   { key: 'overdue', label: 'Overdue' },
+  { key: 'early', label: 'Early Returns' },
   { key: 'returned', label: 'Returned' },
   { key: 'rejected', label: 'Rejected' },
   { key: 'settled', label: 'Settled' },
@@ -83,6 +84,15 @@ export default function BorrowingQueueScreen() {
       pending: pendingBorrowings.length,
       active: normalizedBorrowings.filter((status) => status === 'active').length,
       overdue: normalizedBorrowings.filter((status) => status === 'overdue').length,
+      early: borrowings.filter((b) => {
+        if (!b || String(b.status || '').toLowerCase() !== 'returned') return false;
+        if (!b.return_date || !b.due_date) return false;
+        try {
+          return new Date(b.return_date).getTime() < new Date(b.due_date).getTime();
+        } catch (err) {
+          return false;
+        }
+      }).length,
       returned: normalizedBorrowings.filter((status) => status === 'returned').length,
       rejected: normalizedBorrowings.filter((status) => status === 'rejected').length,
       settled: settledIds.size,
@@ -97,6 +107,17 @@ export default function BorrowingQueueScreen() {
   }, [pendingBorrowings, filter]);
 
   const visibleBorrowings = useMemo(() => {
+    if (filter === 'early') {
+      return borrowings.filter((b) => {
+        if (!b || String(b.status || '').toLowerCase() !== 'returned') return false;
+        if (!b.return_date || !b.due_date) return false;
+        try {
+          return new Date(b.return_date).getTime() < new Date(b.due_date).getTime();
+        } catch (err) {
+          return false;
+        }
+      });
+    }
     if (filter === 'settled') {
       return borrowings.filter((borrowing) => settledIds.has(String(borrowing._id)));
     }

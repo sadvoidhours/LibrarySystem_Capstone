@@ -341,6 +341,14 @@ export default function SuperadminDashboardScreen({ navigation }) {
             <StyledButton title="Borrowing queue" variant="outlineGreen" onPress={() => navigation.navigate('BorrowingQueue')} style={styles.heroButton} />
             <StyledButton title="Edit profile" variant="outline" onPress={() => navigation.navigate('Profile')} style={styles.heroButton} />
             <StyledButton title="Logout" variant="outline" onPress={() => dispatch(logout())} style={styles.heroButton} />
+            <StyledButton title="Send Penalty Reminders" variant="outlineGreen" onPress={async () => {
+              try {
+                const { data } = await api.post('/borrowings/notify/penalty');
+                Alert.alert('Done', `${data.sent || 0} penalty reminder(s) queued/sent.`);
+              } catch (err) {
+                Alert.alert('Error', err.response?.data?.message || 'Failed to send penalty reminders');
+              }
+            }} style={styles.heroButton} />
           </View>
         </Card>
 

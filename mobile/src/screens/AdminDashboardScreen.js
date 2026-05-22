@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../api/client';
@@ -17,6 +17,7 @@ export default function AdminDashboardScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [stats, setStats] = useState(null);
   const [sendingReminders, setSendingReminders] = useState(false);
+  const [sendingPenaltyReminders, setSendingPenaltyReminders] = useState(false);
   const chartItems = useMemo(() => ([
     { label: 'Books', value: stats?.totalBooks || 0, color: palette.blue },
     { label: 'Users', value: stats?.registeredUsers || 0, color: palette.green },
@@ -74,6 +75,17 @@ export default function AdminDashboardScreen({ navigation }) {
                   setSendingReminders(false);
                 }
               }} loading={sendingReminders} style={styles.heroAction} />
+              <StyledButton title="Send Penalty Reminders" variant="outlineGreen" onPress={async () => {
+                try {
+                  setSendingPenaltyReminders(true);
+                  const { data } = await api.post('/borrowings/notify/penalty');
+                  Alert.alert('Done', `${data.sent || 0} penalty reminder(s) queued/sent.`);
+                } catch (err) {
+                  Alert.alert('Error', err.response?.data?.message || 'Failed to send penalty reminders');
+                } finally {
+                  setSendingPenaltyReminders(false);
+                }
+              }} loading={sendingPenaltyReminders} style={styles.heroAction} />
             <StyledButton title="Sign Out" variant="outline" onPress={() => dispatch(logout())} style={styles.heroAction} />
           </View>
         </View>

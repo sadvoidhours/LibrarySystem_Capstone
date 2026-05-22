@@ -28,7 +28,7 @@ const runNonCriticalSideEffect = async (operationName, operation, meta = {}) => 
   }
 };
 
-const { sendDueDateReminders } = require('../services/borrowing-reminder.service');
+const { sendDueDateReminders, sendPenaltyDueReminders } = require('../services/borrowing-reminder.service');
 
 const resolveDueDays = (value) => {
   const parsed = Number.parseInt(value, 10);
@@ -483,6 +483,12 @@ module.exports = {
   sendDueRemindersManual: asyncHandler(async (req, res) => {
     const now = new Date();
     const results = await sendDueDateReminders(now);
+    return res.json({ sent: results.length, details: results });
+  })
+  ,
+  sendPenaltyRemindersManual: asyncHandler(async (req, res) => {
+    const now = new Date();
+    const results = await sendPenaltyDueReminders(now);
     return res.json({ sent: results.length, details: results });
   })
 };
