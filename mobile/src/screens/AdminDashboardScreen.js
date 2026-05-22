@@ -20,6 +20,8 @@ export default function AdminDashboardScreen({ navigation }) {
     { label: 'Books', value: stats?.totalBooks || 0, color: palette.blue },
     { label: 'Users', value: stats?.registeredUsers || 0, color: palette.green },
     { label: 'Active', value: stats?.activeBorrowings || 0, color: palette.orange },
+    { label: 'Early Returns', value: stats?.earlyReturns || 0, color: palette.blue },
+    { label: 'On-time Returns', value: stats?.onTimeReturns || 0, color: palette.green },
     { label: 'Pending', value: stats?.pendingRequests || 0, color: palette.red },
   ]), [stats, palette]);
 
@@ -67,6 +69,8 @@ export default function AdminDashboardScreen({ navigation }) {
           <StatCard icon="book-outline" iconColor={palette.blue} label="Total Books" value={stats?.totalBooks || 0} />
           <StatCard icon="people-outline" iconColor={palette.olive} label="Users" value={stats?.registeredUsers || 0} />
           <StatCard icon="swap-horizontal-outline" iconColor={palette.green} label="Active Borrows" value={stats?.activeBorrowings || 0} />
+          <StatCard icon="checkmark-circle" iconColor={palette.blue} label="Early Returns" value={stats?.earlyReturns || 0} />
+          <StatCard icon="calendar" iconColor={palette.green} label="On-time Returns" value={stats?.onTimeReturns || 0} />
           <StatCard icon="time-outline" iconColor={palette.orange} label="Pending" value={stats?.pendingRequests || 0} />
           <StatCard icon="cash-outline" iconColor={palette.red} label="Penalties" value={`₱${stats?.totalPenalties || 0}`} />
         </View>

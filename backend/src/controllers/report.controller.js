@@ -22,13 +22,38 @@ const adminOverview = asyncHandler(async (req, res) => {
     Borrowing.find().populate('userId', 'name').populate('bookId', 'title').sort({ createdAt: -1 }).limit(10)
   ]);
 
+  // Count borrowings that were returned early (return_date < due_date)
+  // and those returned exactly on-time (same calendar day)
+  const returnedAgg = await Borrowing.aggregate([
+    { $match: { status: 'Returned', return_date: { $exists: true }, due_date: { $exists: true } } },
+    {
+      $project: {
+        isEarly: { $lt: ['$return_date', '$due_date'] },
+        returnDay: { $dateToString: { format: '%Y-%m-%d', date: '$return_date' } },
+        dueDay: { $dateToString: { format: '%Y-%m-%d', date: '$due_date' } }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        early: { $sum: { $cond: ['$isEarly', 1, 0] } },
+        onTime: { $sum: { $cond: [{ $eq: ['$returnDay', '$dueDay'] }, 1, 0] } }
+      }
+    }
+  ]);
+
+  const earlyReturns = returnedAgg[0]?.early || 0;
+  const onTimeReturns = returnedAgg[0]?.onTime || 0;
+
   return res.json({
     totalBooks,
     registeredUsers,
     activeBorrowings,
     pendingRequests,
     totalPenalties: paymentAgg[0]?.total || 0,
-    recentTransactions
+    recentTransactions,
+    earlyReturns,
+    onTimeReturns
   });
 });
 
