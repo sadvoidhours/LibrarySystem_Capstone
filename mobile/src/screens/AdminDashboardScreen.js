@@ -66,24 +66,76 @@ export default function AdminDashboardScreen({ navigation }) {
               <StyledButton title="Borrowing queue" variant="success" onPress={() => navigation.navigate('BorrowingQueue')} style={styles.heroAction} />
               <StyledButton title="Send Due Reminders" variant="outlineGreen" onPress={async () => {
                 try {
-                  setSendingReminders(true);
-                  const { data } = await api.post('/borrowings/notify/due');
-                  Alert.alert('Done', `${data.sent || 0} reminder(s) queued/sent.`);
+                  // Ask which window to send
+                  Alert.alert(
+                    'Send due reminders',
+                    'Choose reminder window to send',
+                    [
+                      { text: 'Due today', onPress: async () => {
+                        setSendingReminders(true);
+                        try {
+                          const { data } = await api.post('/borrowings/notify/due?days=0');
+                          Alert.alert('Done', `${data.sent || 0} reminder(s) queued/sent.`);
+                        } catch (err) {
+                          Alert.alert('Error', err.response?.data?.message || 'Failed to send reminders');
+                        } finally { setSendingReminders(false); }
+                      }},
+                      { text: '1 day', onPress: async () => {
+                        setSendingReminders(true);
+                        try {
+                          const { data } = await api.post('/borrowings/notify/due?days=1');
+                          Alert.alert('Done', `${data.sent || 0} reminder(s) queued/sent.`);
+                        } catch (err) {
+                          Alert.alert('Error', err.response?.data?.message || 'Failed to send reminders');
+                        } finally { setSendingReminders(false); }
+                      }},
+                      { text: 'All', onPress: async () => {
+                        setSendingReminders(true);
+                        try {
+                          const { data } = await api.post('/borrowings/notify/due');
+                          Alert.alert('Done', `${data.sent || 0} reminder(s) queued/sent.`);
+                        } catch (err) {
+                          Alert.alert('Error', err.response?.data?.message || 'Failed to send reminders');
+                        } finally { setSendingReminders(false); }
+                      }},
+                      { text: 'Cancel', style: 'cancel' }
+                    ],
+                    { cancelable: true }
+                  );
                 } catch (err) {
                   Alert.alert('Error', err.response?.data?.message || 'Failed to send reminders');
-                } finally {
-                  setSendingReminders(false);
                 }
               }} loading={sendingReminders} style={styles.heroAction} />
               <StyledButton title="Send Penalty Reminders" variant="outlineGreen" onPress={async () => {
                 try {
-                  setSendingPenaltyReminders(true);
-                  const { data } = await api.post('/borrowings/notify/penalty');
-                  Alert.alert('Done', `${data.sent || 0} penalty reminder(s) queued/sent.`);
+                  Alert.alert(
+                    'Send penalty reminders',
+                    'Choose reminder window to send',
+                    [
+                      { text: '1 day', onPress: async () => {
+                        setSendingPenaltyReminders(true);
+                        try {
+                          const { data } = await api.post('/borrowings/notify/penalty?days=1');
+                          Alert.alert('Done', `${data.sent || 0} penalty reminder(s) queued/sent.`);
+                        } catch (err) {
+                          Alert.alert('Error', err.response?.data?.message || 'Failed to send penalty reminders');
+                        } finally { setSendingPenaltyReminders(false); }
+                      }},
+                      { text: 'All', onPress: async () => {
+                        setSendingPenaltyReminders(true);
+                        try {
+                          const { data } = await api.post('/borrowings/notify/penalty');
+                          Alert.alert('Done', `${data.sent || 0} penalty reminder(s) queued/sent.`);
+                        } catch (err) {
+                          Alert.alert('Error', err.response?.data?.message || 'Failed to send penalty reminders');
+                        } finally { setSendingPenaltyReminders(false); }
+                      }},
+                      { text: 'Cancel', style: 'cancel' }
+                    ],
+                    { cancelable: true }
+                  );
                 } catch (err) {
                   Alert.alert('Error', err.response?.data?.message || 'Failed to send penalty reminders');
-                } finally {
-                  setSendingPenaltyReminders(false);
                 }
               }} loading={sendingPenaltyReminders} style={styles.heroAction} />
             <StyledButton title="Sign Out" variant="outline" onPress={() => dispatch(logout())} style={styles.heroAction} />

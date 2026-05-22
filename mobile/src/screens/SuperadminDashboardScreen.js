@@ -343,8 +343,30 @@ export default function SuperadminDashboardScreen({ navigation }) {
             <StyledButton title="Logout" variant="outline" onPress={() => dispatch(logout())} style={styles.heroButton} />
             <StyledButton title="Send Penalty Reminders" variant="outlineGreen" onPress={async () => {
               try {
-                const { data } = await api.post('/borrowings/notify/penalty');
-                Alert.alert('Done', `${data.sent || 0} penalty reminder(s) queued/sent.`);
+                Alert.alert(
+                  'Send penalty reminders',
+                  'Choose reminder window to send',
+                  [
+                    { text: '1 day', onPress: async () => {
+                      try {
+                        const { data } = await api.post('/borrowings/notify/penalty?days=1');
+                        Alert.alert('Done', `${data.sent || 0} penalty reminder(s) queued/sent.`);
+                      } catch (err) {
+                        Alert.alert('Error', err.response?.data?.message || 'Failed to send penalty reminders');
+                      }
+                    }},
+                    { text: 'All', onPress: async () => {
+                      try {
+                        const { data } = await api.post('/borrowings/notify/penalty');
+                        Alert.alert('Done', `${data.sent || 0} penalty reminder(s) queued/sent.`);
+                      } catch (err) {
+                        Alert.alert('Error', err.response?.data?.message || 'Failed to send penalty reminders');
+                      }
+                    }},
+                    { text: 'Cancel', style: 'cancel' }
+                  ],
+                  { cancelable: true }
+                );
               } catch (err) {
                 Alert.alert('Error', err.response?.data?.message || 'Failed to send penalty reminders');
               }

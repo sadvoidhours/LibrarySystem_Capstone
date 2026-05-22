@@ -30,6 +30,46 @@ const runNonCriticalSideEffect = async (operationName, operation, meta = {}) => 
 
 const { sendDueDateReminders, sendPenaltyDueReminders } = require('../services/borrowing-reminder.service');
 
+const sendNotificationForBorrowing = asyncHandler(async (req, res) => {
+  const borrowingId = req.params.id;
+  const borrowing = await Borrowing.findById(borrowingId)
+    .populate('userId', 'name email expoPushToken')
+    .populate('bookId', 'title');
+
+  if (!borrowing) {
+    return res.status(404).json({ message: 'Borrowing not found' });
+  }
+
+  const userId = borrowing.userId?._id || borrowing.userId;
+  let message = `Manual notice for borrowing: ${borrowing.bookId?.title || 'a book'}.`;
+
+  if (borrowing.status === 'Active' && borrowing.due_date) {
+    message = `Reminder: ${borrowing.bookId?.title || 'Book'} is due on ${new Date(borrowing.due_date).toLocaleDateString()}.`;
+  } else if (borrowing.status === 'Overdue') {
+    message = `Overdue notice: ${borrowing.bookId?.title || 'Book'} was due on ${new Date(borrowing.due_date).toLocaleDateString()}. Please return it as soon as possible.`;
+  } else if (borrowing.status === 'Returned' && Number(borrowing.penaltyAmount || 0) > 0) {
+    message = `Penalty payment reminder: ₱${Number(borrowing.penaltyAmount).toFixed(2)} is due for ${borrowing.bookId?.title || 'a borrowing'}.`;
+  }
+
+  const notification = await notifyUser(userId, message, {
+    type: 'manual-borrowing-notice',
+    dedupeKey: `manual:${borrowing._id}:${Date.now()}`,
+    metadata: { borrowingId: borrowing._id }
+  });
+
+  await runNonCriticalSideEffect('MANUAL_BORROWING_NOTIFICATION_AUDIT', () =>
+    logAudit({
+      actorId: req.user?._id,
+      actorRole: req.user?.role,
+      action: 'MANUAL_BORROWING_NOTIFICATION_SENT',
+      metadata: { borrowingId: borrowing._id, notificationId: notification?._id }
+    }),
+    { borrowingId: String(borrowing._id) }
+  );
+
+  return res.json({ ok: true, notificationId: notification?._id });
+});
+
 const resolveDueDays = (value) => {
   const parsed = Number.parseInt(value, 10);
 
@@ -482,13 +522,17 @@ module.exports = {
   // exposed for manual triggering via admin API
   sendDueRemindersManual: asyncHandler(async (req, res) => {
     const now = new Date();
-    const results = await sendDueDateReminders(now);
+    const daysParam = req.query.days;
+    const windows = Number.isInteger(Number(daysParam)) ? [Number(daysParam)] : null;
+    const results = await sendDueDateReminders(now, windows);
     return res.json({ sent: results.length, details: results });
   })
   ,
   sendPenaltyRemindersManual: asyncHandler(async (req, res) => {
     const now = new Date();
-    const results = await sendPenaltyDueReminders(now);
+    const daysParam = req.query.days;
+    const windows = Number.isInteger(Number(daysParam)) ? [Number(daysParam)] : null;
+    const results = await sendPenaltyDueReminders(now, windows);
     return res.json({ sent: results.length, details: results });
   })
 };

@@ -57,10 +57,12 @@ export default function BorrowingQueueScreen() {
   const [pendingBorrowings, setPendingBorrowings] = useState([]);
   const [borrowings, setBorrowings] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [counts, setCounts] = useState({ pending: 0, active: 0, overdue: 0, returned: 0, rejected: 0, settled: 0, early: 0, onTime: 0 });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [savingId, setSavingId] = useState(null);
   const [selectedBorrowing, setSelectedBorrowing] = useState(null);
+  const [sendingNotification, setSendingNotification] = useState(false);
   const [actionMode, setActionMode] = useState(null);
   const [dueDays, setDueDays] = useState('7');
   const [remarks, setRemarks] = useState('');
@@ -80,24 +82,8 @@ export default function BorrowingQueueScreen() {
   const filterCounts = useMemo(() => {
     const normalizedBorrowings = borrowings.map((borrowing) => String(borrowing.status || '').toLowerCase());
 
-    return {
-      pending: pendingBorrowings.length,
-      active: normalizedBorrowings.filter((status) => status === 'active').length,
-      overdue: normalizedBorrowings.filter((status) => status === 'overdue').length,
-      early: borrowings.filter((b) => {
-        if (!b || String(b.status || '').toLowerCase() !== 'returned') return false;
-        if (!b.return_date || !b.due_date) return false;
-        try {
-          return new Date(b.return_date).getTime() < new Date(b.due_date).getTime();
-        } catch (err) {
-          return false;
-        }
-      }).length,
-      returned: normalizedBorrowings.filter((status) => status === 'returned').length,
-      rejected: normalizedBorrowings.filter((status) => status === 'rejected').length,
-      settled: settledIds.size,
-    };
-  }, [borrowings, pendingBorrowings.length, settledIds]);
+    return counts;
+  }, [borrowings, pendingBorrowings.length, settledIds, counts]);
 
   const visiblePendingBorrowings = useMemo(() => {
     return pendingBorrowings.filter((borrowing) => {
@@ -108,19 +94,22 @@ export default function BorrowingQueueScreen() {
 
   const visibleBorrowings = useMemo(() => {
     if (filter === 'early') {
-      return borrowings.filter((b) => {
+    return borrowings;
         if (!b || String(b.status || '').toLowerCase() !== 'returned') return false;
         if (!b.return_date || !b.due_date) return false;
         try {
-          return new Date(b.return_date).getTime() < new Date(b.due_date).getTime();
-        } catch (err) {
-          return false;
-        }
-      });
-    }
-    if (filter === 'settled') {
-      return borrowings.filter((borrowing) => settledIds.has(String(borrowing._id)));
-    }
+    const [{ data: pendingData }, borrowingsRes, { data: paymentData }, { data: countsData }] = await Promise.all([
+      api.get('/borrowings/pending'),
+      api.get('/reports/borrowings', { params: { filter } }),
+      api.get('/payments'),
+      api.get('/reports/borrowings/counts')
+    ]);
+
+    setPendingBorrowings(pendingData);
+    const borrowingsData = Array.isArray(borrowingsRes.data) ? borrowingsRes.data : (borrowingsRes.data.items || []);
+    setBorrowings(borrowingsData);
+    setPayments(paymentData);
+    setCounts(countsData || {});
 
     if (filter === 'pending') {
       return borrowings.filter((borrowing) => borrowing.status === 'Pending');
@@ -506,6 +495,18 @@ export default function BorrowingQueueScreen() {
 
             <View style={styles.modalActions}>
               <StyledButton title="Cancel" variant="outline" onPress={closeModal} style={styles.modalButton} />
+              <StyledButton title="Send Reminder" variant="outlineGreen" onPress={async () => {
+                try {
+                  setSendingNotification(true);
+                  const { data } = await api.post(`/borrowings/${selectedBorrowing._id}/notify`);
+                  Alert.alert('Done', data.ok ? 'Notification sent' : 'Notification queued');
+                } catch (err) {
+                  Alert.alert('Error', err.response?.data?.message || 'Failed to send notification');
+                } finally {
+                  setSendingNotification(false);
+                }
+              }} loading={sendingNotification} style={[styles.modalButton, { marginRight: 6 }]} />
+
               <StyledButton
                 title={actionMode === 'approve' ? 'Approve' : actionMode === 'reject' ? 'Reject' : 'Save Payment'}
                 variant={actionMode === 'reject' ? 'danger' : 'success'}

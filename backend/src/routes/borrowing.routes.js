@@ -28,5 +28,6 @@ router.post('/scan/borrow', protect, authorize('admin', 'superadmin'), scanBorro
 router.post('/scan/return', protect, authorize('admin', 'superadmin'), scanReturnValidation, validate, scanReturn);
 router.post('/notify/due', protect, authorize('admin', 'superadmin'), require('../controllers/borrowing.controller').sendDueRemindersManual);
 router.post('/notify/penalty', protect, authorize('admin', 'superadmin'), require('../controllers/borrowing.controller').sendPenaltyRemindersManual);
+router.post('/:id/notify', protect, authorize('admin', 'superadmin'), require('../controllers/borrowing.controller').sendNotificationForBorrowing);
 
 module.exports = router;

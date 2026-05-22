@@ -37,7 +37,7 @@ const buildOverdueMessage = (bookTitle, dueDate) => {
   return `Overdue notice: ${bookTitle} was due on ${dueLabel}. Please return it as soon as possible.`;
 };
 
-const sendDueDateReminders = async (now = new Date()) => {
+const sendDueDateReminders = async (now = new Date(), windows = null) => {
   const borrowings = await Borrowing.find({
     status: 'Active',
     due_date: { $exists: true, $ne: null }
@@ -55,7 +55,8 @@ const sendDueDateReminders = async (now = new Date()) => {
 
     const diffDays = Math.ceil((new Date(borrowing.due_date).getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
 
-    if (!REMINDER_WINDOWS.includes(diffDays)) {
+    const windowsToCheck = Array.isArray(windows) && windows.length ? windows : REMINDER_WINDOWS;
+    if (!windowsToCheck.includes(diffDays)) {
       continue;
     }
 
@@ -161,7 +162,7 @@ const buildPenaltyDueMessage = (bookTitle, dueDate) => {
   return `Penalty payment for ${bookTitle} is due on ${dueLabel}. Please settle before the deadline.`;
 };
 
-const sendPenaltyDueReminders = async (now = new Date()) => {
+const sendPenaltyDueReminders = async (now = new Date(), windows = null) => {
   const borrowings = await Borrowing.find({
     status: 'Returned',
     penaltyAmount: { $gt: 0 },
@@ -188,7 +189,8 @@ const sendPenaltyDueReminders = async (now = new Date()) => {
 
     const diffDays = Math.ceil((new Date(borrowing.penalty_due_date).getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
 
-    if (!REMINDER_WINDOWS.includes(diffDays)) {
+    const windowsToCheck = Array.isArray(windows) && windows.length ? windows : REMINDER_WINDOWS;
+    if (!windowsToCheck.includes(diffDays)) {
       continue;
     }
 
