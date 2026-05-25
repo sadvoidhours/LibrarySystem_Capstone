@@ -48,7 +48,7 @@ const formatShortDate = (value) => {
 
 const formatMonthLabel = (date) => date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
-export default function BookLoansScreen() {
+export default function BookBorrowingsScreen() {
   const user = useSelector((state) => state.auth.user);
   const themeMode = useSelector((state) => state.auth.user?.themePreference || 'light');
   const palette = useMemo(() => getThemePalette(themeMode), [themeMode]);

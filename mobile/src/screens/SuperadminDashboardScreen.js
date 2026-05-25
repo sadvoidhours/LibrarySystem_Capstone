@@ -30,7 +30,7 @@ const metricCards = [
   { key: 'facultyUsers', label: 'Faculty', icon: 'person' },
   { key: 'pendingApprovals', label: 'Approvals', icon: 'hourglass' },
   { key: 'totalBooks', label: 'Books', icon: 'library' },
-  { key: 'activeBorrowings', label: 'Book Loans', icon: 'book' },
+  { key: 'activeBorrowings', label: 'Book Borrowings', icon: 'book' },
   { key: 'overdueBorrowings', label: 'Overdue', icon: 'alert-circle' },
 ];
 
@@ -330,7 +330,7 @@ export default function SuperadminDashboardScreen({ navigation }) {
             </View>
             <View style={[styles.heroSummaryCard, { backgroundColor: palette.surfaceAlt }]}>
               <Text style={[styles.heroSummaryValue, { color: palette.gray800 }]}>{overview?.overdueBorrowings ?? 0}</Text>
-              <Text style={[styles.heroSummaryLabel, { color: palette.gray500 }]}>Overdue book loans</Text>
+              <Text style={[styles.heroSummaryLabel, { color: palette.gray500 }]}>Overdue book borrowings</Text>
             </View>
           </View>
 
