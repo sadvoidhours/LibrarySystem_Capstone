@@ -113,13 +113,25 @@ export default function BorrowingQueueScreen() {
   }, [borrowings, filter, settledIds]);
 
   const visiblePayments = useMemo(() => {
-    if (filter === 'settled' || filter === 'pending') {
+    if (filter === 'settled') {
       return payments;
     }
 
     return payments.filter((payment) => {
       const borrowing = borrowings.find((item) => String(item._id) === String(payment.borrowingId?._id || payment.borrowingId));
-      return borrowing ? borrowing.status.toLowerCase() === filter : true;
+
+      if (!borrowing) {
+        return false;
+      }
+
+      if (filter === 'early') {
+        return String(borrowing.status || '').toLowerCase() === 'returned'
+          && borrowing.return_date
+          && borrowing.due_date
+          && new Date(borrowing.return_date).getTime() < new Date(borrowing.due_date).getTime();
+      }
+
+      return String(borrowing.status || '').toLowerCase() === filter;
     });
   }, [borrowings, filter, payments]);
 
@@ -143,7 +155,7 @@ export default function BorrowingQueueScreen() {
     loadData().catch((error) => {
       Alert.alert('Error', error.response?.data?.message || 'Unable to load borrowing queue');
     }).finally(() => setLoading(false));
-  }, []);
+  }, [filter]);
 
   const refresh = async () => {
     setRefreshing(true);
